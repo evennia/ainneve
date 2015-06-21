@@ -65,7 +65,7 @@ class Trait(object):
             health = Trait("Health")
             health.base = 100
             health.mod = 100 # we get a +100 max health buff
-            health.mod = (health.mod - 30) # we get a -30 health debuff
+            health.mod -= 30) # we get a -30 health debuff
             health.maximize()
             health.current # returns 170
             health.clear_mods() # clear all modifiers
