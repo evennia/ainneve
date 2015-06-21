@@ -8,9 +8,15 @@ creation commands.
 
 """
 from evennia import DefaultCharacter
+from ainneve.utils.trait import Trait
+
 
 class Character(DefaultCharacter):
     """
+    This base Character typeclass should only contain things that would be
+    common to NPCs, Mobs, Players, or anything else built off of it. Flags
+    like "Aggro" would go further downstream.
+
     The Character defaults to implementing some of its hook methods with the
     following standard functionality:
 
@@ -28,4 +34,50 @@ class Character(DefaultCharacter):
                     has connected" message echoed to the room
 
     """
-    pass
+    def at_object_creation(self):
+        # race will be a separate Python class, defined and loaded from
+        # some sort of configuration file
+        self.db.race = None
+        # same with Archetype, most likely
+        self.db.archetype = None
+
+        # Primary Traits
+        self.db.primary_traits = {
+            'str': Trait('strength', static=True),
+            'per': Trait('perception', static=True),
+            'int': Trait('intelligence', static=True),
+            'dex': Trait('dexterity', static=True),
+            'cha': Trait('charisma', static=True),
+            'vit': Trait('vitality', static=True),
+            'mag': Trait('magic', static=True)
+        }
+
+        @property
+        def str(self):
+            return self.db.primary_traits['str']
+
+        @property
+        def strength(self):
+            return self.db .primary_traits['str']
+
+        # and so on, unless i think of a better way
+
+        # Secondary Traits
+        self.db.secondary_traits = {
+            'health': self.db.primary_traits['vit'],
+            'stamina': self.db.primary_traits['vit'],
+            'skills': Trait('skills'),
+            'languages': self.db.primary_traits['int'],
+            # saves
+            'fortitude': self.db.primary_traits['vit'],
+            'reflex': self.db.primary_traits['dex'],
+            'willpower': self.db.primary_traits['int'],
+            # magic
+            'mana': self.db.primary_traits['mag'],
+            # armor
+            'armor': Trait('armor')
+        }
+
+        # Equipment
+        self.db.weapons = {}
+        self.db.equipment = {}
