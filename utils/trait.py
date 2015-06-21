@@ -35,6 +35,15 @@ class Trait(object):
             health.fill()
             health.current # returns 100
 
+        Overflow:
+            health = Trait("health", base=25, mod=0)
+            health.fill()
+            health.current += 200 # try to add 200 when already max
+            health.current # 25, overflow=False won't allow it
+            health.overflow = True
+            health.current += 200
+            health.current # 225, overflow=True will allow it
+
         Static trait:
             dodge_chance = Trait("Dodge Chance", static=True)
             dodge_chance.base = 20 (no need to fill, because it is static)
@@ -74,6 +83,7 @@ class Trait(object):
     ):
         self.name = name.title()
         self.static = static
+        self.overflow = overflow
         self.data = {
             'base': base,
             'mod': mod,
@@ -113,9 +123,10 @@ class Trait(object):
     @current.setter
     def current(self, amount):
         if type(amount) in [int, float]:
-            if self.current + amount >= self.actual and not self.overflow:
-                self.data['current'] = self.actual
-            self.data['current'] = amount
+            if (amount >= self.max) and not self.overflow:
+                self.data['current'] = self.max
+            else:
+                self.data['current'] = amount
         else:
             return False
 
