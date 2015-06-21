@@ -1,4 +1,4 @@
-class Trait:
+class Trait(object):
     """
     This creates an easy to use trait for an object or character that has an
     automatically updating "current" field and can be made static.
@@ -70,12 +70,20 @@ class Trait:
     def __init__(
         self,
         name="",
-        data={'current': 0, 'base': 0, 'mod': 0},
-        static=False
+        base=0,
+        mod=0,
+        static=False,
+        **kwargs
     ):
         self.name = name.title()
-        self.data = data
         self.static = static
+        self.data = {
+            'base': base,
+            'mod': mod,
+            'current': base + mod
+        }
+        for key, value in kwargs.iteritems():
+            self.data[key] = value
 
     def __str__(self):
         return "%s:\t\t%s" % (self.name, self.current)
@@ -84,30 +92,46 @@ class Trait:
         return u"%s:\t\t%s" % (self.name, self.current)
 
     @property
-    def actual(self):
-        return self.data["base"] + self.data["mod"]
+    def base(self):
+        return self.data['base']
+
+    @base.setter
+    def base(self, amount):
+        if amount.isdigit():
+            self.data['base'] = amount
+        else:
+            return False
 
     @property
     def current(self):
-        if self.static:
-            return self.actual
+        return self.data['current']
+
+    @current.setter
+    def current(self, amount):
+        if amount.isdigit():
+            self.data['current'] = amount
         else:
-            return self.data["current"]
+            return False
 
     @property
+    def mod(self):
+        return self.data['mod']
+
+    @mod.setter
+    def mod(self, amount):
+        if amount.isdigit():
+            self.data['mod'] = amount
+        else:
+            return False
+
+    def actual(self):
+        return self.data['base'] + self.data['mod']
+
     def max(self):
         return self.actual
 
-    @property
-    def fields(self):
-        fields = []
-        for field in self.data.keys():
-            fields.append(field)
-
-        return fields
-
     def maximize(self):
-        self.data["current"] = self.actual
+        self.current = self.actual
 
     def fill(self):
         self.maximize()
@@ -115,46 +139,8 @@ class Trait:
     def recover(self):
         self.maximize()
 
-    def get_base(self):
-        return self.data["base"]
-
-    def set_base(self, base=None):
-        if base is None:
-            return
-        else:
-            self.data["base"] = base
-
-    def get_mod(self):
-        return self.data["mod"]
-
-    def set_mod(self, mod=None):
-        if mod is None:
-            return
-        else:
-            self.data["mod"] = mod
-
-    def get_field(self, field=None):
-        if field is None:
-            return
-        else:
-            return self.data[field]
-
-    def set_field(self, field=None, value=None):
-        if field is None:
-            return
-        else:
-            self.data[field] = value
-
-    def delete_field(self, field=None):
-        if (field not in [None, 'base', 'current', 'mod']):
-            self.data.pop(field, None)
-        else:
-            return
-
-    def add_field(self, field=None, value=None):
-        if (field in self.data):
-            return
-        elif field is None:
-            return
-        else:
-            self.data[field] = value
+    def fields(self):
+        fields = []
+        for field in self.data.keys():
+            fields.append(field)
+        return fields
