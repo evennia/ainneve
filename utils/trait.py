@@ -24,7 +24,7 @@ class Trait(object):
     The Trait class has the following methods:
         maximize - set 'current' value to max/actual
         fill - alias for maximize
-        recover - clears any mods and then maximizes
+        reset - clears any mods and then maximizes
         clear_mods - sets mod to 0
 
     Example usages:
@@ -68,8 +68,7 @@ class Trait(object):
             health.mod -= 30) # we get a -30 health debuff
             health.maximize()
             health.current # returns 170
-            health.clear_mods() # clear all modifiers
-            health.recover()
+            health.reset() # removes all mods and fills
             health.current # returns 100
     """
     def __init__(
@@ -155,7 +154,7 @@ class Trait(object):
     def fill(self):
         self.maximize()
 
-    def recover(self):
+    def reset(self):
         self.clear_mods()
         self.maximize()
 
