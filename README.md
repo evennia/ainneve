@@ -1,4 +1,4 @@
-# Welcome to Evennia!
+# Welcome to Ainneve!
 
 This directory is your game directory, set up to let you start with
 your new game right away.
