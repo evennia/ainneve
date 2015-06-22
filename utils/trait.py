@@ -3,13 +3,13 @@ class Trait(object):
     This creates an easy to use trait for an object or character that has an
     automatically updating "current" field and can be made static.
 
-    The Trait class can take the following arguments:
-        name - the name of the trait. defaults to ""
-        data - the data structure of the trait. defaults to:
+    Args:
+        name (str): the name of the trait. defaults to ""
+        data (dict): the data structure of the trait. defaults to:
             {'current': 0, 'base': 0, 'mod':0} but can have additional
             pieces of data added.
-        static - whether or not the trait is static (current always equals max)
-        overflow - allow it to go over its max if dynamic
+        static (bool, optional): whether or not the trait is static
+        overflow (bool, optional): allow it to go over its max if dynamic
 
     The Trait class has the following properties:
         actual/max - the maximum possible value of the trait

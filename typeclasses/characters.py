@@ -7,12 +7,11 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-import importlib
+# import importlib
 from evennia import DefaultCharacter
-from ainneve.races import config as races_config
-from ainneve.utils.trait import Trait
+from utils.trait import Trait
 
-races_import_prefix = 'ainneve.races.'
+from plugins import ainneveraces
 
 
 class Character(DefaultCharacter):
@@ -42,6 +41,7 @@ class Character(DefaultCharacter):
         # race will be a separate Python class, defined and loaded from
         # some sort of configuration file
         self.db.race = None
+        self.apply_race('human')
         # same with Archetype, most likely
         self.db.archetype = None
 
@@ -90,22 +90,10 @@ class Character(DefaultCharacter):
         """
         This method applies a race to the character.
 
-        Arguments:
-            race - string
+        Args:
+            race (str): Class path for the race
 
-        The race provided must be in the races config, or it will not load.
+        Returns:
+            bool: True if successful, False if otherwise
         """
-        if type(race) is str and race in races_config['races']:
-            # if 'human' was provided as an argument
-            # rpath = 'ainneve.races.human.Human'
-            rpath = races_import_prefix + race.lower() + '.' + race.title()
-            # rsplit the string into module and class names
-            rmodule, rclass = rpath.rsplit('.', 1)
-            # import 'ainneve.races.human'
-            rimp = importlib.import_module(rmodule)
-            # r becomes the Human class via getattr from the module
-            r = getattr(rimp, rclass)
-            # self.db.race = Human()
-            self.db.race = r()
-        else:
-            return False
+        self.db.race = ainneveraces.load_race(race)
