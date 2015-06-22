@@ -41,7 +41,7 @@ class Character(DefaultCharacter):
         # race will be a separate Python class, defined and loaded from
         # some sort of configuration file
         self.db.race = None
-        self.apply_race('human')
+        self.become_race('human')
         # same with Archetype, most likely
         self.db.archetype = None
 
@@ -86,7 +86,7 @@ class Character(DefaultCharacter):
         self.db.weapons = {}
         self.db.equipment = {}
 
-    def apply_race(self, race):
+    def become_race(self, race):
         """
         This method applies a race to the character.
 
