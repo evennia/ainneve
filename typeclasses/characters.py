@@ -87,11 +87,25 @@ class Character(DefaultCharacter):
         self.db.equipment = {}
 
     def apply_race(self, race):
+        """
+        This method applies a race to the character.
+
+        Arguments:
+            race - string
+
+        The race provided must be in the races config, or it will not load.
+        """
         if type(race) is str and race in races_config['races']:
+            # if 'human' was provided as an argument
+            # rpath = 'ainneve.races.human.Human'
             rpath = races_import_prefix + race.lower() + '.' + race.title()
+            # rsplit the string into module and class names
             rmodule, rclass = rpath.rsplit('.', 1)
+            # import 'ainneve.races.human'
             rimp = importlib.import_module(rmodule)
+            # r becomes the Human class via getattr from the module
             r = getattr(rimp, rclass)
+            # self.db.race = Human()
             self.db.race = r()
         else:
             return False
