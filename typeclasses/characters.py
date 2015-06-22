@@ -8,7 +8,7 @@ creation commands.
 
 """
 from evennia import DefaultCharacter
-from ainneve.utils.trait import Trait
+from utils.trait import Trait
 
 
 class Character(DefaultCharacter):
