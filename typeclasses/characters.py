@@ -7,8 +7,12 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
+import importlib
 from evennia import DefaultCharacter
-from utils.trait import Trait
+from ainneve.races import config as races_config
+from ainneve.utils.trait import Trait
+
+races_import_prefix = 'ainneve.races.'
 
 
 class Character(DefaultCharacter):
@@ -58,7 +62,7 @@ class Character(DefaultCharacter):
 
         @property
         def strength(self):
-            return self.db .primary_traits['str']
+            return self.db.primary_traits['str']
 
         # and so on, unless i think of a better way
 
@@ -75,9 +79,21 @@ class Character(DefaultCharacter):
             # magic
             'mana': self.db.primary_traits['mag'],
             # armor
-            'armor': Trait('armor')
+            'armor': Trait('armor', static=True)
         }
 
         # Equipment
         self.db.weapons = {}
         self.db.equipment = {}
+
+    def apply_race(self, race):
+        if type(race) is str and race in races_config['races']:
+            # TODO:
+            # this needs a graceful try/catch or it could crash server
+            rpath = races_import_prefix + race.lower() + '.' + race.title()
+            rmodule, rclass = rpath.rsplit('.', 1)
+            rimp = importlib.import_module(rmodule)
+            r = getattr(rimp, rclass)
+            self.db.race = r()
+        else:
+            return False
