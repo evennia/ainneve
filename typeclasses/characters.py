@@ -88,8 +88,6 @@ class Character(DefaultCharacter):
 
     def apply_race(self, race):
         if type(race) is str and race in races_config['races']:
-            # TODO:
-            # this needs a graceful try/catch or it could crash server
             rpath = races_import_prefix + race.lower() + '.' + race.title()
             rmodule, rclass = rpath.rsplit('.', 1)
             rimp = importlib.import_module(rmodule)
