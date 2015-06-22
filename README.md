@@ -1,16 +1,8 @@
-# Welcome to Ainneve!
+# Ainneve, an example game for Evennia
 
-This directory is your game directory, set up to let you start with
-your new game right away.
+Welcome! The [Evennia](http://www.evennia.com/) community has created Ainneve for you to use as a base to learn from and build off of.  Ainneve currently is an early work in progress. 
 
-You can delete this readme file when you've read it and you can
-re-arrange things in this game-directory to suit your own sense of
-organisation (the only exception is the directory structure of the
-server/ directory, which Evennia expects). If you change the structure
-you must however also edit/add to your settings file to tell Evennia
-where to look for things.
-
-Your game's main configuration file is found in
+The main configuration file is found in
 `server/conf/settings.py` (but you don't need to change it to get
 started). If you just created this directory, `cd` to this directory
 then initialize a new database using
@@ -34,3 +26,14 @@ documentation found here: https://github.com/evennia/evennia/wiki.
 
 Plenty of beginner's tutorials can be found here:
 http://github.com/evennia/evennia/wiki/Tutorials.
+
+# Contributing
+
+Currently the best resource for learning about Ainneve is the original proposal document, https://docs.google.com/document/d/1fu-zYvFytKHGxFHD6_bLQ4FrotAQ0izXuWE_gn8q2Oc/edit?usp=sharing . Soon we'll be moving that information to this repo's wiki. 
+
+To let us know you're interested in helping out visit the [Evennia developer IRC](http://webchat.freenode.net/?channels=evennia&uio=MT1mYWxzZSY5PXRydWUmMTE9MTk1JjEyPXRydWUbb) and the [Ainneve](https://groups.google.com/forum/?fromgroups#!categories/evennia/ainneve) category of the mailing list. 
+
+
+# License
+
+Ainneve uses the BSD license, the [same as Evennia](https://github.com/evennia/evennia/wiki/Licensing). 
