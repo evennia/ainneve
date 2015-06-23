@@ -1,4 +1,4 @@
-from plugins.ainneveraces.race import Race
+from content.ainneveraces.race import Race
 
 
 class Elf(Race):
@@ -6,8 +6,10 @@ class Elf(Race):
         super(Elf, self).__init__()
         self.name = "Elf"
         self.size = "medium"
-        self.slots = {}
         self.foci = ['agility', 'spirit', 'alertness']
-        self.feats = ['magic resistance', 'heat vision', 'improved listen', 'sprint', 'illusion resistance' ]
+        self.feats = [
+            'magic resistance', 'heat vision', 'improved listen', 'sprint',
+            'illusion resistance'
+        ]
         self.bonuses = {}
         self.detriments = {}

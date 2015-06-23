@@ -11,7 +11,7 @@ creation commands.
 from evennia import DefaultCharacter
 from utils.trait import Trait
 
-from plugins import ainneveraces
+from content import ainneveraces
 
 
 class Character(DefaultCharacter):
@@ -41,50 +41,55 @@ class Character(DefaultCharacter):
         # race will be a separate Python class, defined and loaded from
         # some sort of configuration file
         self.db.race = None
-        self.become_race('human')
         # same with Archetype, most likely
         self.db.archetype = None
 
         # Primary Traits
         self.db.primary_traits = {
-            'str': Trait('strength', static=True),
-            'per': Trait('perception', static=True),
-            'int': Trait('intelligence', static=True),
-            'dex': Trait('dexterity', static=True),
-            'cha': Trait('charisma', static=True),
-            'vit': Trait('vitality', static=True),
-            'mag': Trait('magic', static=True)
+            'strength': Trait('strength', static=True),
+            'perception': Trait('perception', static=True),
+            'intelligence': Trait('intelligence', static=True),
+            'dexterity': Trait('dexterity', static=True),
+            'charisma': Trait('charisma', static=True),
+            'vitality': Trait('vitality', static=True),
+            'magic': Trait('magic', static=True)
         }
 
         @property
-        def str(self):
-            return self.db.primary_traits['str']
+        def strength(self):
+            return self.db.primary_traits['strength']
+
+        @strength.setter
+        def strength(self, amount):
+            self.db.primary_traits['strength'] = amount
 
         @property
-        def strength(self):
-            return self.db.primary_traits['str']
+        def str(self):
+            return self.strength
+
+        @str.setter
+        def str(self, amount):
+            self.strength = amount
 
         # and so on, unless i think of a better way
 
         # Secondary Traits
         self.db.secondary_traits = {
-            'health': self.db.primary_traits['vit'],
-            'stamina': self.db.primary_traits['vit'],
+            'health': Trait('health'),  # vit
+            'stamina': Trait('stamina'),  # vit
             'skills': Trait('skills'),
-            'languages': self.db.primary_traits['int'],
+            'languages': Trait('languages'),  # int
             # saves
-            'fortitude': self.db.primary_traits['vit'],
-            'reflex': self.db.primary_traits['dex'],
-            'will': self.db.primary_traits['int'],
+            'fortitude': Trait('fortitude'),  # vit
+            'reflex': Trait('reflex'),  # dex
+            'will': Trait('will'),  # int
             # magic
-            'mana': self.db.primary_traits['mag'],
+            'mana': Trait('mana'),  # mag
             # armor
             'armor': Trait('armor', static=True)
         }
 
-        # Equipment
-        self.db.weapons = {}
-        self.db.equipment = {}
+        self.db.slots = {}
 
     def become_race(self, race):
         """

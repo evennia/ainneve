@@ -1,4 +1,4 @@
-from plugins import plugger
+import plugger
 
 
 def load_race(race):
