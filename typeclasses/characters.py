@@ -75,7 +75,7 @@ class Character(DefaultCharacter):
             # saves
             'fortitude': self.db.primary_traits['vit'],
             'reflex': self.db.primary_traits['dex'],
-            'willpower': self.db.primary_traits['int'],
+            'will': self.db.primary_traits['int'],
             # magic
             'mana': self.db.primary_traits['mag'],
             # armor
