@@ -101,4 +101,8 @@ class Character(DefaultCharacter):
         Returns:
             bool: True if successful, False if otherwise
         """
+        # set the race
         self.db.race = ainneveraces.load_race(race)
+        # load slots from the race
+        for slot in self.db.race.slots:
+            self.db.slots[slot] = None
