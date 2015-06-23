@@ -6,7 +6,6 @@ class Elf(Race):
         super(Elf, self).__init__()
         self.name = "Elf"
         self.size = "medium"
-        self.limbs = []
         self.slots = {}
         self.foci = ['agility', 'spirit', 'alertness']
         self.feats = ['magic resistance', 'heat vision', 'improved listen', 'sprint', 'illusion resistance' ]
