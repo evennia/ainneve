@@ -11,7 +11,7 @@ creation commands.
 from evennia import DefaultCharacter
 from utils.trait import Trait
 
-from content import ainneveraces
+from world import races
 
 
 class Character(DefaultCharacter):
@@ -57,11 +57,11 @@ class Character(DefaultCharacter):
 
         @property
         def strength(self):
-            return self.db.primary_traits['strength']
+            return self.db.primary_traits['strength'].current
 
         @strength.setter
         def strength(self, amount):
-            self.db.primary_traits['strength'] = amount
+            self.db.primary_traits['strength'].base = amount
 
         @property
         def str(self):
@@ -102,7 +102,7 @@ class Character(DefaultCharacter):
             bool: True if successful, False if otherwise
         """
         # set the race
-        self.db.race = ainneveraces.load_race(race)
+        self.db.race = races.load_race(race)
         # load slots from the race
         for slot in self.db.race.slots:
             self.db.slots[slot] = None

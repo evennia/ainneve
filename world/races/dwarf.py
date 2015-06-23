@@ -1,4 +1,4 @@
-from content.ainneveraces.race import Race
+from world.races.race import Race
 
 
 class Dwarf(Race):
