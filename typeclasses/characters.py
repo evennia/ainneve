@@ -15,6 +15,7 @@ from world import races
 
 
 class Character(DefaultCharacter):
+
     """
     This base Character typeclass should only contain things that would be
     common to NPCs, Mobs, Players, or anything else built off of it. Flags
@@ -37,6 +38,7 @@ class Character(DefaultCharacter):
                     has connected" message echoed to the room
 
     """
+
     def at_object_creation(self):
         # race will be a separate Python class, defined and loaded from
         # some sort of configuration file
@@ -54,24 +56,6 @@ class Character(DefaultCharacter):
             'vitality': Trait('vitality', static=True),
             'magic': Trait('magic', static=True)
         }
-
-        @property
-        def strength(self):
-            return self.db.primary_traits['strength'].current
-
-        @strength.setter
-        def strength(self, amount):
-            self.db.primary_traits['strength'].base = amount
-
-        @property
-        def str(self):
-            return self.strength
-
-        @str.setter
-        def str(self, amount):
-            self.strength = amount
-
-        # and so on, unless i think of a better way
 
         # Secondary Traits
         self.db.secondary_traits = {
@@ -91,6 +75,143 @@ class Character(DefaultCharacter):
 
         self.db.slots = {}
 
+    def base_stat(self, stat, amount):
+        if not stat in [
+                'strength',
+                'perception',
+                'intelligence',
+                'dexterity',
+                'charisma',
+                'vitality',
+                'magic',
+                'health',
+                'stamina',
+                'skills',
+                'languages',
+                'fortitude',
+                'reflex',
+                'will',
+                'mana',
+                'armor']:
+            return False
+
+        # as per the OA blue rulebook mana can never exceed 10 (page 49)
+        if stat = 'mana':
+            if amount > 10:
+                self.db.secondary_traits['mana'].base = 10
+            else:
+                self.db.secondary_traits['mana'].base = amount
+
+        if stat in [
+                'strength',
+                'perception',
+                'intelligence',
+                'dexterity',
+                'charisma',
+                'vitality',
+                'magic']:
+            self.db.primary_traits[stat].base = amount
+
+        if stat in [
+                'health',
+                'stamina',
+                'skills',
+                'languages',
+                'fortitude',
+                'reflex',
+                'will',
+                'armor']:
+            self.db.secondary_traits[stat].base = amount
+
+    def mod_stat(self, stat, amount):
+        if not stat in [
+                'strength',
+                'perception',
+                'intelligence',
+                'dexterity',
+                'charisma',
+                'vitality',
+                'magic',
+                'health',
+                'stamina',
+                'skills',
+                'languages',
+                'fortitude',
+                'reflex',
+                'will',
+                'mana',
+                'armor']:
+            return False
+
+        # as per the OA blue rulebook mana can never exceed 10 (page 49)
+        if stat = 'mana':
+            if (self.db.secondary_traits['mana'].base + amount) > 10:
+                self.db.secondary_traits['mana'].mod = 10
+            else:
+                self.db.secondary_traits['mana'].mod = amount
+
+        if stat in [
+                'strength',
+                'perception',
+                'intelligence',
+                'dexterity',
+                'charisma',
+                'vitality',
+                'magic']:
+            self.db.primary_traits[stat].mod = amount
+
+        if stat in [
+                'health',
+                'stamina',
+                'skills',
+                'languages',
+                'fortitude',
+                'reflex',
+                'will',
+                'armor']:
+            self.db.secondary_traits[stat].mod = amount
+
+    def get_stat(self, stat):
+        if not stat in [
+                'strength',
+                'perception',
+                'intelligence',
+                'dexterity',
+                'charisma',
+                'vitality',
+                'magic',
+                'health',
+                'stamina',
+                'skills',
+                'languages',
+                'fortitude',
+                'reflex',
+                'will',
+                'mana',
+                'armor']:
+            return False
+
+        if stat in [
+                'strength',
+                'perception',
+                'intelligence',
+                'dexterity',
+                'charisma',
+                'vitality',
+                'magic']:
+            return self.db.primary_traits[stat].current
+
+        if stat in [
+                'health',
+                'stamina',
+                'skills',
+                'languages',
+                'fortitude',
+                'reflex',
+                'will',
+                'armor']:
+            return self.db.secondary_traits[stat].current
+
     def become_race(self, race):
         """
         This method applies a race to the character.
@@ -101,6 +222,10 @@ class Character(DefaultCharacter):
         Returns:
             bool: True if successful, False if otherwise
         """
+        # check if race is a valid races object
+        if not isinstance(race, races):
+            return False
+
         # set the race
         self.db.race = races.load_race(race)
         # load slots from the race
