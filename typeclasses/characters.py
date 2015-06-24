@@ -75,142 +75,70 @@ class Character(DefaultCharacter):
 
         self.db.slots = {}
 
-    def base_stat(self, stat, amount):
-        if not stat in [
-                'strength',
-                'perception',
-                'intelligence',
-                'dexterity',
-                'charisma',
-                'vitality',
-                'magic',
-                'health',
-                'stamina',
-                'skills',
-                'languages',
-                'fortitude',
-                'reflex',
-                'will',
-                'mana',
-                'armor']:
-            return False
+    # helper method, checks if stat is valid
+    def find_stat(self, stat):
+        if stat in self.db.primary_traits:
+            return self.db.primary_traits[stat]
+        elif stat in self.db.secondary_traits:
+            return self.db.secondary_traits[stat]
+        else:
+            return None
 
+    # helper method, checks if race gets extra language points
+    def determine_language_points(self):
+        if self.bonuses['languages']:
+            return self.bonuses['languages']
+
+    def base_stat(self, stat, amount):
+        # sets the secondary traits
+        if stat == 'vitality':
+            base_stat('health', amount)
+            base_stat('stamina', amount)
+            base_stat('fortitude', amount)
+            base_stat('reflex', amount)
+
+        if stat == 'intelligence':
+            bonus_language_points = determine_language_points()
+            base_stat('languages', amount + bonus_language_points)
+            base_stat('will', amount)
+              
         # as per the OA blue rulebook mana can never exceed 10 (page 49)
         if stat = 'mana':
             if amount > 10:
                 self.db.secondary_traits['mana'].base = 10
+                return
             else:
                 self.db.secondary_traits['mana'].base = amount
+                return
 
-        if stat in [
-                'strength',
-                'perception',
-                'intelligence',
-                'dexterity',
-                'charisma',
-                'vitality',
-                'magic']:
-            self.db.primary_traits[stat].base = amount
-
-        if stat in [
-                'health',
-                'stamina',
-                'skills',
-                'languages',
-                'fortitude',
-                'reflex',
-                'will',
-                'armor']:
-            self.db.secondary_traits[stat].base = amount
-
-    def mod_stat(self, stat, amount):
-        if not stat in [
-                'strength',
-                'perception',
-                'intelligence',
-                'dexterity',
-                'charisma',
-                'vitality',
-                'magic',
-                'health',
-                'stamina',
-                'skills',
-                'languages',
-                'fortitude',
-                'reflex',
-                'will',
-                'mana',
-                'armor']:
+        stat_valid = find_stat(stat)
+        if stat_valid:
+            stat_valid.base = amount
+        else:
             return False
 
+    def mod_stat(self, stat, amount):
         # as per the OA blue rulebook mana can never exceed 10 (page 49)
         if stat = 'mana':
             if (self.db.secondary_traits['mana'].base + amount) > 10:
                 self.db.secondary_traits['mana'].mod = 10
+                return
             else:
                 self.db.secondary_traits['mana'].mod = amount
-
-        if stat in [
-                'strength',
-                'perception',
-                'intelligence',
-                'dexterity',
-                'charisma',
-                'vitality',
-                'magic']:
-            self.db.primary_traits[stat].mod = amount
-
-        if stat in [
-                'health',
-                'stamina',
-                'skills',
-                'languages',
-                'fortitude',
-                'reflex',
-                'will',
-                'armor']:
-            self.db.secondary_traits[stat].mod = amount
-
-    def get_stat(self, stat):
-        if not stat in [
-                'strength',
-                'perception',
-                'intelligence',
-                'dexterity',
-                'charisma',
-                'vitality',
-                'magic',
-                'health',
-                'stamina',
-                'skills',
-                'languages',
-                'fortitude',
-                'reflex',
-                'will',
-                'mana',
-                'armor']:
+                return
+       
+        stat_valid = find_stat(stat)
+        if stat_valid:
+            stat_valid.mod = amount
+        else: 
             return False
 
-        if stat in [
-                'strength',
-                'perception',
-                'intelligence',
-                'dexterity',
-                'charisma',
-                'vitality',
-                'magic']:
-            return self.db.primary_traits[stat].current
-
-        if stat in [
-                'health',
-                'stamina',
-                'skills',
-                'languages',
-                'fortitude',
-                'reflex',
-                'will',
-                'armor']:
-            return self.db.secondary_traits[stat].current
+    def get_stat(self, stat):
+        stat_valid = find_stat(stat)
+        if stat_valid:
+            stat_valid.mod = amount
+        else: 
+            return False
 
     def become_race(self, race):
         """
