@@ -44,6 +44,8 @@ class Character(DefaultCharacter):
         # same with Archetype, most likely
         self.db.archetype = None
 
+        self.db.slots = {}
+
         # Primary Traits
         self.db.primary_traits = {
             'strength': Trait('strength', static=True),
@@ -88,8 +90,6 @@ class Character(DefaultCharacter):
             # armor
             'armor': Trait('armor', static=True)
         }
-
-        self.db.slots = {}
 
     def become_race(self, race):
         """
