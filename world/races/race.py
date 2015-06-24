@@ -8,10 +8,14 @@ class Race(object):
         self.slots = [
             'head',
             'torso',
-            'left_arm',
-            'right_arm',
-            'left_leg',
-            'right_leg'
+            'left arm',
+            'right arm',
+            'left hand',
+            'right hand',
+            'left leg',
+            'right leg',
+            'left foot',
+            'right foot'
         ]
         self.foci = []
         self.feats = []
