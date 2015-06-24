@@ -88,6 +88,8 @@ class Character(DefaultCharacter):
     def determine_language_points(self):
         if self.bonuses['languages']:
             return self.bonuses['languages']
+        else:
+            return 0
 
     def base_stat(self, stat, amount):
         # sets the secondary traits
