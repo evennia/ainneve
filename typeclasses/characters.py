@@ -104,7 +104,7 @@ class Character(DefaultCharacter):
             self.db.secondary_traits['will'] = amount
 
         # as per the OA blue rulebook mana can never exceed 10 (page 49)
-        if stat = 'mana':
+        if stat == 'mana':
             if (self.db.secondary_traits['mana'].base + amount) >= 10:
                 self.db.secondary_traits['mana'].base = 10
                 self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
@@ -122,7 +122,7 @@ class Character(DefaultCharacter):
 
     def mod_stat(self, stat, amount):
         # as per the OA blue rulebook mana can never exceed 10 (page 49)
-        if stat = 'mana':
+        if stat == 'mana':
             if (self.db.secondary_traits['mana'].base + amount) > 10:
                 self.db.secondary_traits['mana'].mod = 10 - self.db.secondary_traits['mana'].base
                 return
