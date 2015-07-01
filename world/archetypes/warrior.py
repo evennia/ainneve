@@ -1,3 +1,5 @@
+import random
+
 from world.archetypes.archetype import Archetype
 
 
@@ -9,4 +11,5 @@ class Warrior(Archetype):
                                     'charisma': 4,
                                     'vitality': 6}
                                    )
-
+        self.bonuses = {'power': 2}
+        self.health_gain_on_level = random.randint(1, 6) + 2
