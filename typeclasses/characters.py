@@ -9,7 +9,7 @@ creation commands.
 """
 # import importlib
 from evennia import DefaultCharacter
-from utils.trait import Trait
+from world.traits.trait import Trait
 
 from world import races
 
