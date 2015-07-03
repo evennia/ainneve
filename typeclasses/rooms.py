@@ -6,9 +6,9 @@ Rooms are simple containers that has no location of their own.
 """
 
 from evennia import DefaultRoom
+from world.rules.base_object import BaseObject
 
-
-class Room(DefaultRoom):
+class Room(BaseObject, DefaultRoom):
     """
     Rooms are like any Object, except their location is None
     (which is default). They also use basetype_setup() to
@@ -18,7 +18,6 @@ class Room(DefaultRoom):
     See examples/object.py for a list of
     properties and methods available on all Objects.
     """
-    
     
     # Overloading default return_appearance method to show automatic exits
     # destinations and divide users and things. One user per line, one thing
@@ -45,9 +44,9 @@ class Room(DefaultRoom):
             if con.destination:
                 exits.append("{w[%s] {n- {c%s{n" % (key, con.destination))
             elif con.has_player:
-                users.append("{w%s{n is here." % key)
+                users.append("{w%s{n is here." % con.appearance)
             else:
-                things.append("%s" % key)
+                things.append("%s" % con.appearance)
         # get description, build string
         string = "{c%s{n\n" % self.key
         desc = self.db.desc
