@@ -35,6 +35,8 @@ If you're looking for what tasks we need help with, look at our [current open is
 
 To let us know you're interested in helping out visit the [Evennia developer IRC](http://webchat.freenode.net/?channels=evennia&uio=MT1mYWxzZSY5PXRydWUmMTE9MTk1JjEyPXRydWUbb) and the [Ainneve](https://groups.google.com/forum/?fromgroups#!categories/evennia/ainneve) category of the mailing list. 
 
+Please submit pull requests as feature branches rather than from your master -- see https://github.com/evennia/evennia/wiki/Version-Control#making-a-work-branch. 
+
 
 # License
 
