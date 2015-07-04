@@ -9,10 +9,11 @@ creation commands.
 """
 # import importlib
 from evennia import DefaultCharacter
+from evennia.utils import lazy_property
 from world.traits.trait import Trait
 
 from world import races
-
+from world.equip import EquipHandler
 
 class Character(DefaultCharacter):
 
@@ -74,6 +75,13 @@ class Character(DefaultCharacter):
             # armor
             'armor': Trait('armor', static=True)
         }
+
+    @lazy_property
+    def equip(self):
+        """
+        An handler to administrate characters equipment.
+        """
+        return EquipHandler(self)
 
     # helper method, checks if stat is valid
     def find_stat(self, stat):
