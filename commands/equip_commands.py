@@ -176,17 +176,20 @@ class CmdHold(Command):
             caller.msg("You're already holding %s." % obj)
             return
 
-        if not caller.equip.add(obj):
-            string = "You can't hold %s." % obj
-            if caller.equip.get('holds'):
-                string += " You already have something there."
-            caller.msg(string)
-                
+        if not 'holds' in caller.equip.slot:
+            caller.msg("You can't hold %s." % obj)
+            return
+
+        if caller.equip.get('holds'):
+            caller.msg("You can't hold %s. You're already holding something.")
             return
 
         # call hook
         if hasattr(obj, "at_hold"):
             obj.at_hold(caller)
+
+        # Hold command calls 'set' directly, not 'add'
+        caller.equip.set('holds', obj)
 
         caller.msg("You hold %s." % obj)
         caller.location.msg_contents("%s holds %s." % (caller.name.capitalize(), obj),

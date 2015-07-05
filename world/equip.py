@@ -111,8 +111,7 @@ class EquipHandler(object):
             # At the same time all expected errors are converted
             # to KeyError
             try:
-                if slot not in self.slots                           \
-                   or slot not in utils.make_iter(item.db.slot):
+                if slot not in self.slots:
                     raise TypeError
             except TypeError:
                 raise KeyError("Slot not available: %s" % slot)
@@ -183,6 +182,11 @@ class EquipHandler(object):
         self._set(slot, obj)
         return True
 
+    def hold(self, obj):
+        """ 
+        Add an object to the 'hold' slot of character's equip.
+        """
+        
     def remove(self, obj):
         """ 
         Remove an object from character's equip.
