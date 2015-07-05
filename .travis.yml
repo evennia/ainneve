@@ -1,4 +1,12 @@
 language: python
 python:
-    - "2.7"
-install: ./install-dependencies.sh
+  - "2.7"
+install:
+  - git clone https://github.com/evennia/evennia.git
+  - cd evennia
+  - pip install .
+  - cd ../ainneve
+  - evennia migrate
+script:
+  - evennia test evennia
+  - evennia test ainneve
