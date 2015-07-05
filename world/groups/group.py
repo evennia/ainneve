@@ -15,5 +15,5 @@ class Group(object):
     def toggle_row(self, member):
         pass
 
-    def change_columb(self, member, column):
+    def change_column(self, member, column):
         pass
