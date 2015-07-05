@@ -6,7 +6,6 @@ install:
   - cd evennia
   - pip install -e .
   - cd $TRAVIS_BUILD_DIR
-  - pip install .
 script:
   - evennia migrate
   - evennia test evennia
