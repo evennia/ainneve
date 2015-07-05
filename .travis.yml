@@ -9,4 +9,4 @@ install:
 script:
   - evennia migrate
   - evennia test evennia
-  - evennia test ainneve
+  - evennia test
