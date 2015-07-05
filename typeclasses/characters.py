@@ -77,6 +77,8 @@ class Character(DefaultCharacter):
             'armor': Trait('armor', static=True)
         }
 
+        self.ndb.group = None
+
     @lazy_property
     def equip(self):
         """
