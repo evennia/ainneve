@@ -5,7 +5,7 @@ install:
   - git clone https://github.com/evennia/evennia.git
   - cd evennia
   - pip install .
-  - cd ../ainneve
+  - cd $TRAVIS_BUILD_DIR
   - evennia migrate
 script:
   - evennia test evennia
