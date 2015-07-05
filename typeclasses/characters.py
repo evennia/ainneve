@@ -9,12 +9,13 @@ creation commands.
 """
 # import importlib
 from evennia import DefaultCharacter
-from utils.trait import Trait
+from world.traits.trait import Trait
 
 from world import races
 
 
 class Character(DefaultCharacter):
+
     """
     This base Character typeclass should only contain things that would be
     common to NPCs, Mobs, Players, or anything else built off of it. Flags
@@ -37,6 +38,7 @@ class Character(DefaultCharacter):
                     has connected" message echoed to the room
 
     """
+
     def at_object_creation(self):
         # race will be a separate Python class, defined and loaded from
         # some sort of configuration file
@@ -57,24 +59,6 @@ class Character(DefaultCharacter):
             'magic': Trait('magic', static=True)
         }
 
-        @property
-        def strength(self):
-            return self.db.primary_traits['strength'].current
-
-        @strength.setter
-        def strength(self, amount):
-            self.db.primary_traits['strength'].base = amount
-
-        @property
-        def str(self):
-            return self.strength
-
-        @str.setter
-        def str(self, amount):
-            self.strength = amount
-
-        # and so on, unless i think of a better way
-
         # Secondary Traits
         self.db.secondary_traits = {
             'health': Trait('health'),  # vit
@@ -91,6 +75,80 @@ class Character(DefaultCharacter):
             'armor': Trait('armor', static=True)
         }
 
+    # helper method, checks if stat is valid
+    def find_stat(self, stat):
+        if stat in self.db.primary_traits:
+            return self.db.primary_traits[stat]
+        elif stat in self.db.secondary_traits:
+            return self.db.secondary_traits[stat]
+        else:
+            return None
+
+    # helper method, checks if race gets extra language points
+    def determine_language_points(self):
+        if self.bonuses['languages']:
+            return self.bonuses['languages']
+        else:
+            return 0
+
+    def base_stat(self, stat, amount):
+        # sets the secondary traits
+        if stat == 'vitality':
+            for secondary in ['health', 'stamina', 'fortitude', 'reflex']:
+                self.db.secondary_traits[secondary].base = amount
+
+        if stat == 'intelligence':
+            bonus_language_points = determine_language_points()
+            self.db.secondary_traits[
+                'languages'] = amount + bonus_language_points
+            self.db.secondary_traits['will'] = amount
+
+        # as per the OA blue rulebook mana can never exceed 10 (page 49)
+        if stat == 'mana':
+            if (self.db.secondary_traits['mana'].base + amount) >= 10:
+                self.db.secondary_traits['mana'].base = 10
+                self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
+                return
+            else:
+                self.db.secondary_traits['mana'].base = self.db.secondary_traits['mana'].base + amount
+                self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
+                return
+
+        valid_stat = find_stat(stat)
+        if valid_stat:
+            valid_stat.base = amount
+        else:
+            return False
+
+    def mod_stat(self, stat, amount):
+        # as per the OA blue rulebook mana can never exceed 10 (page 49)
+        if stat == 'mana':
+            if (self.db.secondary_traits['mana'].base + amount) > 10:
+                self.db.secondary_traits['mana'].mod = 10 - self.db.secondary_traits['mana'].base
+                return
+            elif (self.db.secondary_traits['mana'].base
+                  + self.db.secondary_traits['mana'].mod + amount) > 10:
+                self.db.secondary_traits[
+                    'mana'].mod = 10 - (self.db.secondary_traits['mana'].base
+                                         + self.db.secondary_traits['mana'].mod)
+                return
+            else:
+                self.db.secondary_traits['mana'].mod = amount
+                return
+
+        valid_stat = find_stat(stat)
+        if valid_stat:
+            valid_stat.base = amount
+        else:
+            return False
+
+    def get_stat(self, stat):
+        valid_stat = find_stat(stat)
+        if valid_stat:
+            valid_stat.base = amount
+        else:
+            return False
+
     def become_race(self, race):
         """
         This method applies a race to the character.
@@ -101,6 +159,7 @@ class Character(DefaultCharacter):
         Returns:
             bool: True if successful, False if otherwise
         """
+
         # set the race
         self.db.race = races.load_race(race)
         # load slots from the race
