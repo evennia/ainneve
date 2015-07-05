@@ -15,6 +15,7 @@ from world.traits.trait import Trait
 from world import races
 from world.equip import EquipHandler
 
+
 class Character(DefaultCharacter):
 
     """
@@ -106,7 +107,7 @@ class Character(DefaultCharacter):
                 self.db.secondary_traits[secondary].base = amount
 
         if stat == 'intelligence':
-            bonus_language_points = determine_language_points()
+            bonus_language_points = self.determine_language_points()
             self.db.secondary_traits[
                 'languages'] = amount + bonus_language_points
             self.db.secondary_traits['will'] = amount
@@ -118,11 +119,11 @@ class Character(DefaultCharacter):
                 self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
                 return
             else:
-                self.db.secondary_traits['mana'].base = self.db.secondary_traits['mana'].base + amount
+                self.db.secondary_traits['mana'].base += amount
                 self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
                 return
 
-        valid_stat = find_stat(stat)
+        valid_stat = self.find_stat(stat)
         if valid_stat:
             valid_stat.base = amount
         else:
@@ -132,30 +133,32 @@ class Character(DefaultCharacter):
         # as per the OA blue rulebook mana can never exceed 10 (page 49)
         if stat == 'mana':
             if (self.db.secondary_traits['mana'].base + amount) > 10:
-                self.db.secondary_traits['mana'].mod = 10 - self.db.secondary_traits['mana'].base
+                self.db.secondary_traits['mana'].mod = 10 - \
+                    self.db.secondary_traits['mana'].base
                 return
-            elif (self.db.secondary_traits['mana'].base
-                  + self.db.secondary_traits['mana'].mod + amount) > 10:
+            elif (self.db.secondary_traits['mana'].base +
+                  self.db.secondary_traits['mana'].mod + amount) > 10:
                 self.db.secondary_traits[
-                    'mana'].mod = 10 - (self.db.secondary_traits['mana'].base
-                                         + self.db.secondary_traits['mana'].mod)
+                    'mana'
+                ].mod = 10 - (self.db.secondary_traits['mana'].base +
+                              self.db.secondary_traits['mana'].mod)
                 return
             else:
                 self.db.secondary_traits['mana'].mod = amount
                 return
 
-        valid_stat = find_stat(stat)
+        valid_stat = self.find_stat(stat)
         if valid_stat:
             valid_stat.base = amount
         else:
             return False
 
     def get_stat(self, stat):
-        valid_stat = find_stat(stat)
+        valid_stat = self.find_stat(stat)
         if valid_stat:
-            valid_stat.base = amount
+            return valid_stat
         else:
-            return False
+            return None
 
     def become_race(self, race):
         """
