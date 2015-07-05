@@ -1,5 +1,5 @@
 # Ainneve, an example game for Evennia 
-https://travis-ci.org/evennia/ainneve.svg?branch=master
+![Build status](https://travis-ci.org/evennia/ainneve.svg?branch=master)
 
 Welcome! The [Evennia](http://www.evennia.com/) community has created Ainneve for you to use as a base to learn from and build off of.  Ainneve currently is an early work in progress. 
 
