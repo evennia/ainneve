@@ -4,9 +4,10 @@ python:
 install:
   - git clone https://github.com/evennia/evennia.git
   - cd evennia
-  - pip install .
+  - pip install -e .
   - cd $TRAVIS_BUILD_DIR
-  - evennia migrate
+  - pip install .
 script:
+  - evennia migrate
   - evennia test evennia
   - evennia test ainneve
