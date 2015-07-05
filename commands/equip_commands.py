@@ -96,7 +96,7 @@ class CmdWear(Command):
         if not caller.equip.add(obj):
             string = "You can't equip %s." % obj
             if [s for s in utils.make_iter(obj.db.slot) if s in caller.equip.empty_slots()]:
-                string += "You already have something there."
+                string += " You already have something there."
             caller.msg(string)
             return
         # call hook
@@ -142,6 +142,7 @@ class CmdWield(Command):
 
         if not obj.db.slot                                         \
            or 'right hand' not in utils.make_iter(obj.db.slot)     \
+           or 'left hand' not in utils.make_iter(obj.db.slot)      \
            or not obj.access(caller, 'equip'):
             caller.msg("You can't wield %s." % obj)
             return
@@ -151,7 +152,10 @@ class CmdWield(Command):
             return
 
         if not caller.equip.add(obj):
-            caller.msg("You can't wield %s." % obj)
+            string = "You can't wield %s." % obj
+            if [s for s in utils.make_iter(obj.db.slot) if s in caller.equip.empty_slots()]:
+                string += " You already have something there."
+            caller.msg(string)
             return
 
         # call hook
@@ -195,16 +199,20 @@ class CmdHold(Command):
             caller.msg("You don't have %s in your inventory." % obj)
             return
 
-        if not obj.db.slot or not 'holds' in utils.make_iter(obj.db.slot) \
-           or not obj.access(caller, 'hold'):
+        if not obj.access(caller, 'hold'):
             caller.msg("You can't hold %s." % obj)
             return
+
         if obj in caller.equip.items():
             caller.msg("You're already holding %s." % obj)
             return
 
         if not caller.equip.add(obj):
-            caller.msg("You can't hold %s." % obj)
+            string = "You can't hold %s." % obj
+            if caller.equip.get('holds'):
+                string += " You already have something there."
+            caller.msg(string)
+                
             return
 
         # call hook

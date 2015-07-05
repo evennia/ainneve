@@ -58,8 +58,6 @@ class EquipHandler(object):
         items():            returns a list of equipped items. Does not
                             returns unoccupied slots
         empty_slots():      returns a list of empty slots
-        showtable():        returns a formatted table of paired
-                            slot, equip. Useful for printing equipment
 
     Example usage:
         Say obj is a hat.
@@ -172,18 +170,6 @@ class EquipHandler(object):
         """
         return filter(lambda x: self.obj.db.equip[x] is None, \
                       self.obj.db.equip.keys())
-
-    def showtable(self):
-        """
-        Shows the equip as a nice formatted table.
-        """
-        table = utils.prettytable.PrettyTable(["slot", "item"])
-        table.header = False
-        table.border = False
-        for slot, item in self:
-            if item:
-                table.add_row(["{C%s{n" % slot.capitalize(), item.name])
-        return str(table).strip()
 
     def add(self, obj):
         """ 

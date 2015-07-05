@@ -14,7 +14,32 @@ class Item(Object):
         """
         super(Item, self).at_object_creation()
         self.locks.add("equip:false();hold:false()")
-        if hasattr(self, 'slot'):
+
+    def at_hold(self, character):
+        """
+        Hook called when a character holds this object.
+
+        Args:
+            character - the character holding this object
+
+        """
+        pass
+
+
+class EquippableItem(Item):
+    """
+    This class implements an item that can be set in the equipment.
+
+    """
+    slot = None
+
+    def at_object_creation(self):
+        """
+        Setup item-specific variables.
+        """
+        super(EquippableItem, self).at_object_creation()
+        self.locks.add("equip:all()")
+        if hasattr(self, 'slot') and self.slot:
             self.db.slot = self.slot
 
     def at_equip(self, character):
@@ -23,16 +48,6 @@ class Item(Object):
 
         Args:
             character - the character equipping this object
-
-        """
-        pass
-
-    def at_hold(self, character):
-        """
-        Hook called when a character holds this object.
-
-        Args:
-            character - the character holding this object
 
         """
         pass
@@ -47,7 +62,7 @@ class Item(Object):
         """
         pass
 
-class Armor(Item):
+class Armor(EquippableItem):
     """
     This class implements a basic armor object
 
@@ -62,7 +77,7 @@ class Armor(Item):
         self.locks.add("equip:all()")
         self.tags.add(self.armor_type, category='armor')
 
-class Weapon(Item):
+class Weapon(EquippableItem):
     """
     This class implements a basic weapon object
 
