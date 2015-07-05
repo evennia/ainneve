@@ -79,31 +79,33 @@ class CmdWear(Command):
         if not obj in caller.contents:
             caller.msg("You don't have %s in your inventory." % obj)
 
-        # equip primary hand with the proper command
-        if 'right hand' in utils.make_iter(obj.db.slot):
-            caller.execute_cmd("wield %s" % args)
-            return
+        # equip primary and secondary hands with the proper feedback
+        if 'right hand' in utils.make_iter(obj.db.slot)     \
+           or 'left hand' in utils.make_iter(obj.db.slot):
+            action = 'wield'
+        else:
+            action = 'wear'
 
-        if not obj.db.slot or 'holds' in utils.make_iter(obj.db.slot)  \
-           or not obj.access(caller, 'equip'):
+        if not obj.db.slot or not obj.access(caller, 'equip'):
             caller.msg("You can't equip %s." % obj)
             return
 
         if obj in caller.equip.items():
-            caller.msg("You're already wearing %s." % obj.name)
+            caller.msg("You're already %sing %s." % (action, obj.name))
             return
 
         if not caller.equip.add(obj):
             string = "You can't equip %s." % obj
-            if [s for s in utils.make_iter(obj.db.slot) if s in caller.equip.empty_slots()]:
+            if [s for s in utils.make_iter(obj.db.slot) if s in caller.equip.slots]:
                 string += " You already have something there."
             caller.msg(string)
             return
+
         # call hook
         if hasattr(obj, "at_equip"):
             obj.at_equip(caller)
-        caller.msg("You wear %s." % obj)
-        caller.location.msg_contents("%s wears %s." % (caller.name.capitalize(), obj),
+        caller.msg("You %s %s." % (action, obj))
+        caller.location.msg_contents("%s %ss %s." % (caller.name.capitalize(), action, obj),
                                      exclude=caller)
 
 
@@ -120,6 +122,7 @@ class CmdWield(Command):
     key = "wield"
     aliases = ["equip primary", "ep"]
     locks = "cmd:all()"
+    obj_to_wield = None
 
     def func(self):
         "implements the command."
@@ -130,41 +133,7 @@ class CmdWield(Command):
             caller.msg("Wield what?")
             return
 
-        # this will search for a target
-        obj = caller.search(args)
-
-        if not obj:
-            return
-
-        if not obj in caller.contents:
-            caller.msg("You don't have %s in your inventory." % obj)
-            return
-
-        if not obj.db.slot                                         \
-           or 'right hand' not in utils.make_iter(obj.db.slot)     \
-           or 'left hand' not in utils.make_iter(obj.db.slot)      \
-           or not obj.access(caller, 'equip'):
-            caller.msg("You can't wield %s." % obj)
-            return
-
-        if obj in caller.equip.items():
-            caller.msg("You're already wielding %s." % obj.name)
-            return
-
-        if not caller.equip.add(obj):
-            string = "You can't wield %s." % obj
-            if [s for s in utils.make_iter(obj.db.slot) if s in caller.equip.empty_slots()]:
-                string += " You already have something there."
-            caller.msg(string)
-            return
-
-        # call hook
-        if hasattr(obj, "at_equip"):
-            obj.at_equip(caller)
-
-        caller.msg("You wield %s." % obj)
-        caller.location.msg_contents("%s wields %s." % (caller.name.capitalize(), obj),
-                                     exclude=caller)
+        caller.execute_cmd("wear %s" % args)
 
 class CmdHold(Command):
     """
