@@ -12,7 +12,7 @@ class Warrior(Archetype):
                                     'dexterity': 5,
                                     'charisma': 5,
                                     'vitality': 7,
-                                    'magic': 5}
+                                    'magic': 4}
                                    )
         self.bonuses = {'power': 2}
         self.health_gain_on_level = random.randint(1, 6) + 2
