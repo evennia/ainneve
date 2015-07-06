@@ -7,9 +7,12 @@ class Warrior(Archetype):
     def __init__(self):
         super(Warrior, self).__init__()
         self.primary_traits.update({'strength': 6,
-                                    'dexterity': 4,
-                                    'charisma': 4,
-                                    'vitality': 6}
+                                    'perception':5,
+                                    'intelligence':4,
+                                    'dexterity': 5,
+                                    'charisma': 5,
+                                    'vitality': 7,
+                                    'magic': 5}
                                    )
         self.bonuses = {'power': 2}
         self.health_gain_on_level = random.randint(1, 6) + 2
