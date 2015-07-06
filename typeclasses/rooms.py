@@ -92,6 +92,6 @@ class Urban(Room):
     # Adding default flags as tag. The flags must be created under category "flag"
     def at_object_creation(self):
         #super(Urban, self).at_object_creation()
-        self.tags.add("has_road", category="flag")
+        self.tags.add("has_road", category="flags")
         self.max_chars = 20
         self.move_request = 1
