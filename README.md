@@ -1,4 +1,5 @@
-# Ainneve, an example game for Evennia
+# Ainneve, an example game for Evennia 
+![Build status](https://travis-ci.org/evennia/ainneve.svg?branch=master)
 
 Welcome! The [Evennia](http://www.evennia.com/) community has created Ainneve for you to use as a base to learn from and build off of.  Ainneve currently is an early work in progress. 
 
@@ -34,6 +35,8 @@ To learn about Ainneve's game systems and world setting, check out [our wiki](ht
 If you're looking for what tasks we need help with, look at our [current open issues](https://github.com/evennia/ainneve/issues).
 
 To let us know you're interested in helping out visit the [Evennia developer IRC](http://webchat.freenode.net/?channels=evennia&uio=MT1mYWxzZSY5PXRydWUmMTE9MTk1JjEyPXRydWUbb) and the [Ainneve](https://groups.google.com/forum/?fromgroups#!categories/evennia/ainneve) category of the mailing list. 
+
+Please submit pull requests as feature branches rather than from your master -- see https://github.com/evennia/evennia/wiki/Version-Control#making-a-work-branch. 
 
 
 # License
