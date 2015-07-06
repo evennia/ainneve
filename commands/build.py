@@ -26,24 +26,24 @@ class CmdFlag(MuxCommand):
     This is the command used to apply room's FLAGS.
     Flags are picked from the following list:
     
-    * is_indoor
-    * is_dark
-    * is_safe
-    * has_road
-    * no_magic
-    * no_teleport
-    * no_summon
-    * is_silent
-    * no_range
-    * is_water
-    * is_air
-    * no_quit
+      * is_indoor
+      * is_dark
+      * is_safe
+      * has_road
+      * no_magic
+      * no_teleport
+      * no_summon
+      * is_silent
+      * no_range
+      * is_water
+      * is_air
+      * no_quit
         
     Usage:
-    @flag[/switches] <obj> = <flag>
+      @flag[/switches] <obj> = <flag>
     
     Switches:
-    /del = remove flag
+      del = remove flag
     """
     
     key = "@flag"
