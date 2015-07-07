@@ -12,4 +12,5 @@ class Scout(Archetype):
                                     'intelligence': 6}
                                    )
         self.movement = 7
-        self.health_roll_on_level_up = (6)
+        self.level_up_health_die = 6
+        self.level_up.health_bonus = 0

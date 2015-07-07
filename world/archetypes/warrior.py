@@ -13,4 +13,5 @@ class Warrior(Archetype):
                                    )
         self.bonuses = {'power': 2}
         self.movement = 5
-        self.health_roll_on_level_up = (6, 2)
+        self.level_up_health_die = 6
+        self.level_up_health_bonus = 1
