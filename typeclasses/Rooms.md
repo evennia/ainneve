@@ -38,7 +38,7 @@ Codewise, flags are **evennia tags** setted with the command **@flag**. See help
 
 #### Urban:
 
-Urban rooms are typical city/village transient rooms. They usually have a road or a path and they are not indoor rooms. A good flag scheme could be the following:
+Urban rooms are typical city/village transient rooms. They usually have a road or a path and they are not indoor rooms.
 + **has_road**
 
 #### Forest:

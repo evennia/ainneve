@@ -18,6 +18,22 @@ class Room(DefaultRoom):
     properties and methods available on all Objects.
     """
     
+    # Room size. This will affect combat in some way at some point.
+    @property
+    def room_size(self):
+        return self.db.room_size
+        
+    @room_size.setter
+    def room_size(self, value):
+        if value is "small":
+            self.db.room_size = 0
+        elif value is "medium":
+            self.db.room_size = 1
+        elif value is "large":
+            self.db.room_size = 2
+        else:
+            raise ValueError('The room size need to match standard string. Check help @size for further instructions.')
+    
     # Maximum characters (mobs included) that can be in the room at the same time.
     @property
     def max_chars(self):
@@ -26,7 +42,7 @@ class Room(DefaultRoom):
     @max_chars.setter
     def max_chars(self, value):
         if type(value) is not int:
-            raise ValueError('Number of maximum characters has to be an integer')
+            raise TypeError('Number of maximum characters has to be an integer.')
         else:
             self.db.max_chars = value
     
@@ -38,7 +54,7 @@ class Room(DefaultRoom):
     @move_request.setter
     def move_request(self, value):
         if type(value) is not int:
-            raise ValueError('Movement points value needs to be an integer')
+            raise TypeError('Movement points value needs to be an integer.')
         else:
             self.db.move_request = value
     

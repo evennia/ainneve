@@ -20,6 +20,7 @@ class BuildCmdSet(CmdSet):
     def at_cmdset_creation(self):
         "Populate CmdSet"
         self.add(CmdFlag())
+        self.add(CmdSize())
 
 class CmdFlag(MuxCommand):
     """
@@ -120,3 +121,17 @@ class CmdFlag(MuxCommand):
             else:
                 string = "No tags attached to %s." % obj
             self.caller.msg(string)
+
+class CmdSize(MuxCommand):
+    pass
+    """
+    used to set/change room size
+    """
+    
+    key = '@size'
+    locks = 'cmd:perm(size) or cmd:perm(Builders)'
+    help_category = 'Building'
+    
+    def func(self):
+        """Implement the size command"""
+        
