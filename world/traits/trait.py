@@ -8,6 +8,7 @@ class Trait(object):
         data (dict): the data structure of the trait. defaults to:
             {'current': 0, 'base': 0, 'mod':0} but can have additional
             pieces of data added.
+        limit (int, optional): limit of the stat
         static (bool, optional): whether or not the trait is static
         overflow (bool, optional): allow it to go over its max if dynamic
 
@@ -76,6 +77,7 @@ class Trait(object):
         name="",
         base=0,
         mod=0,
+        limit=None,
         static=False,
         overflow=False,
         **kwargs
