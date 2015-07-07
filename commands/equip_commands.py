@@ -68,7 +68,7 @@ class CmdWear(Command):
         args = self.args.strip()
         wield = self.wield
 
-        # this is needed at the beginning of the command
+        # reset flag, this should stay at the beginning of the command
         if wield:
             self.wield = False
 
@@ -91,7 +91,7 @@ class CmdWear(Command):
             if not 'left hand' in slots     \
               and not 'right hand' in slots:
                 caller.msg("You can't wield %s." % obj)
-                continue
+                return
 
         # equip primary and secondary hands with the proper feedback
         if 'right hand' in slots                             \
