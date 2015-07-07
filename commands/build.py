@@ -11,6 +11,7 @@
 
 from commands.command import MuxCommand
 from evennia import CmdSet, utils
+from utils.flags_handler import FlagsHandler
 
 class BuildCmdSet(CmdSet):
 
@@ -20,7 +21,7 @@ class BuildCmdSet(CmdSet):
     def at_cmdset_creation(self):
         "Populate CmdSet"
         self.add(CmdFlag())
-        self.add(CmdSize())
+        #self.add(CmdSize())
 
 class CmdFlag(MuxCommand):
     """
@@ -71,22 +72,19 @@ class CmdFlag(MuxCommand):
             self.caller.msg("Usage: @flag[/switches] <obj> = <flag>")
             return
         if "del" in self.switches:
-            # remove one or all tags
+            # remove one flag
             obj = self.caller.search(self.lhs, global_search=True)
             if not obj:
                 return
             if self.rhs:
                 # remove individual tag
                 flag = self.rhs
-                category = "flags"
-                obj.tags.remove(flag, category=category)
-                string = "Removed flag '%s'%s from %s (if it existed)" % (flag,
-                                                    " (category: %s)" % category if category else "",
-                                                    obj)
+                handler = FlagsHandler(obj)
+                handler.remove(flag)
+                string = "Removed flag '%s' from %s." % (flag, obj)
             else:
-                # no tag specified, clear all tags
-                obj.tags.clear()
-                string = "Cleared all tags and flags from from %s." % obj
+                # no tag specified, send error message
+                string = "You need to provide a flag to be deleted." % obj
             self.caller.msg(string)
             return
         if self.rhs:
@@ -95,43 +93,34 @@ class CmdFlag(MuxCommand):
             if not obj:
                 return
             flag = self.rhs
-            category = "flags"
+            handler = FlagsHandler(obj)
             if flag in flags:
                 # create the tag
-                obj.tags.add(flag, category=category)
-                string = "Added flag '%s'%s to %s." % (flag,
-                                                    " (category: %s)" % category if category else "",
-                                                    obj)
+                handler.add(flag)
+                string = "Added flag '%s' to %s." % (flag, obj)
                 self.caller.msg(string)
             else:
                 string = "'%s' is not a possible flag. You may add it as a tag (see help @tag)" % flag
                 self.caller.msg(string)
         else:
-            # no = found - list tags on object
+            # no '=' found - list tags on object
             obj = self.caller.search(self.args, global_search=True)
             if not obj:
                 return
-            tagtuples = obj.tags.all(return_key_and_category=True)
-            ntags = len(tagtuples)
-            tags = [tup[0] for tup in tagtuples]
-            categories = [" (category: %s)" % tup[1] if tup[1] else "" for tup in tagtuples]
-            if ntags:
-                string = "Tag%s on %s: %s" % ("s" if ntags > 1 else "", obj,
-                                        ", ".join("'%s'%s" % (tags[i], categories[i]) for i in range(ntags)))
-            else:
-                string = "No tags attached to %s." % obj
+            handler = FlagsHandler(obj)
+            string = handler.lists()
             self.caller.msg(string)
 
-class CmdSize(MuxCommand):
-    pass
-    """
-    used to set/change room size
-    """
-    
-    key = '@size'
-    locks = 'cmd:perm(size) or cmd:perm(Builders)'
-    help_category = 'Building'
-    
-    def func(self):
-        """Implement the size command"""
-        
+#class CmdSize(MuxCommand):
+#    """
+#    used to set/change room size
+#    """
+#    
+#    key = '@size'
+#    locks = 'cmd:perm(size) or cmd:perm(Builders)'
+#    help_category = 'Building'
+#    
+#    def func(self):
+#        """Implement the size command"""
+#        if not self.args:
+#            self.caller.msg("Usage: @size <obj> <small/medium/size>
