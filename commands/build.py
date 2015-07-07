@@ -20,6 +20,7 @@ class BuildCmdSet(CmdSet):
     def at_cmdset_creation(self):
         "Populate CmdSet"
         self.add(CmdFlag())
+        self.add(CmdSector())
         #self.add(CmdSize())
 
 class CmdFlag(MuxCommand):
@@ -71,6 +72,7 @@ class CmdFlag(MuxCommand):
                 string = "You need to provide a flag to be deleted."
             self.caller.msg(string)
             return
+            
         if self.rhs:
             # = is found, so we are on the form obj = tag
             obj = self.caller.search(self.lhs, global_search=True)
@@ -87,6 +89,46 @@ class CmdFlag(MuxCommand):
             string = obj.flags.lists()
             self.caller.msg(string)
 
+class CmdSector(MuxCommand):
+    """
+    This command is used to set sector type on room
+    
+    Usage:
+      @sector <obj> = <type>
+    
+    List of available sector types:
+    
+      * indoor
+      * desert
+      * urban
+      * field
+      * forest
+      * hill
+      * mountain
+      * water
+      * underwater
+      * air
+    """
+    
+    key = "@sector"
+    locks = "cmd:perm(sector) or cmd:perm(Builders)"
+    help_category = "Building"
+        
+    def func(self):
+        if not self.args:
+            self.caller.msg("Usage: @sector <obj> = <type>")
+            return
+        obj = self.caller.search(self.lhs, global_search=True)    
+        if self.rhs:
+            if not obj:
+                return
+            sector = self.rhs
+            string = obj.sector.set_sector(sector)
+        else:
+            string = "%s is a '{w%s{n' room." % (obj, obj.sector.show())
+        self.caller.msg(string)
+        return
+        
 #class CmdSize(MuxCommand):
 #    """
 #    used to set/change room size

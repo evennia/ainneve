@@ -7,6 +7,7 @@ Rooms are simple containers that has no location of their own.
 
 from evennia import DefaultRoom
 from utils.flags_handler import FlagsHandler
+from utils.sectors_handler import SectorsHandler
 
 class Room(DefaultRoom):
     """
@@ -19,6 +20,12 @@ class Room(DefaultRoom):
     properties and methods available on all Objects.
     """
     
+    # Sectors handled by sectors handler
+    @property
+    def sector(self):
+        return SectorsHandler(self)
+    
+    # Flags handled by Nadorrano's handler
     @property
     def flags(self):
         return FlagsHandler(self)
@@ -104,15 +111,14 @@ class Room(DefaultRoom):
             string += "\n" + "\n".join(things)
         return string
         
-class Urban(Room):
-    """
-    This class is the default urban location. Anything going from a city square
-    to a village road should be built upon this class.
-    """
-    
-    # Adding default flags as tag. The flags must be created under category "flag"
-    def at_object_creation(self):
-        #super(Urban, self).at_object_creation()
-        self.tags.add("has_road", category="flags")
-        self.max_chars = 20
-        self.move_request = 1
+#class Urban(Room):
+#    """
+#    This class is the default urban location. Anything going from a city square
+#    to a village road should be built upon this class.
+#    """
+#    
+#    # Adding default flags as tag. The flags must be created under category "flag"
+#    def at_object_creation(self):
+#        self.tags.add("has_road", category="flags")
+#        self.max_chars = 20
+#        self.move_request = 1
