@@ -11,7 +11,6 @@
 
 from commands.command import MuxCommand
 from evennia import CmdSet, utils
-from utils.flags_handler import FlagsHandler
 
 class BuildCmdSet(CmdSet):
 
@@ -54,20 +53,7 @@ class CmdFlag(MuxCommand):
     
     def func(self):
         "Implement the Flag command"
-        flags = (
-            "is_indoor",
-            "is_dark",
-            "is_safe",
-            "has_road",
-            "no_magic",
-            "no_teleport",
-            "no_summon",
-            "is_silent",
-            "no_range",
-            "is_water",
-            "is_air",
-            "no_quit"
-            )
+        
         if not self.args:
             self.caller.msg("Usage: @flag[/switches] <obj> = <flag>")
             return
@@ -79,12 +65,10 @@ class CmdFlag(MuxCommand):
             if self.rhs:
                 # remove individual tag
                 flag = self.rhs
-                handler = FlagsHandler(obj)
-                handler.remove(flag)
-                string = "Removed flag '%s' from %s." % (flag, obj)
+                string = obj.flags.remove(flag)
             else:
                 # no tag specified, send error message
-                string = "You need to provide a flag to be deleted." % obj
+                string = "You need to provide a flag to be deleted."
             self.caller.msg(string)
             return
         if self.rhs:
@@ -93,22 +77,14 @@ class CmdFlag(MuxCommand):
             if not obj:
                 return
             flag = self.rhs
-            handler = FlagsHandler(obj)
-            if flag in flags:
-                # create the tag
-                handler.add(flag)
-                string = "Added flag '%s' to %s." % (flag, obj)
-                self.caller.msg(string)
-            else:
-                string = "'%s' is not a possible flag. You may add it as a tag (see help @tag)" % flag
-                self.caller.msg(string)
+            string = obj.flags.add(flag)
+            self.caller.msg(string)
         else:
             # no '=' found - list tags on object
             obj = self.caller.search(self.args, global_search=True)
             if not obj:
                 return
-            handler = FlagsHandler(obj)
-            string = handler.lists()
+            string = obj.flags.lists()
             self.caller.msg(string)
 
 #class CmdSize(MuxCommand):
@@ -123,4 +99,4 @@ class CmdFlag(MuxCommand):
 #    def func(self):
 #        """Implement the size command"""
 #        if not self.args:
-#            self.caller.msg("Usage: @size <obj> <small/medium/size>
+#            self.caller.msg("Usage: @size <obj> = <small/medium/size>")

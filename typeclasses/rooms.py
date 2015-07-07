@@ -6,6 +6,7 @@ Rooms are simple containers that has no location of their own.
 """
 
 from evennia import DefaultRoom
+from utils.flags_handler import FlagsHandler
 
 class Room(DefaultRoom):
     """
@@ -17,6 +18,10 @@ class Room(DefaultRoom):
     See examples/object.py for a list of
     properties and methods available on all Objects.
     """
+    
+    @property
+    def flags(self):
+        return FlagsHandler(self)
     
     # Room size. This will affect combat in some way at some point.
     @property
