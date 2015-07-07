@@ -12,4 +12,5 @@ class Warrior(Archetype):
                                     'vitality': 6}
                                    )
         self.bonuses = {'power': 2}
-        self.health_gain_on_level = random.randint(1, 6) + 2
+        self.movement = 5
+        self.health_roll_on_level_up = (6, 2)

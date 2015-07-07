@@ -8,5 +8,3 @@ class Archetype(object):
                                'vitality': 0,
                                'magic': 0}
         self.bonuses = {}
-        self.health_gain_on_level = None
-
