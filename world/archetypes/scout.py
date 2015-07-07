@@ -13,4 +13,4 @@ class Scout(Archetype):
                                    )
         self.movement = 7
         self.level_up_health_die = 6
-        self.level_up.health_bonus = 0
+        self.level_up_health_bonus = 0
