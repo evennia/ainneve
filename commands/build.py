@@ -125,7 +125,7 @@ class CmdSector(MuxCommand):
             sector = self.rhs
             string = obj.sector.set_sector(sector)
         else:
-            string = "%s is a '{w%s{n' room." % (obj, obj.sector.show())
+            string = "%s is a '%s' room." % (obj, obj.sector.show())
         self.caller.msg(string)
         return
         

@@ -110,15 +110,3 @@ class Room(DefaultRoom):
         if things:
             string += "\n" + "\n".join(things)
         return string
-        
-#class Urban(Room):
-#    """
-#    This class is the default urban location. Anything going from a city square
-#    to a village road should be built upon this class.
-#    """
-#    
-#    # Adding default flags as tag. The flags must be created under category "flag"
-#    def at_object_creation(self):
-#        self.tags.add("has_road", category="flags")
-#        self.max_chars = 20
-#        self.move_request = 1
