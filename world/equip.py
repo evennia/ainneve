@@ -1,11 +1,7 @@
 # -*- coding: UTF-8 -*-
 from evennia import settings, utils
  
-DEFAULT = ('head',
-           'left ear',
-           'right ear',
-           'body',
-           'left hand',
+DEFAULT = ('left hand',
            'right hand',
            'holds')
 
@@ -75,13 +71,14 @@ class EquipHandler(object):
         
 
     """
-    def __init__(self, obj, slots=DEFAULT):
+    def __init__(self, obj, slots=()):
         """
         Init class.
         """
         # save the parent typeclass
         self.obj = obj
-        # available slots
+        # race slots + default slot (make sure they are there)
+        slots = tuple(slots) + DEFAULT
         self.slots = tuple(set(slots))
         # initialize equipment
         if not self.obj.db.equip:
@@ -140,7 +137,7 @@ class EquipHandler(object):
         """
         Shows the equipment.
         """
-        return str(self.showtable())
+        return str(self.obj.db.equip)
 
     def __iter__(self):
         """
