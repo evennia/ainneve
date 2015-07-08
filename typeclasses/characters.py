@@ -15,8 +15,10 @@ from world.traits.trait import Trait
 from world import races
 from world.equip import EquipHandler
 
+from baseobject import BaseObject
 
-class Character(DefaultCharacter):
+
+class Character(BaseObject, DefaultCharacter):
 
     """
     This base Character typeclass should only contain things that would be

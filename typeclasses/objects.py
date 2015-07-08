@@ -11,8 +11,9 @@ inheritance.
 
 """
 from evennia import DefaultObject
+from baseobject import BaseObject
 
-class Object(DefaultObject):
+class Object(BaseObject, DefaultObject):
     """
     This is the root typeclass object, implementing an in-game Evennia
     game object, such as having a location, being able to be

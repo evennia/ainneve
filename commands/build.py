@@ -21,7 +21,6 @@ class BuildCmdSet(CmdSet):
         "Populate CmdSet"
         self.add(CmdFlag())
         self.add(CmdSector())
-        #self.add(CmdSize())
 
 class CmdFlag(MuxCommand):
     """
@@ -128,17 +127,3 @@ class CmdSector(MuxCommand):
             string = "%s is a '%s' room." % (obj, obj.sector.show())
         self.caller.msg(string)
         return
-        
-#class CmdSize(MuxCommand):
-#    """
-#    used to set/change room size
-#    """
-#    
-#    key = '@size'
-#    locks = 'cmd:perm(size) or cmd:perm(Builders)'
-#    help_category = 'Building'
-#    
-#    def func(self):
-#        """Implement the size command"""
-#        if not self.args:
-#            self.caller.msg("Usage: @size <obj> = <small/medium/size>")

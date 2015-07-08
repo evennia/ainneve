@@ -8,8 +8,9 @@ Rooms are simple containers that has no location of their own.
 from evennia import DefaultRoom
 from utils.flags_handler import FlagsHandler
 from utils.sectors_handler import SectorsHandler
+from baseobject import BaseObject
 
-class Room(DefaultRoom):
+class Room(BaseObject, DefaultRoom):
     """
     Rooms are like any Object, except their location is None
     (which is default). They also use basetype_setup() to
@@ -30,22 +31,6 @@ class Room(DefaultRoom):
     def flags(self):
         return FlagsHandler(self)
     
-    # Room size. This will affect combat in some way at some point.
-    @property
-    def room_size(self):
-        return self.db.room_size
-        
-    @room_size.setter
-    def room_size(self, value):
-        if value is "small":
-            self.db.room_size = 0
-        elif value is "medium":
-            self.db.room_size = 1
-        elif value is "large":
-            self.db.room_size = 2
-        else:
-            raise ValueError('The room size need to match standard string. Check help @size for further instructions.')
-    
     # Maximum characters (mobs included) that can be in the room at the same time.
     @property
     def max_chars(self):
@@ -57,18 +42,6 @@ class Room(DefaultRoom):
             raise TypeError('Number of maximum characters has to be an integer.')
         else:
             self.db.max_chars = value
-    
-    # Return movement points needed to traverse.
-    @property
-    def move_request(self):
-        return self.db.move_request
-        
-    @move_request.setter
-    def move_request(self, value):
-        if type(value) is not int:
-            raise TypeError('Movement points value needs to be an integer.')
-        else:
-            self.db.move_request = value
     
     # Overloading default return_appearance method to show automatic exits
     # destinations and divide users and things. One user per line, one thing
@@ -91,18 +64,16 @@ class Room(DefaultRoom):
                                                     con.access(looker, "view"))
         exits, users, things = [], [], []
         for con in visible:
-            key = con.key
             if con.destination:
-                exits.append("{w[%s] {n- {c%s{n" % (key, con.destination))
+                exits.append("{w[%s] {n- {c%s{n" % (con.key, con.destination))
             elif con.has_player:
-                users.append("{w%s{n is here." % con.key)
+                users.append("{w%s{n is here." % con.short_desc)
             else:
-                things.append("%s" % con.key)
+                things.append("%s" % con.short_desc)
         # get description, build string
-        string = "{c%s{n\n" % self.key
-        desc = self.db.desc
-        if desc:
-            string += "%s" % desc
+        string = "{c%s{n\n" % self.short_desc
+        if self.long_desc:
+            string += "%s" % self.long_desc
         if exits:
             string += "\n\n{rExits:\n{n" + "\n".join(exits)
         if users:
