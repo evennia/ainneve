@@ -79,12 +79,22 @@ class Character(DefaultCharacter):
 
         self.ndb.group = None
 
+    @property
+    def inventory(self):
+        """
+        Return inventory items.
+        """
+        eq = hasattr(self, 'equip') and self.equip.items or []
+        return [obj for obj in self.contents if obj not in eq]
+
     @lazy_property
     def equip(self):
         """
         An handler to administrate characters equipment.
         """
-        return EquipHandler(self)
+        # sample slots, when race is completed feed race.slots instead
+        slots = ('head', 'torso', 'neck1', 'neck2', 'feet')
+        return EquipHandler(self, slots=slots)
 
     # helper method, checks if stat is valid
     def find_stat(self, stat):

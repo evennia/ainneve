@@ -32,6 +32,7 @@ class EquippableItem(Item):
 
     """
     slot = None
+    slot_operator = 'OR'
 
     def at_object_creation(self):
         """
@@ -39,8 +40,8 @@ class EquippableItem(Item):
         """
         super(EquippableItem, self).at_object_creation()
         self.locks.add("equip:all()")
-        if hasattr(self, 'slot') and self.slot:
-            self.db.slot = self.slot
+        self.db.slot_operator = self.slot_operator
+        self.db.slot = self.slot
 
     def at_equip(self, character):
         """
@@ -62,6 +63,10 @@ class EquippableItem(Item):
         """
         pass
 
+#
+# Armors
+#
+
 class Armor(EquippableItem):
     """
     This class implements a basic armor object
@@ -77,13 +82,35 @@ class Armor(EquippableItem):
         self.locks.add("equip:all()")
         self.tags.add(self.armor_type, category='armor')
 
+class Shield(Armor):
+    """
+    This class implements a basic shield object,
+    a functional type of armor.
+
+    """
+    armor_type = 'shield'
+    slot = 'wield2'
+
+class Breastplate(Armor):
+    """
+    This class implements a basic shield object,
+    a functional type of armor.
+
+    """
+    armor_type = 'breastplate'
+    slot = 'torso'
+
+#
+# Weapons
+#
+
 class Weapon(EquippableItem):
     """
     This class implements a basic weapon object
 
     """
     weapon_type = 'other'
-    slot = 'right hand'
+    slot = 'wield1'
 
     def at_object_creation(self):
         """
@@ -93,23 +120,25 @@ class Weapon(EquippableItem):
         self.locks.add("equip:all()")
         self.tags.add(self.weapon_type, category='weapon')
 
-class Shield(Armor):
-    """
-    This class implements a basic shield object,
-    a functional type of armor.
-
-    """
-    armor_type = 'shield'
-    slot = 'left hand'
 
 class MeleeWeapon(Weapon):
     """
-    This class implements a basic melee weapon
+    This class implements a basic melee weapon.
 
     """
     pass
 
-class RangedWeapon(Weapon):
+class TwoHandedWeapon(Weapon):
+    """
+    This class implements a basic two-handed weapon object.
+
+    """
+    weapon_type = 'other'
+    slot = ['wield1', 'wield2']
+    slot_operator = 'AND'
+
+
+class RangedWeapon(TwoHandedWeapon):
     """
     This class implements a basic ranged weapon
 
@@ -129,6 +158,27 @@ class Sword(MeleeWeapon):
 
     """
     weapon_type = 'sword'
+
+class TwoHandedSword(Sword, TwoHandedWeapon):
+    """
+    This class implements a basic sword object
+
+    """
+    pass
+
+class Axe(MeleeWeapon):
+    """
+    This class implements a basic axe object
+
+    """
+    weapon_type = 'axe'
+
+class Mace(MeleeWeapon):
+    """
+    This class implements a basic mace object
+
+    """
+    weapon_type = 'mace'
 
 class Bow(RangedWeapon):
     """

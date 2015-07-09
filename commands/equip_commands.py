@@ -2,7 +2,7 @@
 # Commands and cmdsetRelated to the equip handler
 #
 from evennia import CmdSet, utils
-from commands.command import Command
+from evennia import Command
 
 class EquipCmdSet(CmdSet):
 
@@ -88,14 +88,14 @@ class CmdWear(Command):
         slots = utils.make_iter(obj.db.slot)
 
         if wield:
-            if not 'left hand' in slots     \
-              and not 'right hand' in slots:
+            if not caller.equip.primary_hand in slots     \
+              and not caller.equip.secondary_hand in slots:
                 caller.msg("You can't wield %s." % obj)
                 return
 
         # equip primary and secondary hands with the proper feedback
-        if 'right hand' in slots                             \
-           or 'left hand' in slots:
+        if caller.equip.primary_hand in slots  \
+           or caller.equip.secondary_hand in slots:
             action = 'wield'
         else:
             action = 'wear'
@@ -104,7 +104,7 @@ class CmdWear(Command):
             caller.msg("You can't equip %s." % obj)
             return
 
-        if obj in caller.equip.items():
+        if obj in caller.equip.items:
             caller.msg("You're already %sing %s." % (action, obj.name))
             return
 
@@ -186,7 +186,7 @@ class CmdHold(Command):
             caller.msg("You can't hold %s." % obj)
             return
 
-        if obj in caller.equip.items():
+        if obj in caller.equip.items:
             caller.msg("You're already holding %s." % obj)
             return
 
@@ -240,7 +240,7 @@ class CmdRemove(Command):
         if not obj:
             return
 
-        if not obj in caller.equip.items():
+        if not obj in caller.equip.items:
             caller.msg("You are not wearing %s." % obj)
             return
         if not caller.equip.remove(obj):
