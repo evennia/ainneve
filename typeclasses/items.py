@@ -91,7 +91,7 @@ class Shield(Armor):
     armor_type = 'shield'
     slot = 'wield2'
 
-class BreastPlate(Armor):
+class Breastplate(Armor):
     """
     This class implements a basic shield object,
     a functional type of armor.
