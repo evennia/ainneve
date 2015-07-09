@@ -1,9 +1,11 @@
 # -*- coding: UTF-8 -*-
 from evennia import settings, utils
  
-DEFAULT = ('left hand',
-           'right hand',
-           'holds')
+PRIMARY_HAND = 'wield1'
+SECONDARY_HAND = 'wield2'
+HOLD_SLOT = 'holds'
+
+DEFAULT = (PRIMARY_HAND, SECONDARY_HAND, HOLD_SLOT)
 
 class EquipHandler(object):
     """
@@ -79,7 +81,9 @@ class EquipHandler(object):
         self.obj = obj
         # race slots + default slot (make sure they are there)
         slots = tuple(slots) + DEFAULT
-        self.slots = tuple(set(slots))
+        self._slots = tuple(set(slots))
+        self.primary_hand = PRIMARY_HAND
+        self.secondary_hand = SECONDARY_HAND
         # initialize equipment
         if not self.obj.db.equip:
             self.obj.db.equip = {x: None for x in self.slots}
@@ -131,7 +135,7 @@ class EquipHandler(object):
         """
         Returns the number of equipped objects.
         """
-        return len(self.items())
+        return len(self.items)
 
     def __str__(self):
         """
@@ -152,29 +156,40 @@ class EquipHandler(object):
         """
         Implement the __contains__ method.
         """
-        return item in self.items()
+        return item in self.items
 
+    @property
+    def slots(self):
+        return self._slots
+
+    @property
     def items(self):
         """
         Shows equipped items.
         """
         return filter(None, self.obj.db.equip.values())
 
+    @property
     def empty_slots(self):
         """
         Returns empty slots.
         """
-        return filter(lambda x: self.obj.db.equip[x] is None, \
-                      self.obj.db.equip.keys())
+        return [k for k, v in self if v is None]
 
     def add(self, obj):
         """ 
         Add an object to character's equip.
         """
         slots = utils.make_iter(obj.db.slot)
-        free_slots = [sl for sl in slots if self.get(sl, True) == None]
+        free_slots = [sl for sl in slots if sl in self.empty_slots]
         if not free_slots:
             return False
+        if obj.db.slot_operator == 'AND':
+            if len(free_slots) != len(slots):
+                return False
+            for slot in free_slots:
+                self._set(slot, obj)
+            return True
         slot = free_slots[0]
         self._set(slot, obj)
         return True
