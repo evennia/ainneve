@@ -40,7 +40,7 @@ class EquippableItem(Item):
         """
         super(EquippableItem, self).at_object_creation()
         self.locks.add("equip:all()")
-        self.self.db.slot_operator = self.slot_operator
+        self.db.slot_operator = self.slot_operator
         self.db.slot = self.slot
 
     def at_equip(self, character):
