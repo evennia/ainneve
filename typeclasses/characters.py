@@ -15,10 +15,8 @@ from world.traits.trait import Trait
 from world import races
 from world.equip import EquipHandler
 
-from baseobject import BaseObject
 
-
-class Character(BaseObject, DefaultCharacter):
+class Character(DefaultCharacter):
 
     """
     This base Character typeclass should only contain things that would be
@@ -42,7 +40,22 @@ class Character(BaseObject, DefaultCharacter):
                     has connected" message echoed to the room
 
     """
+    @property
+    def short_desc(self):
+        return self.key
 
+    @short_desc.setter
+    def short_desc(self, desc):
+        self.key = "%s" % desc
+        
+    @property
+    def long_desc(self):
+        return self.db.desc
+    
+    @long_desc.setter
+    def long_desc(self, desc):
+        self.db.desc = "%s" % desc
+        
     def at_object_creation(self):
         # race will be a separate Python class, defined and loaded from
         # some sort of configuration file
