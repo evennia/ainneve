@@ -17,7 +17,31 @@ class Room(Object):
     See examples/object.py for a list of
     properties and methods available on all Objects.
     """
-
+    # Define terrain constants
+    TERRAIN_TYPES = {
+                    'INDOOR':0,
+                    'URBAN':1,
+                    'FIELD':2,
+                    'FOREST':3,
+                    'DESERT':4,
+                    'MOUNTAIN':5,
+                    'WATER':6,
+                    'UNDERWATER':7,
+                    'FLYING':8
+                    }
+    
+    # Terrain property, sets self.db.terrain_type, taken from the constats dict
+    @property
+    def terrain(self):
+        return self.db.terrain
+    
+    @terrain.setter
+    def terrain(self,value):
+        if value in self.TERRAIN_TYPES:
+            self.db.terrain = self.TERRAIN_TYPES[value]
+        else:
+            raise ValueError('This terrain type does not exist.')
+    
     # Maximum characters (mobs included) that can be in the room at the same time.
     @property
     def max_chars(self):
