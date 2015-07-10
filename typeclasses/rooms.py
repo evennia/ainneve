@@ -5,9 +5,9 @@ Rooms are simple containers that has no location of their own.
 
 """
 
-from evennia import DefaultRoom
+from objects import Object
 
-class Room(DefaultRoom):
+class Room(Object):
     """
     Rooms are like any Object, except their location is None
     (which is default). They also use basetype_setup() to
@@ -17,22 +17,7 @@ class Room(DefaultRoom):
     See examples/object.py for a list of
     properties and methods available on all Objects.
     """
-    @property
-    def short_desc(self):
-        return self.key
 
-    @short_desc.setter
-    def short_desc(self, desc):
-        self.key = "%s" % desc
-        
-    @property
-    def long_desc(self):
-        return self.db.desc
-    
-    @long_desc.setter
-    def long_desc(self, desc):
-        self.db.desc = "%s" % desc
-            
     # Maximum characters (mobs included) that can be in the room at the same time.
     @property
     def max_chars(self):
@@ -83,3 +68,16 @@ class Room(DefaultRoom):
         if things:
             string += "\n" + "\n".join(things)
         return string
+    
+    def basetype_setup(self):
+        """
+        Simple room setup setting locks to make sure the room
+        cannot be picked up.
+
+        """
+
+        super(Room, self).basetype_setup()
+        self.locks.add(";".join(["get:false()",
+                                 "puppet:false()"])) # would be weird to puppet a room ...
+        self.location = None
+
