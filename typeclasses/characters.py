@@ -16,8 +16,10 @@ from world.equip import EquipHandler
 
 from objects import Object
 
-class Character(Object):
+from server.conf import settings
 
+
+class Character(Object):
     """
     This base Character typeclass should only contain things that would be
     common to NPCs, Mobs, Players, or anything else built off of it. Flags
@@ -52,8 +54,9 @@ class Character(Object):
 
         """
         super(Character, self).basetype_setup()
-        self.locks.add(";".join(["get:false()",  # noone can pick up the character
-                                 "call:false()"])) # no commands can be called on character from outside
+        self.locks.add(
+            ";".join(["get:false()",  # noone can pick up the character
+                      "call:false()"]))  # no commands can be called on character from outside
         # add the default cmdset
         self.cmdset.add_default(settings.CMDSET_CHARACTER, permanent=True)
 
@@ -85,7 +88,8 @@ class Character(Object):
             self.db.prelogout_location = self.location
             self.location.at_object_receive(self, self.location)
         else:
-            player.msg("{r%s has no location and no home is set.{n" % self, sessid=sessid)
+            player.msg("{r%s has no location and no home is set.{n" % self,
+                       sessid=sessid)
 
     def at_post_puppet(self):
         """
@@ -96,7 +100,8 @@ class Character(Object):
         self.msg("\nYou become {c%s{n.\n" % self.name)
         self.execute_cmd("look")
         if self.location:
-            self.location.msg_contents("%s has entered the game." % self.name, exclude=[self])
+            self.location.msg_contents("%s has entered the game." % self.name,
+                                       exclude=[self])
 
     def at_post_unpuppet(self, player, sessid=None):
         """
@@ -110,11 +115,12 @@ class Character(Object):
             sessid (int): Session id controlling the connection that
                 just disconnected.
         """
-        if self.location: # have to check, in case of multiple connections closing
-            self.location.msg_contents("%s has left the game." % self.name, exclude=[self])
+        if self.location:  # have to check, in case of multiple connections closing
+            self.location.msg_contents("%s has left the game." % self.name,
+                                       exclude=[self])
             self.db.prelogout_location = self.location
             self.location = None
-        
+
     def at_object_creation(self):
         # race will be a separate Python class, defined and loaded from
         # some sort of configuration file
@@ -220,10 +226,11 @@ class Character(Object):
         if stat == 'mana':
             if (self.db.secondary_traits['mana'].base + amount) > 10:
                 self.db.secondary_traits['mana'].mod = 10 - \
-                    self.db.secondary_traits['mana'].base
+                                                       self.db.secondary_traits[
+                                                           'mana'].base
                 return
             elif (self.db.secondary_traits['mana'].base +
-                  self.db.secondary_traits['mana'].mod + amount) > 10:
+                      self.db.secondary_traits['mana'].mod + amount) > 10:
                 self.db.secondary_traits[
                     'mana'
                 ].mod = 10 - (self.db.secondary_traits['mana'].base +
