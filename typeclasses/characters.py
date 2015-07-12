@@ -16,7 +16,7 @@ from world.equip import EquipHandler
 
 from objects import Object
 
-from server.conf import settings
+from django.conf import settings
 
 
 class Character(Object):
