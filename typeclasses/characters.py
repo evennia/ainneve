@@ -10,14 +10,13 @@ creation commands.
 # import importlib
 from evennia.utils import lazy_property
 from world.traits.trait import Trait
+from world.abilities.abilities import Ability
 
 from world import races
 from world.equip import EquipHandler
 
 from objects import Object
-
 from server.conf import settings
-
 
 class Character(Object):
     """
@@ -128,7 +127,17 @@ class Character(Object):
         # same with Archetype, most likely
         self.db.archetype = None
 
-        self.db.slots = {}
+        # each player will be assigned with attribute points
+        # which can be used to select their starting skills/spells
+        # these points can also be used to improve skills/spells
+        self.db.ability_points = 100
+
+
+        # add new abilities here
+        self.db.abilities = {
+            'hide'  : Ability('hide'),
+            'sneak' : Ability('sneak'),
+        }
 
         # Primary Traits
         self.db.primary_traits = {
@@ -269,3 +278,6 @@ class Character(Object):
         # load slots from the race
         for slot in self.db.race.slots:
             self.db.slots[slot] = None
+
+    def testing(self):
+        self.msg("does this work??")
