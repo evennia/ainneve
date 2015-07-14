@@ -31,7 +31,7 @@ class CmdSaveSkills(Command):
 
     """
     key = "saveskills"
-    alias ["saveskill"]
+    alias = ["saveskill"]
     locks = "cmd:all()"
 
     def func(self):
@@ -81,7 +81,7 @@ class CmdSaveSpells(Command):
 
     """
     key = "savespells"
-    alias ["savespell"]
+    alias = ["savespell"]
     locks = "cmd:all()"
 
     def func(self):

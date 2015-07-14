@@ -274,11 +274,11 @@ class Character(Object):
             self.db.slots[slot] = None
 
     def has_skill(self, skill):
-        if skill in self.db.skills.keys():
+        if skill in self.db.skills:
             return True
 
     def has_spell(self, spell):
-        if spell in self.db.spells.keys():
+        if spell in self.db.spells:
             return True
 
     def get_skill(self,skill):
