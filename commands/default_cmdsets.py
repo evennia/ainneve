@@ -16,7 +16,10 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 
 from evennia import default_cmds
 from commands import equip_commands
-from commands import ability_commands
+from commands import admin_cmdset
+from commands import general_cmdset
+from commands import skills_cmdset
+from commands import spells_cmdset
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -35,7 +38,10 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         # any commands you add below will overload the default ones.
         #
         self.add(equip_commands.EquipCmdSet())
-        self.add(ability_commands.AbilityCmdSet())
+        self.add(admin_cmdset.AdminCmdSet())
+        self.add(general_cmdset.GeneralCmdSet())
+        self.add(skills_cmdset.SkillCmdSet())
+        self.add(spells_cmdset.SpellCmdSet())
 
 class PlayerCmdSet(default_cmds.PlayerCmdSet):
     """

@@ -10,11 +10,8 @@ creation commands.
 # import importlib
 from evennia.utils import lazy_property
 from world.traits.trait import Trait
-from world.abilities.abilities import Ability
-
 from world import races
 from world.equip import EquipHandler
-
 from objects import Object
 from django.conf import settings
 
@@ -127,17 +124,14 @@ class Character(Object):
         # same with Archetype, most likely
         self.db.archetype = None
 
-        # each player will be assigned with attribute points
+        # each player will be assigned with ability points
         # which can be used to select their starting skills/spells
         # these points can also be used to improve skills/spells
         self.db.ability_points = 100
 
-
-        # add new abilities here
-        self.db.abilities = {
-            'hide'  : Ability('hide'),
-            'sneak' : Ability('sneak'),
-        }
+        # each character will have a unique skill and spell set
+        self.db.skills = {}
+        self.db.spells = {}
 
         # Primary Traits
         self.db.primary_traits = {
@@ -279,5 +273,20 @@ class Character(Object):
         for slot in self.db.race.slots:
             self.db.slots[slot] = None
 
-    def testing(self):
-        self.msg("does this work??")
+    def has_skill(self, skill):
+        if skill in self.db.skills.keys():
+            return True
+
+    def has_spell(self, spell):
+        if spell in self.db.spells.keys():
+            return True
+
+    def get_skill(self,skill):
+        return self.db.skills[skill]
+
+    def get_spell(self,spell):
+        return self.db.spells[spell]
+
+
+
+
