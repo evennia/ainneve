@@ -1,8 +1,7 @@
 from evennia import CmdSet, utils
 from evennia import Command
-from world.abilities.ability import Ability
-from world.abilities.spell_db import spell_db
-from world.abilities.skill_db import skill_db
+from world.databases.spell_db import spell_db
+from world.databases.skill_db import skill_db
 from evennia.utils import evtable
 
 

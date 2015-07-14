@@ -14,6 +14,9 @@ from world import races
 from world.equip import EquipHandler
 from objects import Object
 from django.conf import settings
+from world.databases.traits_db import primary_trait_db, secondary_trait_db
+from world.databases.spell_db import spell_db
+from world.databases.skill_db import skill_db
 
 class Character(Object):
     """
@@ -125,40 +128,17 @@ class Character(Object):
         self.db.archetype = None
 
         # each player will be assigned with ability points
-        # which can be used to select their starting skills/spells
-        # these points can also be used to improve skills/spells
         self.db.ability_points = 100
 
-        # each character will have a unique skill and spell set
-        self.db.skills = {}
-        self.db.spells = {}
+        # each player will be assigned all skills [skill_db.py]
+        self.db.skills = skill_db
+        # each player will be assigned all spells [spell_db.py]
+        self.db.spells = spell_db
 
-        # Primary Traits
-        self.db.primary_traits = {
-            'strength': Trait('strength', static=True),
-            'perception': Trait('perception', static=True),
-            'intelligence': Trait('intelligence', static=True),
-            'dexterity': Trait('dexterity', static=True),
-            'charisma': Trait('charisma', static=True),
-            'vitality': Trait('vitality', static=True),
-            'magic': Trait('magic', static=True)
-        }
-
-        # Secondary Traits
-        self.db.secondary_traits = {
-            'health': Trait('health'),  # vit
-            'stamina': Trait('stamina'),  # vit
-            'skills': Trait('skills'),
-            'languages': Trait('languages'),  # int
-            # saves
-            'fortitude': Trait('fortitude'),  # vit
-            'reflex': Trait('reflex'),  # dex
-            'will': Trait('will'),  # int
-            # magic
-            'mana': Trait('mana'),  # mag
-            # armor
-            'armor': Trait('armor', static=True)
-        }
+        #each player will be assigned all primary traits [traits_db.py]
+        self.db.primary_traits = primary_trait_db
+        #each player will be assigned all secondary traits [traits_db.py]
+        self.db.secondary_traits = secondary_trait_db
 
         self.ndb.group = None
 
