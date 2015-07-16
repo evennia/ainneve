@@ -2,7 +2,7 @@
 # Commands and cmdsetRelated to the equip handler
 #
 from evennia import CmdSet, utils
-from command import Command
+from evennia import Command
 
 class EquipCmdSet(CmdSet):
 
