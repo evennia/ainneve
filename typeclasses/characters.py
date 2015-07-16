@@ -66,6 +66,7 @@ class Character(Object):
 
         """
         self.execute_cmd('look')
+        self.show_prompt()
 
     def at_pre_puppet(self, player, sessid=None):
         """
@@ -102,6 +103,7 @@ class Character(Object):
         if self.location:
             self.location.msg_contents("%s has entered the game." % self.name,
                                        exclude=[self])
+        self.show_prompt()
 
     def at_post_unpuppet(self, player, sessid=None):
         """
@@ -129,6 +131,7 @@ class Character(Object):
         self.db.archetype = None
 
         self.db.slots = {}
+        self.db.prompt = '\n{y*hn*:{ghp {y*mnn*:{gmv {y*mn*:{gmn {w> '
 
         # Primary Traits
         self.db.primary_traits = {
@@ -269,3 +272,29 @@ class Character(Object):
         # load slots from the race
         for slot in self.db.race.slots:
             self.db.slots[slot] = None
+
+    def show_prompt(self, mode='default', translate_prompt=None):
+        PROMPT_OPTIONS = {'*hn*'  : ['current hp',
+                                     str(self.db.secondary_traits['health'].current)],
+                          '*hm*'  : ['maximum hp',
+                                     '<set prompt replacement value>'],
+                          '*mn*'  : ['current mana',
+                                     str(self.db.secondary_traits['mana'].current)],
+                          '*mm*'  : ['maximum mana',
+                                     '<set prompt replacement value>'],
+                          '*mnn*' : ['current moves',
+                                     '<set prompt replacement value>'],
+                          '*mmm*' : ['maximum moves',
+                                     '<set prompt replacement value>'],
+                          }
+        prompt_msg = self.db.prompt
+
+        if 'default' in mode:
+            for option in PROMPT_OPTIONS:
+                prompt_msg = prompt_msg.replace(option, PROMPT_OPTIONS[option][1])
+            self.msg(prompt=prompt_msg)
+
+        elif 'translate_only' in mode:
+            for option in PROMPT_OPTIONS:
+                if option in translate_prompt:
+                    self.msg('%s has been replaced with: %s' % (option, PROMPT_OPTIONS[option][0]))
