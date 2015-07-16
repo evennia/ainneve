@@ -18,7 +18,6 @@ from objects import Object
 
 from django.conf import settings
 
-
 class Character(Object):
     """
     This base Character typeclass should only contain things that would be
@@ -100,10 +99,10 @@ class Character(Object):
         """
         self.msg("\nYou become {c%s{n.\n" % self.name)
         self.execute_cmd("look")
+        self.show_prompt()
         if self.location:
             self.location.msg_contents("%s has entered the game." % self.name,
                                        exclude=[self])
-        self.show_prompt()
 
     def at_post_unpuppet(self, player, sessid=None):
         """
@@ -297,4 +296,4 @@ class Character(Object):
         elif 'translate_only' in mode:
             for option in PROMPT_OPTIONS:
                 if option in translate_prompt:
-                    self.msg('%s has been replaced with: %s' % (option, PROMPT_OPTIONS[option][0]))
+                    self.msg('  %s has been replaced with: %s' % (option, PROMPT_OPTIONS[option][0]))

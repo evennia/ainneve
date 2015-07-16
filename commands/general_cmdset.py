@@ -2,7 +2,9 @@
 # Commands and CmdSetRelated for general player purposes
 #
 from evennia import CmdSet, utils
-from evennia import Command
+from command import Command
+from evennia import Command as EvCommand
+from evennia import syscmdkeys
 
 
 class GeneralCmdSet(CmdSet):
@@ -12,7 +14,14 @@ class GeneralCmdSet(CmdSet):
 
     def at_cmdset_creation(self):
         "Populate CmdSet"
+        self.add(CmdNoInput())
         self.add(CmdPrompt())
+
+class CmdNoInput(EvCommand):
+    "Task to perform if the player hits <return> with no input"
+    key = syscmdkeys.CMD_NOINPUT
+    def func(self):
+        self.caller.show_prompt()
 
 class CmdPrompt(Command):
     """
@@ -44,7 +53,6 @@ class CmdPrompt(Command):
             self.prompt = self.args.lstrip()
         else:
             self.prompt = None
-            self.caller.msg('Prompt length is too long')
 
     def func(self):
         caller = self.caller
@@ -60,3 +68,4 @@ class CmdPrompt(Command):
             caller.msg('New prompt has been set: %s' % new_prompt)
             new_prompt = '\n' + new_prompt + ' '
             caller.db.prompt = new_prompt
+            

@@ -83,7 +83,7 @@ class Command(BaseCommand):
         """
         This hook is called after `self.func()`.
         """
-        pass
+        self.caller.show_prompt()
 
 
 class MuxCommand(default_cmds.MuxCommand):
