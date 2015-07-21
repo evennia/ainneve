@@ -6,7 +6,8 @@ from world.archetypes.archetype import Archetype
 class Arcanist(Archetype):
     def __init__(self):
         super(Arcanist, self).__init__()
-        self.template.update({'perception': 4,
+        self.name = 'Arcanist'
+        self.base.update({'perception': 4,
                               'intelligence': 6,
                               'charisma': 4,
                               'magic': 6,

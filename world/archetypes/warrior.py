@@ -6,7 +6,8 @@ from world.archetypes.archetype import Archetype
 class Warrior(Archetype):
     def __init__(self):
         super(Warrior, self).__init__()
-        self.template.update({'strength': 6,
+        self.name = 'Warrior'
+        self.base.update({'strength': 6,
                               'dexterity': 4,
                               'charisma': 4,
                               'vitality': 6,
