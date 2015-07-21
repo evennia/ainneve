@@ -2,7 +2,7 @@
 # Commands and cmdsetRelated to the equip handler
 #
 from evennia import CmdSet, utils
-from commands.command import Command
+from evennia import Command
 
 class EquipCmdSet(CmdSet):
 
@@ -59,12 +59,18 @@ class CmdWear(Command):
     """
     key = "wear"
     locks = "cmd:all()"
+    wield = False
 
     def func(self):
         "implements the command."
 
         caller = self.caller
         args = self.args.strip()
+        wield = self.wield
+
+        # reset flag, this should stay at the beginning of the command
+        if wield:
+            self.wield = False
 
         if not args:
             caller.msg("Wear what?")
@@ -79,9 +85,17 @@ class CmdWear(Command):
         if not obj in caller.contents:
             caller.msg("You don't have %s in your inventory." % obj)
 
+        slots = utils.make_iter(obj.db.slot)
+
+        if wield:
+            if not caller.equip.primary_hand in slots     \
+              and not caller.equip.secondary_hand in slots:
+                caller.msg("You can't wield %s." % obj)
+                return
+
         # equip primary and secondary hands with the proper feedback
-        if 'right hand' in utils.make_iter(obj.db.slot)     \
-           or 'left hand' in utils.make_iter(obj.db.slot):
+        if caller.equip.primary_hand in slots  \
+           or caller.equip.secondary_hand in slots:
             action = 'wield'
         else:
             action = 'wear'
@@ -90,13 +104,13 @@ class CmdWear(Command):
             caller.msg("You can't equip %s." % obj)
             return
 
-        if obj in caller.equip.items():
+        if obj in caller.equip.items:
             caller.msg("You're already %sing %s." % (action, obj.name))
             return
 
         if not caller.equip.add(obj):
             string = "You can't equip %s." % obj
-            if [s for s in utils.make_iter(obj.db.slot) if s in caller.equip.slots]:
+            if [slot for slot in slots if slot in caller.equip.slots]:
                 string += " You already have something there."
             caller.msg(string)
             return
@@ -120,9 +134,7 @@ class CmdWield(Command):
 
     """
     key = "wield"
-    aliases = ["equip primary", "ep"]
     locks = "cmd:all()"
-    obj_to_wield = None
 
     def func(self):
         "implements the command."
@@ -133,7 +145,10 @@ class CmdWield(Command):
             caller.msg("Wield what?")
             return
 
+        cmd = self.cmdset.get("wear")
+        cmd.wield = True
         caller.execute_cmd("wear %s" % args)
+
 
 class CmdHold(Command):
     """
@@ -146,7 +161,6 @@ class CmdHold(Command):
 
     """
     key = "hold"
-    aliases = ["equip secondary", "es"]
     locks = "cmd:all()"
 
     def func(self):
@@ -172,7 +186,7 @@ class CmdHold(Command):
             caller.msg("You can't hold %s." % obj)
             return
 
-        if obj in caller.equip.items():
+        if obj in caller.equip.items:
             caller.msg("You're already holding %s." % obj)
             return
 
@@ -226,7 +240,7 @@ class CmdRemove(Command):
         if not obj:
             return
 
-        if not obj in caller.equip.items():
+        if not obj in caller.equip.items:
             caller.msg("You are not wearing %s." % obj)
             return
         if not caller.equip.remove(obj):

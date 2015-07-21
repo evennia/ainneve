@@ -8,16 +8,18 @@ creation commands.
 
 """
 # import importlib
-from evennia import DefaultCharacter
 from evennia.utils import lazy_property
 from world.traits.trait import Trait
 
 from world import races
 from world.equip import EquipHandler
 
+from objects import Object
 
-class Character(DefaultCharacter):
+from django.conf import settings
 
+
+class Character(Object):
     """
     This base Character typeclass should only contain things that would be
     common to NPCs, Mobs, Players, or anything else built off of it. Flags
@@ -40,6 +42,84 @@ class Character(DefaultCharacter):
                     has connected" message echoed to the room
 
     """
+
+    def basetype_setup(self):
+        """
+        Setup character-specific security.
+
+        You should normally not need to overload this, but if you do,
+        make sure to reproduce at least the two last commands in this
+        method (unless you want to fundamentally change how a
+        Character object works).
+
+        """
+        super(Character, self).basetype_setup()
+        self.locks.add(
+            ";".join(["get:false()",  # noone can pick up the character
+                      "call:false()"]))  # no commands can be called on character from outside
+        # add the default cmdset
+        self.cmdset.add_default(settings.CMDSET_CHARACTER, permanent=True)
+
+    def at_after_move(self, source_location):
+        """
+        We make sure to look around after a move.
+
+        """
+        self.execute_cmd('look')
+
+    def at_pre_puppet(self, player, sessid=None):
+        """
+        This implementation recovers the character again after having been "stoved
+        away" to the `None` location in `at_post_unpuppet`.
+
+        Args:
+            player (Player): This is the connecting player.
+            sessid (int): Session id controlling the connection.
+
+        """
+        if self.db.prelogout_location:
+            # try to recover
+            self.location = self.db.prelogout_location
+        if self.location is None:
+            # make sure location is never None (home should always exist)
+            self.location = self.home
+        if self.location:
+            # save location again to be sure
+            self.db.prelogout_location = self.location
+            self.location.at_object_receive(self, self.location)
+        else:
+            player.msg("{r%s has no location and no home is set.{n" % self,
+                       sessid=sessid)
+
+    def at_post_puppet(self):
+        """
+        Called just after puppeting has been completed and all
+        Player<->Object links have been established.
+
+        """
+        self.msg("\nYou become {c%s{n.\n" % self.name)
+        self.execute_cmd("look")
+        if self.location:
+            self.location.msg_contents("%s has entered the game." % self.name,
+                                       exclude=[self])
+
+    def at_post_unpuppet(self, player, sessid=None):
+        """
+        We stove away the character when the player goes ooc/logs off,
+        otherwise the character object will remain in the room also
+        after the player logged off ("headless", so to say).
+
+        Args:
+            player (Player): The player object that just disconnected
+                from this object.
+            sessid (int): Session id controlling the connection that
+                just disconnected.
+        """
+        if self.location:  # have to check, in case of multiple connections closing
+            self.location.msg_contents("%s has left the game." % self.name,
+                                       exclude=[self])
+            self.db.prelogout_location = self.location
+            self.location = None
 
     def at_object_creation(self):
         # race will be a separate Python class, defined and loaded from
@@ -79,12 +159,22 @@ class Character(DefaultCharacter):
 
         self.ndb.group = None
 
+    @property
+    def inventory(self):
+        """
+        Return inventory items.
+        """
+        eq = hasattr(self, 'equip') and self.equip.items or []
+        return [obj for obj in self.contents if obj not in eq]
+
     @lazy_property
     def equip(self):
         """
         An handler to administrate characters equipment.
         """
-        return EquipHandler(self)
+        # sample slots, when race is completed feed race.slots instead
+        slots = ('head', 'torso', 'neck1', 'neck2', 'feet')
+        return EquipHandler(self, slots=slots)
 
     # helper method, checks if stat is valid
     def find_stat(self, stat):
@@ -136,10 +226,11 @@ class Character(DefaultCharacter):
         if stat == 'mana':
             if (self.db.secondary_traits['mana'].base + amount) > 10:
                 self.db.secondary_traits['mana'].mod = 10 - \
-                    self.db.secondary_traits['mana'].base
+                                                       self.db.secondary_traits[
+                                                           'mana'].base
                 return
             elif (self.db.secondary_traits['mana'].base +
-                  self.db.secondary_traits['mana'].mod + amount) > 10:
+                      self.db.secondary_traits['mana'].mod + amount) > 10:
                 self.db.secondary_traits[
                     'mana'
                 ].mod = 10 - (self.db.secondary_traits['mana'].base +
