@@ -13,6 +13,8 @@ from world.traits.trait import Trait
 
 from world import races
 from world.equip import EquipHandler
+from world.config.spellmanager import spell_manager
+from world.config.skillmanager import skill_manager
 
 from objects import Object
 
@@ -129,6 +131,9 @@ class Character(Object):
         self.db.archetype = None
 
         self.db.slots = {}
+        self.db.ability_points = 100
+        self.db.skills = {}
+        self.db.spells = {}
 
         # Primary Traits
         self.db.primary_traits = {
@@ -140,7 +145,6 @@ class Character(Object):
             'vitality': Trait('vitality', static=True),
             'magic': Trait('magic', static=True)
         }
-
         # Secondary Traits
         self.db.secondary_traits = {
             'health': Trait('health'),  # vit
@@ -158,6 +162,9 @@ class Character(Object):
         }
 
         self.ndb.group = None
+
+        self.initalize_skills()
+        self.initalize_spells()
 
     @property
     def inventory(self):
@@ -269,3 +276,15 @@ class Character(Object):
         # load slots from the race
         for slot in self.db.race.slots:
             self.db.slots[slot] = None
+
+    def initalize_skills(self):
+        # Assign the players all level 1 skills
+        for skill in skill_manager:
+            if skill_manager[skill].level == 1:
+                self.db.skills[skill] = 0
+
+    def initalize_spells(self):
+        # Assign the players all level 1 spells
+        for spell in spell_manager:
+            if spell_manager[spell].level == 1:
+                self.db.spells[spell] = 0
