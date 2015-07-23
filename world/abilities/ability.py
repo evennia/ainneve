@@ -13,7 +13,7 @@ class Ability(object):
         self.modifier = 0                   # The modifier for this skill, i.e. damage value
         self.affects = {}                   # What affect is applied
 
-        self.msg_to_caller = "you use %s"   # Text to show to the caller on use
+        self.msg_to_caller = ""             # Text to show to the caller on use
         self.msg_to_target = ""             # Text to show to the target on use
         self.msg_to_room = ""               # Text to show to the room on use
 
