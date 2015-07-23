@@ -28,3 +28,15 @@ lock functions from evennia.locks.lockfuncs.
 #    """
 #    print "%s tried to access %s. Access denied." % (accessing_obj, accessed_obj)
 #    return False
+
+#Ainneve specific locks
+
+def has_skill(accessing_obj, accessed_obj, *args, **kwargs):
+    character = accessing_obj
+    skill = args[0]
+    return character.has_skill(skill)
+
+def has_spell(accessing_obj, accessed_obj, *args, **kwargs):
+    character = accessing_obj
+    spell = args[0]
+    return character.has_spell(spell)

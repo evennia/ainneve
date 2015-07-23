@@ -10,14 +10,10 @@ creation commands.
 # import importlib
 from evennia.utils import lazy_property
 from world.traits.trait import Trait
-
 from world import races
 from world.equip import EquipHandler
-
 from objects import Object
-
 from django.conf import settings
-
 
 class Character(Object):
     """
@@ -128,9 +124,11 @@ class Character(Object):
         # same with Archetype, most likely
         self.db.archetype = None
 
-        self.db.slots = {}
+        # each player will be assigned with ability points
+        self.db.ability_points = 100
+        self.db.skills = {}
+        self.db.spells = {}
 
-        # Primary Traits
         self.db.primary_traits = {
             'strength': Trait('strength', static=True),
             'perception': Trait('perception', static=True),
@@ -140,20 +138,15 @@ class Character(Object):
             'vitality': Trait('vitality', static=True),
             'magic': Trait('magic', static=True)
         }
-
-        # Secondary Traits
         self.db.secondary_traits = {
-            'health': Trait('health'),  # vit
-            'stamina': Trait('stamina'),  # vit
+            'health': Trait('health'),              # vit
+            'stamina': Trait('stamina'),            # vit
             'skills': Trait('skills'),
-            'languages': Trait('languages'),  # int
-            # saves
-            'fortitude': Trait('fortitude'),  # vit
-            'reflex': Trait('reflex'),  # dex
-            'will': Trait('will'),  # int
-            # magic
-            'mana': Trait('mana'),  # mag
-            # armor
+            'languages': Trait('languages'),        # int
+            'fortitude': Trait('fortitude'),        # vit
+            'reflex': Trait('reflex'),              # dex
+            'will': Trait('will'),                  # int
+            'mana': Trait('mana'),                  # mag
             'armor': Trait('armor', static=True)
         }
 
@@ -269,3 +262,14 @@ class Character(Object):
         # load slots from the race
         for slot in self.db.race.slots:
             self.db.slots[slot] = None
+
+    def has_skill(self, skill):
+        if skill in self.db.skills:
+            return True
+
+    def has_spell(self, spell):
+        if spell in self.db.spells:
+            return True
+
+
+
