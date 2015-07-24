@@ -172,8 +172,7 @@ class Character(Object):
         """
         An handler to administrate characters equipment.
         """
-        # sample slots, when race is completed feed race.slots instead
-        slots = ('head', 'torso', 'neck1', 'neck2', 'feet')
+        slots = slots.db.race.slots if self.db.race else ()
         return EquipHandler(self, slots=slots)
 
     # helper method, checks if stat is valid
@@ -266,6 +265,4 @@ class Character(Object):
 
         # set the race
         self.db.race = races.load_race(race)
-        # load slots from the race
-        for slot in self.db.race.slots:
-            self.db.slots[slot] = None
+
