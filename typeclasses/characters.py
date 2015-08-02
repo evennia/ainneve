@@ -128,7 +128,7 @@ class Character(Object):
         # same with Archetype, most likely
         self.db.archetype = None
 
-        self.db.slots = {}
+        self.db.slots = ()
 
         # Primary Traits
         self.db.primary_traits = {
@@ -172,8 +172,7 @@ class Character(Object):
         """
         An handler to administrate characters equipment.
         """
-        # sample slots, when race is completed feed race.slots instead
-        slots = ('head', 'torso', 'neck1', 'neck2', 'feet')
+        slots = slots.db.slots or ()
         return EquipHandler(self, slots=slots)
 
     # helper method, checks if stat is valid
@@ -266,6 +265,5 @@ class Character(Object):
 
         # set the race
         self.db.race = races.load_race(race)
-        # load slots from the race
-        for slot in self.db.race.slots:
-            self.db.slots[slot] = None
+        self.db.slots = self.db.race.slots
+

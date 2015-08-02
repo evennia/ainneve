@@ -1,4 +1,4 @@
-from world.races.race import Race
+from world.races import Race
 
 
 class Dwarf(Race):

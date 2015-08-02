@@ -1,5 +1,6 @@
 # -*- coding: UTF-8 -*-
-from evennia import settings, utils
+from django.conf import settings
+from evennia import utils
  
 PRIMARY_HAND = 'wield1'
 SECONDARY_HAND = 'wield2'
@@ -73,20 +74,20 @@ class EquipHandler(object):
         
 
     """
+
+    primary_hand = PRIMARY_HAND
+    secondary_hand = SECONDARY_HAND
+
     def __init__(self, obj, slots=()):
         """
         Init class.
         """
         # save the parent typeclass
         self.obj = obj
-        # race slots + default slot (make sure they are there)
-        slots = tuple(slots) + DEFAULT
-        self._slots = tuple(set(slots))
-        self.primary_hand = PRIMARY_HAND
-        self.secondary_hand = SECONDARY_HAND
         # initialize equipment
         if not self.obj.db.equip:
-            self.obj.db.equip = {x: None for x in self.slots}
+            slots = tuple(slots) + DEFAULT
+            self.obj.db.equip = {x: None for x in slots}
 
     def _set(self, slot, item):
         """
@@ -97,7 +98,7 @@ class EquipHandler(object):
         """
         # allows None values to pass all checks
         if item != None:
-            # first check, only allows typeclasses to pass;
+            # first check, allows typeclasses to pass;
             # at the same time all expected errors are converted
             # to ValueError
             try:
@@ -106,7 +107,7 @@ class EquipHandler(object):
                     raise AttributeError
             except AttributeError:
                 raise ValueError("Item can't be set in equip.")
-            # second check, only allows objects that are
+            # second check, allows objects that are
             # correctly defined to be equipped, i.e. they have a slot
             # and that slot exist in the current equip.
             # At the same time all expected errors are converted
@@ -160,14 +161,14 @@ class EquipHandler(object):
 
     @property
     def slots(self):
-        return self._slots
+        return self.obj.db.equip.keys()
 
     @property
     def items(self):
         """
         Shows equipped items.
         """
-        return filter(None, self.obj.db.equip.values())
+        return [obj for obj in self.obj.db.equip.values() if obj]
 
     @property
     def empty_slots(self):
