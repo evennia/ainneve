@@ -1,6 +1,6 @@
 import random
 
-from world.archetypes.archetype import Archetype
+from world.archetypes import Archetype
 
 
 class Arcanist(Archetype):
