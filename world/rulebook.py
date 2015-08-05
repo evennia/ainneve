@@ -2,29 +2,23 @@ from random import randint
 
 
 def roll_stat():
-    rolls = []
-    stat = 0
+    """rolls the 4d6, drop lowest and sums the remaining dice."""
 
     # roll a 4d6
-    for stat in range(0, 4):
-        rolls.append(randint(1, 6))
+    rolls = [randint(1, 6) for _ in range(4)]
     # order from high to low
     rolls = sorted(rolls, reverse=True)
     # drop lowest roll
     rolls.pop()
 
-    for roll in rolls:
-        stat += roll
+    stat = sum(rolls)
 
     return stat
 
 
 def roll_stats(amount):
-    stats = []
-
-    for stat in range(0, amount):
-        stats.append(roll_stat())
-
+    """rolls ``amount`` number of stats and returns list of result."""
+    stats = [roll_stat() for _ in range(amount)]
     return sorted(stats, reverse=True)
 
 
