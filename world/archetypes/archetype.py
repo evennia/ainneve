@@ -1,14 +1,16 @@
 class Archetype(object):
     def __init__(self):
-        self.base = {'strength': 0,
-                     'perception': 0,
-                     'intelligence': 0,
-                     'dexterity': 0,
-                     'charisma': 0,
-                     'vitality': 0,
-                     'magic': 0,
-                     'movement': 0,
-                     'power': 0}
+        self.base = {
+            'strength': 0,
+            'perception': 0,
+            'intelligence': 0,
+            'dexterity': 0,
+            'charisma': 0,
+            'vitality': 0,
+            'magic': 0,
+            'movement': 0,
+            'power': 0
+        }
         self.health_die = None
         self.health_bonus = None
 
