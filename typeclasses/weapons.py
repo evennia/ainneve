@@ -8,7 +8,7 @@ class Weapon(Item):
     def at_object_creation(self):
         super(Weapon, self).at_object_creation()
         self.damage = 0
-        self.handedness = 1
+        self.handedness = 0
         self.abilities = []
 
 class RangedWeapon(Weapon):

@@ -1,5 +1,5 @@
 """
-Weapon typeclasses
+Armor typeclasses
 """
 
 from typeclasses.items import Item
