@@ -26,5 +26,5 @@ class Archetype(object):
         dual.health_die = min(a.health_die, b.health_die)
         dual.health_bonus = min(a.health_bonus, b.health_bonus)
         dual.name = duals[frozenset([a.name, b.name])]
-        dual.__class__.__name__ = dual.name.replace('-','')
+        dual.__class__.__name__ = dual.name.replace('-', '')
         return dual
