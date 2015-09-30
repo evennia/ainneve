@@ -48,4 +48,3 @@ class Race(object):
         self.feats = []
         self.bonuses = {}
         self.detriments = {}
-
