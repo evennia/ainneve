@@ -144,19 +144,25 @@ class Character(Object):
 
         # Secondary Traits
         self.db.secondary_traits = {
-            'health': Trait('health'),  # vit
-            'stamina': Trait('stamina'),  # vit
+            'health': Trait('health'),           # vit
+            'stamina': Trait('stamina'),         # vit
             'skills': Trait('skills'),
-            'languages': Trait('languages'),  # int
+            'languages': Trait('languages'),     # int
             # saves
-            'fortitude': Trait('fortitude'),  # vit
-            'reflex': Trait('reflex'),  # dex
-            'will': Trait('will'),  # int
+            'fortitude': Trait('fortitude'),     # vit
+            'reflex': Trait('reflex'),           # dex
+            'will': Trait('will'),               # int
             # magic
-            'mana': Trait('mana'),  # mag
+            'mana': Trait('mana'),               # mag
             # armor
             'armor': Trait('armor', static=True)
         }
+
+        # Allow health and stamina to overflow
+        self.get_stat('health').overflow = True
+        self.get_stat('stamina').overflow = True
+        # Cap mana at 10, overflow is default False
+        self.get_stat('mana').base = 10
 
         self.ndb.group = None
 
@@ -204,16 +210,17 @@ class Character(Object):
                 'languages'] = amount + bonus_language_points
             self.db.secondary_traits['will'] = amount
 
+        # TODO: Refactor this. This ability should be handled on the Trait
         # as per the OA blue rulebook mana can never exceed 10 (page 49)
-        if stat == 'mana':
-            if (self.db.secondary_traits['mana'].base + amount) >= 10:
-                self.db.secondary_traits['mana'].base = 10
-                self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
-                return
-            else:
-                self.db.secondary_traits['mana'].base += amount
-                self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
-                return
+        # if stat == 'mana':
+        #     if (self.db.secondary_traits['mana'].base + amount) >= 10:
+        #         self.db.secondary_traits['mana'].base = 10
+        #         self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
+        #         return
+        #     else:
+        #         self.db.secondary_traits['mana'].base += amount
+        #         self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
+        #         return
 
         valid_stat = self.find_stat(stat)
         if valid_stat:
@@ -221,30 +228,31 @@ class Character(Object):
         else:
             return False
 
-    def mod_stat(self, stat, amount):
-        # as per the OA blue rulebook mana can never exceed 10 (page 49)
-        if stat == 'mana':
-            if (self.db.secondary_traits['mana'].base + amount) > 10:
-                self.db.secondary_traits['mana'].mod = 10 - \
-                                                       self.db.secondary_traits[
-                                                           'mana'].base
-                return
-            elif (self.db.secondary_traits['mana'].base +
-                      self.db.secondary_traits['mana'].mod + amount) > 10:
-                self.db.secondary_traits[
-                    'mana'
-                ].mod = 10 - (self.db.secondary_traits['mana'].base +
-                              self.db.secondary_traits['mana'].mod)
-                return
-            else:
-                self.db.secondary_traits['mana'].mod = amount
-                return
-
-        valid_stat = self.find_stat(stat)
-        if valid_stat:
-            valid_stat.base = amount
-        else:
-            return False
+    # TODO: Refactor this. Currently broken. - WN
+    # def mod_stat(self, stat, amount):
+    #     # as per the OA blue rulebook mana can never exceed 10 (page 49)
+    #     if stat == 'mana':
+    #         if (self.db.secondary_traits['mana'].base + amount) > 10:
+    #             self.db.secondary_traits['mana'].mod = 10 - \
+    #             self.db.secondary_traits['mana'].base
+    #             return
+    #         elif (self.db.secondary_traits['mana'].base +
+    #               self.db.secondary_traits['mana'].mod + amount) > 10:
+    #             self.db.secondary_traits[
+    #                 'mana'
+    #             ].mod = 10 - (self.db.secondary_traits['mana'].base +
+    #                           self.db.secondary_traits['mana'].mod)
+    #             return
+    #         else:
+    #             self.db.secondary_traits['mana'].mod = amount
+    #             return
+    #
+    #     valid_stat = self.find_stat(stat)
+    #     if valid_stat:
+    #         valid_stat.base = amount
+    #     else:
+    #         return False
+    #
 
     def get_stat(self, stat):
         valid_stat = self.find_stat(stat)
@@ -267,4 +275,3 @@ class Character(Object):
         # set the race
         self.db.race = races.load_race(race)
         self.db.slots = self.db.race.slots
-
