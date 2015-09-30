@@ -12,6 +12,7 @@ from evennia.utils import lazy_property
 from world.traits.trait import Trait
 
 from world import races
+from world import rulebook
 from world.equip import EquipHandler
 
 from objects import Object
@@ -56,7 +57,8 @@ class Character(Object):
         super(Character, self).basetype_setup()
         self.locks.add(
             ";".join(["get:false()",  # noone can pick up the character
-                      "call:false()"]))  # no commands can be called on character from outside
+                      # no external commands can be called on char
+                      "call:false()"]))
         # add the default cmdset
         self.cmdset.add_default(settings.CMDSET_CHARACTER, permanent=True)
 
@@ -69,7 +71,7 @@ class Character(Object):
 
     def at_pre_puppet(self, player, sessid=None):
         """
-        This implementation recovers the character again after having been "stoved
+        This implementation recovers the character again after being "stowed
         away" to the `None` location in `at_post_unpuppet`.
 
         Args:
@@ -115,7 +117,7 @@ class Character(Object):
             sessid (int): Session id controlling the connection that
                 just disconnected.
         """
-        if self.location:  # have to check, in case of multiple connections closing
+        if self.location:  # have to check, in case of multiple connections
             self.location.msg_contents("%s has left the game." % self.name,
                                        exclude=[self])
             self.db.prelogout_location = self.location
@@ -128,7 +130,7 @@ class Character(Object):
         # same with Archetype, most likely
         self.db.archetype = None
 
-        self.db.slots = ()
+        self.db.slots = []
 
         # Primary Traits
         self.db.primary_traits = {
@@ -143,19 +145,31 @@ class Character(Object):
 
         # Secondary Traits
         self.db.secondary_traits = {
-            'health': Trait('health'),  # vit
-            'stamina': Trait('stamina'),  # vit
+            'health': Trait('health'),           # vit
+            'stamina': Trait('stamina'),         # vit
             'skills': Trait('skills'),
-            'languages': Trait('languages'),  # int
+            'languages': Trait('languages'),     # int
             # saves
-            'fortitude': Trait('fortitude'),  # vit
-            'reflex': Trait('reflex'),  # dex
-            'will': Trait('will'),  # int
+            'fortitude': Trait('fortitude'),     # vit
+            'reflex': Trait('reflex'),           # dex
+            'will': Trait('will'),               # int
             # magic
-            'mana': Trait('mana'),  # mag
+            'mana': Trait('mana'),               # mag
             # armor
             'armor': Trait('armor', static=True)
         }
+
+        for stat in self.db.primary_traits:
+            # roll the stat and set the base accordingly
+            self.base_stat(stat.name.lower(), rulebook.roll_stat())
+
+        # Allow health and stamina to overflow
+        self.get_stat('health').overflow = True
+        self.get_stat('stamina').overflow = True
+        # Cap mana at 10, overflow is default False
+        mana_stat = self.get_stat('mana')
+        mana_stat.base = 10
+        mana_stat.fill()
 
         self.ndb.group = None
 
@@ -172,7 +186,7 @@ class Character(Object):
         """
         An handler to administrate characters equipment.
         """
-        slots = slots.db.slots or ()
+        slots = self.db.slots or []
         return EquipHandler(self, slots=slots)
 
     # helper method, checks if stat is valid
@@ -203,47 +217,39 @@ class Character(Object):
                 'languages'] = amount + bonus_language_points
             self.db.secondary_traits['will'] = amount
 
-        # as per the OA blue rulebook mana can never exceed 10 (page 49)
-        if stat == 'mana':
-            if (self.db.secondary_traits['mana'].base + amount) >= 10:
-                self.db.secondary_traits['mana'].base = 10
-                self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
-                return
-            else:
-                self.db.secondary_traits['mana'].base += amount
-                self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
-                return
-
+        # If no secondary stats involved, just verify the stat and base it
         valid_stat = self.find_stat(stat)
         if valid_stat:
             valid_stat.base = amount
         else:
             return False
 
-    def mod_stat(self, stat, amount):
-        # as per the OA blue rulebook mana can never exceed 10 (page 49)
-        if stat == 'mana':
-            if (self.db.secondary_traits['mana'].base + amount) > 10:
-                self.db.secondary_traits['mana'].mod = 10 - \
-                                                       self.db.secondary_traits[
-                                                           'mana'].base
-                return
-            elif (self.db.secondary_traits['mana'].base +
-                      self.db.secondary_traits['mana'].mod + amount) > 10:
-                self.db.secondary_traits[
-                    'mana'
-                ].mod = 10 - (self.db.secondary_traits['mana'].base +
-                              self.db.secondary_traits['mana'].mod)
-                return
-            else:
-                self.db.secondary_traits['mana'].mod = amount
-                return
+    # TODO: Refactor this. Currently broken. - WN
 
-        valid_stat = self.find_stat(stat)
-        if valid_stat:
-            valid_stat.base = amount
-        else:
-            return False
+    # def mod_stat(self, stat, amount):
+    #     # as per the OA blue rulebook mana can never exceed 10 (page 49)
+    #     if stat == 'mana':
+    #         if (self.db.secondary_traits['mana'].base + amount) > 10:
+    #             self.db.secondary_traits['mana'].mod = 10 - \
+    #             self.db.secondary_traits['mana'].base
+    #             return
+    #         elif (self.db.secondary_traits['mana'].base +
+    #               self.db.secondary_traits['mana'].mod + amount) > 10:
+    #             self.db.secondary_traits[
+    #                 'mana'
+    #             ].mod = 10 - (self.db.secondary_traits['mana'].base +
+    #                           self.db.secondary_traits['mana'].mod)
+    #             return
+    #         else:
+    #             self.db.secondary_traits['mana'].mod = amount
+    #             return
+    #
+    #     valid_stat = self.find_stat(stat)
+    #     if valid_stat:
+    #         valid_stat.base = amount
+    #     else:
+    #         return False
+    #
 
     def get_stat(self, stat):
         valid_stat = self.find_stat(stat)
@@ -266,4 +272,3 @@ class Character(Object):
         # set the race
         self.db.race = races.load_race(race)
         self.db.slots = self.db.race.slots
-
