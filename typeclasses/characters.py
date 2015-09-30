@@ -227,6 +227,7 @@ class Character(Object):
             return False
 
     # TODO: Refactor this. Currently broken. - WN
+
     # def mod_stat(self, stat, amount):
     #     # as per the OA blue rulebook mana can never exceed 10 (page 49)
     #     if stat == 'mana':
