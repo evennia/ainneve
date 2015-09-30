@@ -162,8 +162,7 @@ class Character(Object):
         # TODO: Could this be optimized?
         for stat in self.db.primary_traits:
             # roll the stat and set the base accordingly
-            self.base_stat(self.db.primary_traits[stat].name.lower(),
-                           rulebook.roll_stat())
+            self.base_stat(stat.name.lower(), rulebook.roll_stat())
 
         # Allow health and stamina to overflow
         self.get_stat('health').overflow = True
