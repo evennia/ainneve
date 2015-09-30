@@ -56,7 +56,8 @@ class Character(Object):
         super(Character, self).basetype_setup()
         self.locks.add(
             ";".join(["get:false()",  # noone can pick up the character
-                      "call:false()"]))  # no commands can be called on character from outside
+                      # no external commands can be called on char
+                      "call:false()"]))
         # add the default cmdset
         self.cmdset.add_default(settings.CMDSET_CHARACTER, permanent=True)
 
@@ -69,7 +70,7 @@ class Character(Object):
 
     def at_pre_puppet(self, player, sessid=None):
         """
-        This implementation recovers the character again after having been "stoved
+        This implementation recovers the character again after being "stowed
         away" to the `None` location in `at_post_unpuppet`.
 
         Args:
@@ -115,7 +116,7 @@ class Character(Object):
             sessid (int): Session id controlling the connection that
                 just disconnected.
         """
-        if self.location:  # have to check, in case of multiple connections closing
+        if self.location:  # have to check, in case of multiple connections
             self.location.msg_contents("%s has left the game." % self.name,
                                        exclude=[self])
             self.db.prelogout_location = self.location
@@ -172,7 +173,7 @@ class Character(Object):
         """
         An handler to administrate characters equipment.
         """
-        slots = slots.db.slots or ()
+        slots = self.db.slots or ()
         return EquipHandler(self, slots=slots)
 
     # helper method, checks if stat is valid
