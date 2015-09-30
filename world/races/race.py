@@ -5,7 +5,7 @@ class Race(object):
     def __init__(self):
         self.name = ""
         self.size = ""
-        self.slots = (
+        self.slots = [
             'head',
             'left ear',
             'right ear',
@@ -28,7 +28,7 @@ class Race(object):
             'belt2',
             'legs',
             'feet',
-        )
+        ]
 
         self.limbs = {
             'head':         ('head', 'left ear', 'right ear', 'on eyes',
