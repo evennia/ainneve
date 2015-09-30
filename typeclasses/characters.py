@@ -159,7 +159,6 @@ class Character(Object):
             'armor': Trait('armor', static=True)
         }
 
-        # TODO: Could this be optimized?
         for stat in self.db.primary_traits:
             # roll the stat and set the base accordingly
             self.base_stat(stat.name.lower(), rulebook.roll_stat())
