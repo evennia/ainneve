@@ -31,7 +31,8 @@ class Race(object):
         )
 
         self.limbs = {
-            'head':         ('head', 'left ear', 'right ear', 'on eyes', 'neck1', 'neck2',),
+            'head':         ('head', 'left ear', 'right ear', 'on eyes',
+                             'neck1', 'neck2',),
             'torso':        ('torso', 'shoulders', 'back', 'belt1', 'belt2',),
             'left arm':     ('arms', 'left wrist',),
             'right arm':    ('arms', 'right wrist',),
