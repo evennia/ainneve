@@ -12,6 +12,7 @@ from evennia.utils import lazy_property
 from world.traits.trait import Trait
 
 from world import races
+from world import rulebook
 from world.equip import EquipHandler
 
 from objects import Object
@@ -158,11 +159,19 @@ class Character(Object):
             'armor': Trait('armor', static=True)
         }
 
+        # TODO: Could this be optimized?
+        for stat in self.db.primary_traits:
+            # roll the stat and set the base accordingly
+            self.base_stat(self.db.primary_traits[stat].name.lower(),
+                           rulebook.roll_stat())
+
         # Allow health and stamina to overflow
         self.get_stat('health').overflow = True
         self.get_stat('stamina').overflow = True
         # Cap mana at 10, overflow is default False
-        self.get_stat('mana').base = 10
+        mana_stat = self.get_stat('mana')
+        mana_stat.base = 10
+        mana_stat.fill()
 
         self.ndb.group = None
 
@@ -210,18 +219,7 @@ class Character(Object):
                 'languages'] = amount + bonus_language_points
             self.db.secondary_traits['will'] = amount
 
-        # TODO: Refactor this. This ability should be handled on the Trait
-        # as per the OA blue rulebook mana can never exceed 10 (page 49)
-        # if stat == 'mana':
-        #     if (self.db.secondary_traits['mana'].base + amount) >= 10:
-        #         self.db.secondary_traits['mana'].base = 10
-        #         self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
-        #         return
-        #     else:
-        #         self.db.secondary_traits['mana'].base += amount
-        #         self.mod_stat(stat, self.db.secondary_traits['mana'].mod)
-        #         return
-
+        # If no secondary stats involved, just verify the stat and base it
         valid_stat = self.find_stat(stat)
         if valid_stat:
             valid_stat.base = amount
