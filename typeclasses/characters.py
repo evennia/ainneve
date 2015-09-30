@@ -124,13 +124,8 @@ class Character(Object):
             self.location = None
 
     def at_object_creation(self):
-        # race will be a separate Python class, defined and loaded from
-        # some sort of configuration file
         self.db.race = None
-        # same with Archetype, most likely
         self.db.archetype = None
-
-        self.db.slots = []
 
         # Primary Traits
         self.db.primary_traits = {
@@ -171,8 +166,14 @@ class Character(Object):
         mana_stat.base = 10
         mana_stat.fill()
 
+        # Persistent attributes
+        self.db.slots = []
+
+        # Non-persistent attributes
         self.ndb.group = None
 
+    # TODO: The EquipHandler should be refactored. It's a little complex for
+    # what it does
     @property
     def inventory(self):
         """
