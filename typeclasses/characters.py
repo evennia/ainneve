@@ -154,7 +154,7 @@ class Character(Object):
             'armor': Trait('armor', static=True)
         }
 
-        for stat in self.db.primary_traits:
+        for stat in self.db.primary_traits.itervalues():
             # roll the stat and set the base accordingly
             self.base_stat(stat.name.lower(), rulebook.roll_stat())
 
@@ -201,8 +201,8 @@ class Character(Object):
 
     # helper method, checks if race gets extra language points
     def determine_language_points(self):
-        if self.bonuses['languages']:
-            return self.bonuses['languages']
+        if self.db.race and self.db.race.bonuses['languages']:
+            return self.db.race.bonuses['languages']
         else:
             return 0
 
