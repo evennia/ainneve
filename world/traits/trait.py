@@ -93,6 +93,12 @@ class Trait(object):
         for key, value in kwargs.iteritems():
             self.data[key] = value
 
+    def __str__(self):
+        return "%s:\t\t%s" % (self.name, self.current)
+
+    def __unicode__(self):
+        return u"%s:\t\t%s" % (self.name, self.current)
+
     @property
     def actual(self):
         return self.data['base'] + self.data['mod']
