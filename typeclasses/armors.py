@@ -2,14 +2,14 @@
 Armor typeclasses
 """
 
-from typeclasses.items import Equippable, Item
+from typeclasses.items import Equippable
 
-class Armor(Item, Equippable):
-    """
-    Typeclass for armor objects.
-    """
+class Armor(Equippable):
+    """Typeclass for armor objects.
 
-    # primary defensive stat
+    Attributes:
+      toughness (int): primary defensive stat
+    """
     toughness = 0
 
     def at_object_creation(self):
@@ -83,3 +83,8 @@ class Shroud(Armor):
     slots = ['torso', 'arms', 'legs']
     slot_operator = 'AND'
 
+
+class Shield(Armor):
+    """Typeclass for shield prototypes."""
+    slots = ['wield2', 'back']
+    slot_operator = 'OR'

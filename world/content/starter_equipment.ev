@@ -1,8 +1,6 @@
 #
 #  Spawns one copy of each piece of starter equipment
-#
-#  First, we have generic items that all characters
-#  can wear during character generation, etc.
+#  and some tables for display
 #
 @spawn "STARTER_HAT"
 #
@@ -11,7 +9,6 @@
 @spawn "STARTER_PANTS"
 #
 @spawn "STARTER_SHOES"
-#
 #
 ## Warrior Equipment
 #
@@ -57,3 +54,34 @@
 @spawn "STARTER_ARC_FOOTWRAPS"
 #
 #
+## Weapons
+#
+## Misc
+#
+@spawn "HUNTING_KNIFE"
+#
+## Warrior
+#
+@spawn "IRON_HAND_AXE"
+#
+@spawn "IRON_THROWING_AXE"
+#
+@spawn "IRON_LONGSWORD"
+#
+@spawn "IRON_MAUL"
+#
+## Scout
+#
+@spawn "LEATHER_WHIP"
+#
+@spawn "IRON_RAPIER"
+#
+@spawn "MAPLE_SHORT_BOW"
+#
+@spawn "LEATHER_BUCKLER"
+#
+## Arcanist
+#
+@spawn "MAPLE_STAFF"
+#
+
