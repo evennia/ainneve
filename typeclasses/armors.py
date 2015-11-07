@@ -2,15 +2,19 @@
 Armor typeclasses
 """
 
-from typeclasses.items import Item
+from typeclasses.items import Equippable, Item
 
-class Armor(Item):
+class Armor(Item, Equippable):
+    """
+    Typeclass for armor objects.
+    """
+
+    # primary defensive stat
+    toughness = 0
+
     def at_object_creation(self):
         super(Armor, self).at_object_creation()
-        self.db.toughness = 0
-        self.db.abilities = []
-        self.db.slot = []
-        self.db.slot_operator = 'AND'
+        self.db.toughness = self.toughness
 
 
 # typeclasses for prototyping
@@ -18,79 +22,64 @@ class Armor(Item):
 
 class Headwear(Armor):
     """Typeclass for armor prototypes worn on the head."""
-    def at_object_creation(self):
-        super(Headwear, self).at_object_creation()
-        self.db.slot = ['head']
+    slots = ['head']
 
 
 class Shoulderwear(Armor):
     """Typeclass for armor prototypes worn on the shoulders."""
-    def at_object_creation(self):
-        super(Shoulderwear, self).at_object_creation()
-        self.db.slot = ['shoulders']
+    slots = ['shoulders']
 
 
 class Breastplate(Armor):
     """Typeclass for sleeveless armor prototypes."""
-    def at_object_creation(self):
-        super(Breastplate, self).at_object_creation()
-        self.db.slot = ['torso']
+    slots = ['torso']
 
 
-class SleevedShirt(Breastplate):
+class UnderShirt():
+    """Typeclass for shirts worn beneath Breastplates."""
+    slots = ['arms']
+
+
+class SleevedShirt(Armor):
     """Typeclass for full upper body armor prototypes."""
-    def at_object_creation(self):
-        super(SleevedShirt, self).at_object_creation()
-        self.db.slot += ['arms']
+    slots = ['torso', 'arms']
 
 
 class Armband(Armor):
-    """Typeclass for arm band prototypes."""
-    def at_object_creation(self):
-        super(Armband, self).at_object_creation()
-        self.db.slot = ['left wrist', 'right wrist']
-        self.db.slot_operator = 'OR'
+    """Typeclass for arm band/bracelet prototypes."""
+    slots = ['left wrist', 'right wrist']
+    slot_operator = 'OR'
 
 
 class Gloves(Armor):
     """Typeclass for armor prototypes for the hands."""
-    def at_object_creation(self):
-        super(Gloves, self).at_object_creation()
-        self.db.slot = ['hands']
+    slots = ['hands']
 
 
 class Gauntlets(Gloves):
     """Typeclass for long glove armor prototypes."""
-    def at_object_creation(self):
-        super(Gauntlets, self).at_object_creation()
-        self.db.slot += ['left wrist', 'right wrist']
+    slots = ['hands', 'left wrist', 'right wrist']
+    slot_operator = 'AND'
 
 
 class Belt(Armor):
     """Typeclass for armor prototypes worn in belt slots."""
-    def at_object_creation(self):
-        super(Belt, self).at_object_creation()
-        self.db.slot = ['belt1', 'belt2']
-        self.db.slot_operator = 'OR'
+    slots = ['belt1', 'belt2']
+    slot_operator = 'OR'
 
 
 class Legwear(Armor):
     """Typeclass for armor prototypes worn on the legs."""
-    def at_object_creation(self):
-        super(Legwear, self).at_object_creation()
-        self.db.slot = ['legs']
+    slots = ['legs']
 
 
 class Footwear(Armor):
     """Typeclass for armor prototypes worn on the feet."""
-    def at_object_creation(self):
-        super(Footwear, self).at_object_creation()
-        self.db.slot = ['feet']
+    slots = ['feet']
 
 
 class Shroud(Armor):
     """Typeclass for arcanist shroud prototypes."""
-    def at_object_creation(self):
-        super(Shroud, self).at_object_creation()
-        self.db.slot = ['torso', 'arms', 'left wrist', 'right wrist', 'legs']
+    slots = ['torso', 'arms', 'legs']
+    slot_operator = 'AND'
 
