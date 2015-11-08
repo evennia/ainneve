@@ -43,12 +43,13 @@ class UnderShirt():
 class SleevedShirt(Armor):
     """Typeclass for full upper body armor prototypes."""
     slots = ['torso', 'arms']
+    multi_slot = True
 
 
 class Armband(Armor):
     """Typeclass for arm band/bracelet prototypes."""
     slots = ['left wrist', 'right wrist']
-    slot_operator = 'OR'
+    multi_slot = False
 
 
 class Gloves(Armor):
@@ -59,13 +60,13 @@ class Gloves(Armor):
 class Gauntlets(Gloves):
     """Typeclass for long glove armor prototypes."""
     slots = ['hands', 'left wrist', 'right wrist']
-    slot_operator = 'AND'
+    multi_slot = True
 
 
 class Belt(Armor):
     """Typeclass for armor prototypes worn in belt slots."""
     slots = ['belt1', 'belt2']
-    slot_operator = 'OR'
+    multi_slot = False
 
 
 class Legwear(Armor):
@@ -81,10 +82,10 @@ class Footwear(Armor):
 class Shroud(Armor):
     """Typeclass for arcanist shroud prototypes."""
     slots = ['torso', 'arms', 'legs']
-    slot_operator = 'AND'
+    multi_slot = True
 
 
 class Shield(Armor):
     """Typeclass for shield prototypes."""
     slots = ['wield2', 'back']
-    slot_operator = 'OR'
+    multi_slot = False

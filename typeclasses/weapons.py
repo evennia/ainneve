@@ -43,7 +43,7 @@ class RangedWeapon(Weapon):
 class TwoHanded(object):
     """Mixin class for two handed weapons."""
     slots = ['wield1', 'wield2']
-    slot_operator = 'AND'
+    multi_slot = True
     handedness = 2
 
 

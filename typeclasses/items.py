@@ -30,11 +30,11 @@ class Equippable(Item):
 
     Attributes:
       slots (str, list[str]): list of slots for equipping
-      slot_operator (str): operator for multiple slots. "OR" equips to
-          first available slot; "AND" requires all slots available.
+      multi_slot (bool): operator for multiple slots. False equips to
+          first available slot; True requires all listed slots available.
     """
     slots = None
-    slot_operator = 'AND'
+    slot_operator = False
 
     def at_object_creation(self):
         super(Equippable, self).at_object_creation()

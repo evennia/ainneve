@@ -185,7 +185,7 @@ class EquipHandler(object):
         free_slots = [sl for sl in slots if sl in self.empty_slots]
         if not free_slots:
             return False
-        if obj.db.slot_operator == 'AND':
+        if obj.db.multi_slot:
             if len(free_slots) != len(slots):
                 return False
             for slot in free_slots:
