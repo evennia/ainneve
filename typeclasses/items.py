@@ -36,13 +36,13 @@ class Equippable(Item):
             first available slot; True requires all listed slots available.
     """
     slots = None
-    slot_operator = False
+    multi_slot = False
 
     def at_object_creation(self):
         super(Equippable, self).at_object_creation()
         self.locks.add("puppet:false();equip:true()")
         self.db.slot = self.slots
-        self.db.slot_operator = self.slot_operator
+        self.db.multi_slot = self.multi_slot
 
     def at_equip(self, character):
         """
