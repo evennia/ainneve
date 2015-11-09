@@ -5,10 +5,11 @@ Armor typeclasses
 from typeclasses.items import Equippable
 
 class Armor(Equippable):
-    """Typeclass for armor objects.
+    """
+    Typeclass for armor objects.
 
     Attributes:
-      toughness (int): primary defensive stat
+        toughness (int): primary defensive stat
     """
     toughness = 0
 

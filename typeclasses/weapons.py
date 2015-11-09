@@ -6,11 +6,12 @@ from typeclasses.items import Equippable
 
 
 class Weapon(Equippable):
-    """Typeclass for weapon objects.
+    """
+    Typeclass for weapon objects.
 
     Attributes:
-      damage (int): primary attack stat
-      handedness (int): indicates single- or double-handed weapon
+        damage (int): primary attack stat
+        handedness (int): indicates single- or double-handed weapon
     """
     slots = ['wield1', 'wield2']
     slot_operator = 'OR'
@@ -25,11 +26,12 @@ class Weapon(Equippable):
 
 
 class RangedWeapon(Weapon):
-    """Typeclass for thrown and single-handed ranged weapon objects.
+    """
+    Typeclass for thrown and single-handed ranged weapon objects.
 
     Attributes:
-      range (int): range of weapon in (units?)
-      ammunition Optional(str): type of ammunition used (thrown if None)
+        range (int): range of weapon in (units?)
+        ammunition Optional(str): type of ammunition used (thrown if None)
     """
     range = 0
     ammunition = None

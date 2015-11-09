@@ -6,11 +6,12 @@ from typeclasses.objects import Object
 
 
 class Item(Object):
-    """Typeclass for Items.
+    """
+    Typeclass for Items.
 
     Attributes:
-      value (int): monetary value of the item in CC
-      weight (int): weight of the item
+        value (int): monetary value of the item in CC
+        weight (int): weight of the item
     """
     value = 0
     weight = 0
@@ -26,12 +27,13 @@ class Item(Object):
 
 
 class Equippable(Item):
-    """Typeclass for equippable Items.
+    """
+    Typeclass for equippable Items.
 
     Attributes:
-      slots (str, list[str]): list of slots for equipping
-      multi_slot (bool): operator for multiple slots. False equips to
-          first available slot; True requires all listed slots available.
+        slots (str, list[str]): list of slots for equipping
+        multi_slot (bool): operator for multiple slots. False equips to
+            first available slot; True requires all listed slots available.
     """
     slots = None
     slot_operator = False
@@ -43,18 +45,20 @@ class Equippable(Item):
         self.db.slot_operator = self.slot_operator
 
     def at_equip(self, character):
-        """Hook called when an object is equipped by character.
+        """
+        Hook called when an object is equipped by character.
 
         Args:
-          character: the character equipping this object
+            character: the character equipping this object
         """
         pass
 
     def at_remove(self, character):
-        """Hook called when an object is removed from character equip.
+        """
+        Hook called when an object is removed from character equip.
 
         Args:
-          character: the character removing this object
+            character: the character removing this object
         """
         pass
 
