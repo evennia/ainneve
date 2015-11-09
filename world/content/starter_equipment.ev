@@ -29,8 +29,6 @@
 #
 #  Armor
 #
-@spawn "STARTER_SCO_CAPE"
-#
 @spawn "STARTER_SCO_RAGLAN"
 #
 @spawn "STARTER_SCO_GLOVES"
@@ -45,7 +43,7 @@
 #
 @spawn "STARTER_ARC_HEADBAND"
 #
-@spawn "STARTER_ARC_SHROUD"
+@spawn "STARTER_ARC_COWL"
 #
 @spawn "STARTER_ARC_WRISTBAND"
 #

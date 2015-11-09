@@ -134,16 +134,6 @@ STARTER_SCO_SHOES = \
      "value": 50,
      "toughness": 0}
 
-STARTER_SCO_CAPE = \
-    {"key": "a dark cape",
-     "aliases": ["cape"],
-     "typeclass": "typeclasses.armors.Shoulderwear",
-     "desc": "Made of flowing fabric, this cape can be used both to slink " +
-             "away stealthily and to protect yourself in battle.",
-     "weight": 3,
-     "value": 40,
-     "toughness": 1}
-
 STARTER_SCO_GLOVES = \
     {"key": "soft leather gloves",
      "aliases": ["gloves"],
@@ -157,11 +147,11 @@ STARTER_SCO_GLOVES = \
 
 ## Arcanist Vestments
 
-STARTER_ARC_SHROUD = \
-    {"key": "a novice shroud",
-     "aliases": ["shroud", "robes"],
-     "typeclass": "typeclasses.armors.Shroud",
-     "desc": "The soft grey cotton of this shroud has been infused with " +
+STARTER_ARC_COWL = \
+    {"key": "a novice cowl",
+     "aliases": ["cowl", "robes"],
+     "typeclass": "typeclasses.armors.Robes",
+     "desc": "The soft grey cotton of this cowl has been infused with " +
              "magical energy and pulses with potentialities almost " +
              "imperceptibly.",
      "weight": 4,

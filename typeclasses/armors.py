@@ -25,19 +25,9 @@ class Headwear(Armor):
     slots = ['head']
 
 
-class Shoulderwear(Armor):
-    """Typeclass for armor prototypes worn on the shoulders."""
-    slots = ['shoulders']
-
-
 class Breastplate(Armor):
     """Typeclass for sleeveless armor prototypes."""
     slots = ['torso']
-
-
-class UnderShirt():
-    """Typeclass for shirts worn beneath Breastplates."""
-    slots = ['arms']
 
 
 class SleevedShirt(Armor):
@@ -79,7 +69,7 @@ class Footwear(Armor):
     slots = ['feet']
 
 
-class Shroud(Armor):
+class Robes(Armor):
     """Typeclass for arcanist shroud prototypes."""
     slots = ['torso', 'arms', 'legs']
     multi_slot = True
