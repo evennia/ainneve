@@ -26,14 +26,14 @@ def at_initial_setup():
         {YDeveloper/Builder Resources{n
           * Issue tracking: https://github.com/evennia/ainneve/issues
           * Discussion list: https://groups.google.com/forum/?fromgroups#!categories/evennia/ainneve
-          * Annieve Wiki: https://github.com/evennia/ainneve/wiki
+          * Ainneve Wiki: https://github.com/evennia/ainneve/wiki
           * Evennia Developer IRC: http://webchat.freenode.net/?channels=evennia
 
         {YGetting Started{n
           As Player #1 you can use the {w@batchcmd{n or {w@batchcode{n commands to
           build components of Ainneve, or the entire world (once it has been created).
 
-          Build scripts are in the {wworld/content/{n directory and have {w*.ev{n or {w*.py{n extensions.
+          Build scripts are in the {wworld/build/{n directory and have {w*.ev{n or {w*.py{n extensions.
 
         """)
 

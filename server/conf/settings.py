@@ -34,6 +34,7 @@ HTTP_LOG_FILE = os.path.join(LOG_DIR, 'http_requests.log')
 
 # Other defaults
 PROTOTYPE_MODULES = ("world.prototypes",)
+BASE_BATCHPROCESS_PATHS = ['world.build']
 
 ######################################################################
 # Evennia Database config
