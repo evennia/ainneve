@@ -1,0 +1,85 @@
+#
+#  Spawns one copy of each piece of starter equipment
+#  and some tables for display
+#
+@spawn "STARTER_HAT"
+#
+@spawn "STARTER_SHIRT"
+#
+@spawn "STARTER_PANTS"
+#
+@spawn "STARTER_SHOES"
+#
+## Warrior Equipment
+#
+#  Armor
+#
+@spawn "STARTER_WAR_HELM"
+#
+@spawn "STARTER_WAR_BRIGANDINE"
+#
+@spawn "STARTER_WAR_GAUNTLETS"
+#
+@spawn "STARTER_WAR_GREAVES"
+#
+@spawn "STARTER_WAR_BOOTS"
+#
+#
+## Scout Equipment
+#
+#  Armor
+#
+@spawn "STARTER_SCO_RAGLAN"
+#
+@spawn "STARTER_SCO_GLOVES"
+#
+@spawn "STARTER_SCO_LEGGINGS"
+#
+@spawn "STARTER_SCO_SHOES"
+#
+## Arcanist Equipment
+#
+#  Wearables
+#
+@spawn "STARTER_ARC_HEADBAND"
+#
+@spawn "STARTER_ARC_COWL"
+#
+@spawn "STARTER_ARC_WRISTBAND"
+#
+@spawn "STARTER_ARC_BELT"
+#
+@spawn "STARTER_ARC_FOOTWRAPS"
+#
+#
+## Weapons
+#
+## Misc
+#
+@spawn "HUNTING_KNIFE"
+#
+## Warrior
+#
+@spawn "IRON_HAND_AXE"
+#
+@spawn "IRON_THROWING_AXE"
+#
+@spawn "IRON_LONGSWORD"
+#
+@spawn "IRON_MAUL"
+#
+## Scout
+#
+@spawn "LEATHER_WHIP"
+#
+@spawn "IRON_RAPIER"
+#
+@spawn "MAPLE_SHORT_BOW"
+#
+@spawn "LEATHER_BUCKLER"
+#
+## Arcanist
+#
+@spawn "MAPLE_STAFF"
+#
+

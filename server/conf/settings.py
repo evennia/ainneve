@@ -33,7 +33,8 @@ PORTAL_LOG_FILE = os.path.join(LOG_DIR, 'portal.log')
 HTTP_LOG_FILE = os.path.join(LOG_DIR, 'http_requests.log')
 
 # Other defaults
-PROTOTYPE_MODULES = ("world.prototypes",)
+PROTOTYPE_MODULES = ("world.content.prototypes.wearables",
+                     "world.content.prototypes.combat")
 
 ######################################################################
 # Evennia Database config
