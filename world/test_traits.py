@@ -63,33 +63,30 @@ class TraitExtraPropsTestCase(TestCase):
     def tearDown(self):
         self.trait = None
 
-    def test_extra_props_getattr(self):
-        """extra properties are gettable as attributes"""
+    def test_extra_props_get(self):
+        """test that extra properties are gettable"""
+        # access via getattr
         self.assertTrue(self.trait.preloaded)
-
-    def test_extra_props_getitem(self):
-        """extra properties are gettable as dict keys"""
+        # access via getitem
         self.assertTrue(self.trait['preloaded'])
 
-    def test_extra_props_setattr(self):
-        """extra properties are settable as attributes"""
+    def test_extra_props_set(self):
+        """test that extra properties are settable"""
+        # set via setattr
         self.trait.skill_points = 2
         self.assertIn('skill_points', self.trait.extra)
-
-    def test_extra_props_setitem(self):
-        """extra properties are settable as dict keys"""
+        # set via setitem
         self.trait['skill_points'] = 2
         self.assertIn('skill_points', self.trait.extra)
 
-    def test_extra_props_delattr(self):
-        """extra properties are deletable as attributes"""
+    def test_extra_props_del(self):
+        """test that extra properties are deletable"""
+        # delete via delattr
         del self.trait.preloaded
         self.assertNotIn('preloaded', self.trait.extra)
         with self.assertRaises(AttributeError):
              x = self.trait.preloaded
-
-    def test_extra_props_delitem(self):
-        """extra properties are deletable as dict keys"""
+        # delete via delitem
         del self.trait['preloaded']
         self.assertNotIn('preloaded', self.trait.extra)
         with self.assertRaises(KeyError):
@@ -120,49 +117,45 @@ class TraitOperatorsTestCase(TestCase):
         self.assertEqual(+self.st, 8)
 
     def test_add_traits(self):
-        """addition of two `Trait` objects"""
+        """test addition of `Trait` objects"""
+        # two Trait objects
         self.assertEqual(self.st + self.at, 12)
-
-    def test_add_numeric(self):
-        """addition of `Trait` and numeric"""
+        # Trait and numeric
         self.assertEqual(self.st + 1, 9)
         self.assertEqual(1 + self.st, 9)
 
     def test_sub_traits(self):
-        """subtraction of two `Trait` objects"""
+        """test subtraction of `Trait` objects"""
+        # two Trait objects
         self.assertEqual(self.st - self.at, 4)
-
-    def test_sub_numeric(self):
-        """Subtraction of `Trait` and numeric"""
+        # Trait and numeric
         self.assertEqual(self.st - 1, 7)
         self.assertEqual(10 - self.st, 2)
 
     def test_mul_traits(self):
-        """multiplication of two `Trait` objects"""
+        """test multiplication of `Trait` objects"""
+        # between two Traits
         self.assertEqual(self.st * self.at, 32)
-
-    def test_mul_numeric(self):
-        """multiplication of `Trait` and numeric"""
+        # between Trait and numeric
         self.assertEqual(self.at * 4, 16)
         self.assertEqual(4 * self.at, 16)
 
-    def test_floordiv_traits(self):
-        """floor division of two `Trait` objects"""
+    def test_floordiv(self):
+        """test floor division of `Trait` objects"""
+        # between two Traits
         self.assertEqual(self.st // self.at, 2)
-
-    def test_floordiv_numeric(self):
-        """floor division of `Trait` and numeric"""
+        # between Trait and numeric
         self.assertEqual(self.st // 2, 4)
         self.assertEqual(18 // self.st, 2)
 
     def test_comparisons_traits(self):
-        """equality comparison between `Trait` objects"""
+        """test equality comparison between `Trait` objects"""
         self.assertNotEqual(self.st, self.at)
         self.assertLess(self.at, self.st)
         self.assertLessEqual(self.at, self.st)
         self.assertGreater(self.st, self.at)
         self.assertGreaterEqual(self.st, self.at)
-        # make str.actual = atk.actual modding atk
+        # make st.actual = at.actual by modding at
         self.at.mod = 4
         self.assertEqual(self.st, self.at)
         self.assertGreaterEqual(self.st, self.at)
@@ -423,12 +416,18 @@ class TraitFactoryTestCase(TestCase):
         self._traits, self.traits = None, None
 
     def test_access_by_attr(self):
-        """ensure `TraitFactory` access as attr"""
+        """test `Trait` access by key"""
+        # as attribute
         self.assertIsInstance(self.traits.str, Trait)
-
-    def test_access_by_dictkey(self):
-        """ensure `TraitFactory` access ass dict key"""
+        # as dict key
         self.assertIsInstance(self.traits['str'], Trait)
+
+    def test_assignment_error(self):
+        """ensure attempting to assign to a Trait key on a TraitFactory fails."""
+        with self.assertRaises(TraitException):
+            self.traits.str = 5
+        with self.assertRaises(TraitException):
+            self.traits['str'] = 5
 
     def test_defaults_static(self):
         """check defaults for static trait optional parameters in config"""
@@ -465,12 +464,11 @@ class TraitFactoryTestCase(TestCase):
         self.assertEqual(hp.max, 0)
         self.assertEqual(hp.extra, [])
 
-    def test_missing_name(self):
-        """ensure the trait config data includes 'name'"""
+    def test_config_errors(self):
+        """test for required keys in trait config data"""
+        # missing name
         with self.assertRaises(TraitException):
             bad1 = self.traits.bad1
-
-    def test_missing_type(self):
-        """ensure the trait config data includes 'type'"""
+        # missing type
         with self.assertRaises(TraitException):
             bad2 = self.traits.bad2

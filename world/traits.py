@@ -298,9 +298,24 @@ class TraitFactory(object):
             self.cache[trait] = Trait(data)
         return self.cache[trait]
 
+    def __setattr__(self, key, value):
+        """Returns error message if trait objects are assigned directly."""
+        if key in ('dbobj', 'cache'):
+            super(TraitFactory, self).__setattr__(key, value)
+        else:
+            raise TraitException(
+                "Trait object not settable. Assign one of "
+                "`{0}.base`, `{0}.mod`, or `{0}.current` ".format(key) +
+                "properties instead."
+            )
+
     def __getitem__(self, item):
         """Returns `Trait` instances accessed as dict keys."""
         return self.__getattr__(item)
+
+    def __setitem__(self, key, value):
+        """Returns error message if trait objects are assigned directly."""
+        return self.__setattr__(key, value)
 
 @total_ordering
 class Trait(object):
