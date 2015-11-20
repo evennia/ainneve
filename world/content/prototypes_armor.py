@@ -3,7 +3,7 @@ Prototype module containing armor.
 """
 
 from evennia.utils.evtable import fill
-from world.money import CC, SC, CC
+from world.economy import CC, SC, CC
 
 # Armor
 
