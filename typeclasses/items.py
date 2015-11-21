@@ -26,16 +26,10 @@ class Item(Object):
         self.db.weight = float(self.weight)
 
     def at_get(self, getter):
-        super(Armor, self).at_get(getter)
-        # TODO: once traits are finarized, something like
-        # getter.db.carrying += self.db.weight
-        pass
+        getter.traits.ENC.current += self.db.weight
 
     def at_drop(self, dropper):
-        super(Armor, self).at_drop(dropper)
-        # TODO: once traits are finarized, something like
-        # getter.db.carrying -= self.db.weight
-        pass
+        dropper.traits.ENC.current -= self.db.weight
 
 
 class Equippable(Item):

@@ -19,16 +19,10 @@ class Armor(Equippable):
         self.db.toughness = self.toughness
 
     def at_equip(self, character):
-        super(Armor, self).at_equip(character)
-        # TODO: once traits are finalized, something like
-        # character.db.traits.defense.mod += self.db.toughness
-        pass
+        character.traits.DEF.mod += self.db.toughness
 
     def at_remove(self, character):
-        super(Armor, self).at_remove(character)
-        # TODO: once traits are finalized, something like
-        # character.db.traits.defense.mod -= self.db.toughness
-        pass
+        character.traits.DEF.mod -= self.db.toughness
 
 
 class Shield(Armor):

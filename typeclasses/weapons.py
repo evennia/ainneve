@@ -25,16 +25,10 @@ class Weapon(Equippable):
         self.db.handedness = self.handedness
 
     def at_equip(self, character):
-        super(Armor, self).at_equip(character)
-        # TODO: once traits are finalized, something like
-        # character.db.traits.attack = character.db.traits.strength + self.db.damage
-        pass
+        character.traits.ATKM.mod += self.db.damage
 
     def at_remove(self, character):
-        super(Armor, self).at_remove(character)
-        # TODO: once traits are finalized, something like
-        # character.db.traits.attack = character.db.traits.strength
-        pass
+        character.traits.ATKM.mod -= self.db.damage
 
 class RangedWeapon(Weapon):
     """
@@ -53,16 +47,10 @@ class RangedWeapon(Weapon):
         self.db.ammunition = self.ammunition
 
     def at_equip(self, character):
-        super(Armor, self).at_equip(character)
-        # TODO: once traits are finalized, something like
-        # character.db.traits.attack = character.db.traits.perception + self.db.damage
-        pass
+        character.traits.ATKR += self.db.damage
 
     def at_remove(self, character):
-        super(Armor, self).at_remove(character)
-        # TODO: once traits are finalized, something like
-        # character.db.traits.attack = character.db.traits.perception
-        pass
+        character.traits.ATKR -= self.db.damage
 
 
 class TwoHanded(object):
