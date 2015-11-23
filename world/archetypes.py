@@ -98,7 +98,7 @@ def validate_primary_traits(traits):
         (tuple[bool, str]): first value is whether the traits are valid,
             second value is error message
     """
-    total = sum(+traits[t] for t in PRIMARY_TRAITS)
+    total = sum(traits[t].base for t in PRIMARY_TRAITS)
     if total > TOTAL_PRIMARY_POINTS:
         return False, 'Too many trait points allocated.'
     if total < TOTAL_PRIMARY_POINTS:
@@ -115,22 +115,25 @@ def calculate_secondary_traits(traits):
         populated.
     """
     # secondary traits
-    traits.HP.base = +traits.VIT
-    traits.SP.base = +traits.VIT
+    traits.HP.base = traits.VIT.actual
+    traits.SP.base = traits.VIT.actual
     # save rolls
-    traits.FORT.base = +traits.VIT
-    traits.REFL.base = +traits.DEX
-    traits.WILL.base = +traits.INT
+    traits.FORT.base = traits.VIT.actual
+    traits.REFL.base = traits.DEX.actual
+    traits.WILL.base = traits.INT.actual
     # combat
-    traits.ATKM.base = +traits.STR
-    traits.ATKR.base = +traits.PER
-    traits.ATKU.base = +traits.DEX
-    traits.DEF.base = +traits.DEX
+    traits.ATKM.base = traits.STR.actual
+    traits.ATKR.base = traits.PER.actual
+    traits.ATKU.base = traits.DEX.actual
+    traits.DEF.base = traits.DEX.actual
+    # mana
+    traits.BM.max = 10 if traits.MAG.base > 0 else 0
+    traits.WM.max = 10 if traits.MAG.base > 0 else 0
     # misc
     traits.STR.carry_factor = 10
     traits.STR.lift_factor = 20
     traits.STR.push_factor = 40
-    traits.ENC.max = traits.STR.lift_factor * traits.STR
+    traits.ENC.max = traits.STR.lift_factor * traits.STR.actual
 
 
 def load_archetype(name):
@@ -204,8 +207,8 @@ class Archetype(object):
             'VIT': {'type': 'trait', 'base': 1, 'mod': 0, 'name': 'Vitality'},
             # magic
             'MAG': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Magic'},
-            'BM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 10, 'name': 'Black Mana'},
-            'WM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 10, 'name': 'White Mana'},
+            'BM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 0, 'name': 'Black Mana'},
+            'WM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 0, 'name': 'White Mana'},
             # secondary
             'HP': {'type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Health'},
             'SP': {'type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Stamina'},

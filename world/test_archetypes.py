@@ -17,13 +17,13 @@ class ArchetypeTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.archetype, 'Warrior')
         self.assertEqual(set(archetypes.ALL_TRAITS),
                          set(self.char1.db.traits.keys()))
-        self.assertEqual(+self.char1.traits.STR, 6)
-        self.assertEqual(+self.char1.traits.PER, 1)
-        self.assertEqual(+self.char1.traits.INT, 1)
-        self.assertEqual(+self.char1.traits.DEX, 4)
-        self.assertEqual(+self.char1.traits.CHA, 4)
-        self.assertEqual(+self.char1.traits.VIT, 6)
-        self.assertEqual(+self.char1.traits.MAG, 0)
+        self.assertEqual(self.char1.traits.STR.actual, 6)
+        self.assertEqual(self.char1.traits.PER.actual, 1)
+        self.assertEqual(self.char1.traits.INT.actual, 1)
+        self.assertEqual(self.char1.traits.DEX.actual, 4)
+        self.assertEqual(self.char1.traits.CHA.actual, 4)
+        self.assertEqual(self.char1.traits.VIT.actual, 6)
+        self.assertEqual(self.char1.traits.MAG.actual, 0)
 
     def test_apply_scout(self):
         """confirm the Scout archetype is initialized correctly"""
@@ -31,13 +31,13 @@ class ArchetypeTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.archetype, 'Scout')
         self.assertEqual(set(archetypes.ALL_TRAITS),
                          set(self.char1.db.traits.keys()))
-        self.assertEqual(+self.char1.traits.STR, 4)
-        self.assertEqual(+self.char1.traits.PER, 6)
-        self.assertEqual(+self.char1.traits.INT, 6)
-        self.assertEqual(+self.char1.traits.DEX, 4)
-        self.assertEqual(+self.char1.traits.CHA, 1)
-        self.assertEqual(+self.char1.traits.VIT, 1)
-        self.assertEqual(+self.char1.traits.MAG, 0)
+        self.assertEqual(self.char1.traits.STR.actual, 4)
+        self.assertEqual(self.char1.traits.PER.actual, 6)
+        self.assertEqual(self.char1.traits.INT.actual, 6)
+        self.assertEqual(self.char1.traits.DEX.actual, 4)
+        self.assertEqual(self.char1.traits.CHA.actual, 1)
+        self.assertEqual(self.char1.traits.VIT.actual, 1)
+        self.assertEqual(self.char1.traits.MAG.actual, 0)
 
     def test_apply_arcanist(self):
         """confirm the Arcanist archetype is initialized correctly"""
@@ -45,13 +45,13 @@ class ArchetypeTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.archetype, 'Arcanist')
         self.assertEqual(set(archetypes.ALL_TRAITS),
                          set(self.char1.db.traits.keys()))
-        self.assertEqual(+self.char1.traits.STR, 1)
-        self.assertEqual(+self.char1.traits.PER, 4)
-        self.assertEqual(+self.char1.traits.INT, 6)
-        self.assertEqual(+self.char1.traits.DEX, 1)
-        self.assertEqual(+self.char1.traits.CHA, 4)
-        self.assertEqual(+self.char1.traits.VIT, 1)
-        self.assertEqual(+self.char1.traits.MAG, 6)
+        self.assertEqual(self.char1.traits.STR.actual, 1)
+        self.assertEqual(self.char1.traits.PER.actual, 4)
+        self.assertEqual(self.char1.traits.INT.actual, 6)
+        self.assertEqual(self.char1.traits.DEX.actual, 1)
+        self.assertEqual(self.char1.traits.CHA.actual, 4)
+        self.assertEqual(self.char1.traits.VIT.actual, 1)
+        self.assertEqual(self.char1.traits.MAG.actual, 6)
 
     def test_apply_warrior_scout(self):
         """confirm the Warrior-Scout archetype is initialized correctly"""
@@ -60,13 +60,13 @@ class ArchetypeTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.archetype, 'Warrior-Scout')
         self.assertEqual(set(archetypes.ALL_TRAITS),
                          set(self.char1.db.traits.keys()))
-        self.assertEqual(+self.char1.traits.STR, 5)
-        self.assertEqual(+self.char1.traits.PER, 3)
-        self.assertEqual(+self.char1.traits.INT, 3)
-        self.assertEqual(+self.char1.traits.DEX, 4)
-        self.assertEqual(+self.char1.traits.CHA, 2)
-        self.assertEqual(+self.char1.traits.VIT, 3)
-        self.assertEqual(+self.char1.traits.MAG, 0)
+        self.assertEqual(self.char1.traits.STR.actual, 5)
+        self.assertEqual(self.char1.traits.PER.actual, 3)
+        self.assertEqual(self.char1.traits.INT.actual, 3)
+        self.assertEqual(self.char1.traits.DEX.actual, 4)
+        self.assertEqual(self.char1.traits.CHA.actual, 2)
+        self.assertEqual(self.char1.traits.VIT.actual, 3)
+        self.assertEqual(self.char1.traits.MAG.actual, 0)
         # reset and test opposite order
         archetypes.apply_archetype(self.char1, 'scout', reset=True)
         archetypes.apply_archetype(self.char1, 'warrior')
@@ -79,13 +79,13 @@ class ArchetypeTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.archetype, 'Warrior-Arcanist')
         self.assertEqual(set(archetypes.ALL_TRAITS),
                          set(self.char1.db.traits.keys()))
-        self.assertEqual(+self.char1.traits.STR, 3)
-        self.assertEqual(+self.char1.traits.PER, 2)
-        self.assertEqual(+self.char1.traits.INT, 3)
-        self.assertEqual(+self.char1.traits.DEX, 2)
-        self.assertEqual(+self.char1.traits.CHA, 4)
-        self.assertEqual(+self.char1.traits.VIT, 3)
-        self.assertEqual(+self.char1.traits.MAG, 3)
+        self.assertEqual(self.char1.traits.STR.actual, 3)
+        self.assertEqual(self.char1.traits.PER.actual, 2)
+        self.assertEqual(self.char1.traits.INT.actual, 3)
+        self.assertEqual(self.char1.traits.DEX.actual, 2)
+        self.assertEqual(self.char1.traits.CHA.actual, 4)
+        self.assertEqual(self.char1.traits.VIT.actual, 3)
+        self.assertEqual(self.char1.traits.MAG.actual, 3)
         # reset and test opposite order
         archetypes.apply_archetype(self.char1, 'arcanist', reset=True)
         archetypes.apply_archetype(self.char1, 'warrior')
@@ -98,13 +98,13 @@ class ArchetypeTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.archetype, 'Arcanist-Scout')
         self.assertEqual(set(archetypes.ALL_TRAITS),
                          set(self.char1.db.traits.keys()))
-        self.assertEqual(+self.char1.traits.STR, 2)
-        self.assertEqual(+self.char1.traits.PER, 5)
-        self.assertEqual(+self.char1.traits.INT, 6)
-        self.assertEqual(+self.char1.traits.DEX, 2)
-        self.assertEqual(+self.char1.traits.CHA, 2)
-        self.assertEqual(+self.char1.traits.VIT, 1)
-        self.assertEqual(+self.char1.traits.MAG, 3)
+        self.assertEqual(self.char1.traits.STR.actual, 2)
+        self.assertEqual(self.char1.traits.PER.actual, 5)
+        self.assertEqual(self.char1.traits.INT.actual, 6)
+        self.assertEqual(self.char1.traits.DEX.actual, 2)
+        self.assertEqual(self.char1.traits.CHA.actual, 2)
+        self.assertEqual(self.char1.traits.VIT.actual, 1)
+        self.assertEqual(self.char1.traits.MAG.actual, 3)
         # reset and test opposite order
         archetypes.apply_archetype(self.char1, 'scout', reset=True)
         archetypes.apply_archetype(self.char1, 'arcanist')
@@ -141,7 +141,7 @@ class PublicFunctionsTestCase(EvenniaTest):
         self.char1.traits.CHA.base += 1
         self.char1.traits.VIT.base += 2
         is_valid, errmsg = archetypes.validate_primary_traits(self.char1.traits)
-        self.assertEqual(sum(+self.char1.traits[t]
+        self.assertEqual(sum(self.char1.traits[t].actual
                              for t in archetypes.PRIMARY_TRAITS), 30)
         self.assertTrue(is_valid)
         # smartest warrior ever
@@ -183,16 +183,26 @@ class PublicFunctionsTestCase(EvenniaTest):
         self.char1.traits.DEX.base += 2
         self.char1.traits.VIT.base += 3
         archetypes.calculate_secondary_traits(self.char1.traits)
-        self.assertEqual(+self.char1.traits.HP, 9)
-        self.assertEqual(+self.char1.traits.SP, 9)
-        self.assertEqual(+self.char1.traits.FORT, 9)
-        self.assertEqual(+self.char1.traits.REFL, 6)
-        self.assertEqual(+self.char1.traits.WILL, 1)
-        self.assertEqual(+self.char1.traits.ATKM, 9)
-        self.assertEqual(+self.char1.traits.ATKR, 1)
-        self.assertEqual(+self.char1.traits.ATKU, 6)
-        self.assertEqual(+self.char1.traits.DEF, 6)
+        self.assertEqual(self.char1.traits.HP.actual, 9)
+        self.assertEqual(self.char1.traits.SP.actual, 9)
+        self.assertEqual(self.char1.traits.BM.actual, 0)
+        self.assertEqual(self.char1.traits.WM.actual, 0)
+        self.assertEqual(self.char1.traits.BM.max, 0)
+        self.assertEqual(self.char1.traits.WM.max, 0)
+        self.assertEqual(self.char1.traits.FORT.actual, 9)
+        self.assertEqual(self.char1.traits.REFL.actual, 6)
+        self.assertEqual(self.char1.traits.WILL.actual, 1)
+        self.assertEqual(self.char1.traits.ATKM.actual, 9)
+        self.assertEqual(self.char1.traits.ATKR.actual, 1)
+        self.assertEqual(self.char1.traits.ATKU.actual, 6)
+        self.assertEqual(self.char1.traits.DEF.actual, 6)
         self.assertEqual(self.char1.traits.ENC.max, 180)
+        # if any allocated to MAG, WM and BM have max=10
+        self.char1.traits.STR.base -= 1
+        self.char1.traits.MAG.base += 1
+        archetypes.calculate_secondary_traits(self.char1.traits)
+        self.assertEqual(self.char1.traits.BM.max, 10)
+        self.assertEqual(self.char1.traits.WM.max, 10)
 
     def test_load_archetype(self):
         """confirm `load_archetype` returns correct class instance"""

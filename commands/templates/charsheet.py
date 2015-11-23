@@ -14,14 +14,14 @@ FORM = """
   {YName{n: xxxxxxxxxxxxxAxxxxxxxxxxxxxx     {YXP{n: xxCxx / xxxxDxxxx   {YLevel{n: xEx  |
   {YArchetype{n: xxxxxxxxxxxBxxxxxxxxxxx                                         |
                                        +-------------------------------------|
-  oooooooooooooooooooooooooooooooooo   | {YPrimary Traits   {CStrength{n    : xFx  |
-  ooooooooooooooooo1oooooooooooooooo   | ~~~~~~~~~~~~~~   {CPerception{n  : xGx  |
-  oooooooooooooooooooooooooooooooooo   |                  {CIntelligence{n: xHx  |
+  ooooooooooooooooooooooooooooooooooo  | {YPrimary Traits   {CStrength{n    : xFx  |
+  ooooooooooooooooo1ooooooooooooooooo  | ~~~~~~~~~~~~~~   {CPerception{n  : xGx  |
+  ooooooooooooooooooooooooooooooooooo  |                  {CIntelligence{n: xHx  |
                                        |                  {CDexterity{n   : xIx  |
   {YDescription{n                          |                  {CCharisma{n    : xJx  |
   ~~~~~~~~~~~                          |                  {CVitality{n    : xKx  |
-  ooooooooooooooooo2oooooooooooooooo   |                  {CMagic{n       : xLx  |
-  oooooooooooooooooooooooooooooooooo   |-------------------------------------|
+  ooooooooooooooooo2ooooooooooooooooo  |                  {CMagic{n       : xLx  |
+  ooooooooooooooooooooooooooooooooooo  |-------------------------------------|
                                        | {YSave Rolls       {CFortitude{n   : xMx  |
   {YEncumbrance{n                          | ~~~~~~~~~~       {CReflex{n      : xNx  |
   ~~~~~~~~~~~                          |                  {CWill{n        : xOx  |

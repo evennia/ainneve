@@ -36,31 +36,33 @@ class CmdSheet(MuxCommand):
         Handle displaying status.
         """
         form = EvForm('commands.templates.charsheet', align='r')
+        tr = self.caller.traits
+
         fields = {
             'A': self.caller.name,
             'B': self.caller.db.archetype,
-            'C': +self.caller.traits.XP,
-            'D': self.caller.traits.XP.level_boundaries[+self.caller.traits.LV],
-            'E': +self.caller.traits.LV,
-            'F': +self.caller.traits.STR,
-            'G': +self.caller.traits.PER,
-            'H': +self.caller.traits.INT,
-            'I': +self.caller.traits.DEX,
-            'J': +self.caller.traits.CHA,
-            'K': +self.caller.traits.VIT,
-            'L': +self.caller.traits.MAG,
-            'M': +self.caller.traits.FORT,
-            'N': +self.caller.traits.REFL,
-            'O': +self.caller.traits.WILL,
-            'P': +self.caller.traits.ATKM,
-            'Q': +self.caller.traits.ATKR,
-            'R': +self.caller.traits.ATKU,
-            'S': +self.caller.traits.DEF,
-            'T': "{:+d}".format(+self.caller.traits.PP),
-            'U': +self.caller.traits.ENC,
-            'V': self.caller.traits.ENC.max,
-            'W': self.caller.traits.MV.mod,
-            'X': +self.caller.traits.MV,
+            'C': tr.XP.actual,
+            'D': tr.XP.level_boundaries[tr.LV.actual],
+            'E': tr.LV.actual,
+            'F': tr.STR.actual,
+            'G': tr.PER.actual,
+            'H': tr.INT.actual,
+            'I': tr.DEX.actual,
+            'J': tr.CHA.actual,
+            'K': tr.VIT.actual,
+            'L': tr.MAG.actual,
+            'M': tr.FORT.actual,
+            'N': tr.REFL.actual,
+            'O': tr.WILL.actual,
+            'P': tr.ATKM.actual,
+            'Q': tr.ATKR.actual,
+            'R': tr.ATKU.actual,
+            'S': tr.DEF.actual,
+            'T': "{:+d}".format(tr.PP.actual),
+            'U': tr.ENC.actual,
+            'V': tr.ENC.max,
+            'W': tr.MV.mod,
+            'X': tr.MV.actual,
         }
         bold = lambda v: "{{w{}{{n".format(v)
         form.map({k: bold(v) for k, v in fields.iteritems()})
@@ -70,13 +72,15 @@ class CmdSheet(MuxCommand):
                        table=[[self.caller.long_desc]],
                        border=None)
 
-        gauges = EvTable("{CHP{n", "{CSP{n", "{CBM{n", "{CWM{n",
-                         table=[[bold(+self.caller.traits.HP)],
-                                [bold(+self.caller.traits.SP)],
-                                [bold(+self.caller.traits.BM)],
-                                [bold(+self.caller.traits.WM)]],
-                         align='c',
-                         border="incols")
+        gauges = EvTable(
+            "{CHP{n", "{CSP{n", "{CBM{n", "{CWM{n",
+            table=[["{} / {}".format(bold(tr.HP.actual), bold(tr.HP.max))],
+                   ["{} / {}".format(bold(tr.SP.actual), bold(tr.SP.max))],
+                   ["{} / {}".format(bold(tr.BM.actual), bold(tr.BM.max))],
+                   ["{} / {}".format(bold(tr.WM.actual), bold(tr.WM.max))]],
+            align='c',
+            border="incols"
+        )
 
         form.map(tables={1: gauges, 2: desc})
 
@@ -100,11 +104,12 @@ class CmdTraits(MuxCommand):
     key = "traits"
     aliases = ["trait", "tr"]
     locks = "cmd:all()"
-    arg_regex = r"\s(?:pri|sec|sav|com|enc|car)|"
+    arg_regex = r"\s.+|"
 
     def func(self):
         from world import archetypes
         table = None
+        tr = self.caller.traits
         if self.args.startswith('pri'):
             title = 'Primary Traits'
             traits = archetypes.PRIMARY_TRAITS
@@ -119,24 +124,26 @@ class CmdTraits(MuxCommand):
             traits = archetypes.COMBAT_TRAITS
         elif self.args.startswith('enc') or self.args.startswith('car'):
             title = 'Encumbrance'
-            traits = [["{{C{}{{n".format(self.caller.traits.ENC.name),
+            traits = [["{{C{}{{n".format(tr.ENC.name),
                        "{CEncumbrance Penalty{n",
-                       "{{C{}{{n".format(self.caller.traits.MV.name)],
-                      ["{{w{}{{n / {{w{}{{n".format(+self.caller.traits.ENC,
-                                                    self.caller.traits.ENC.max),
-                       "{{w{:+d}{{n".format(self.caller.traits.MV.mod),
-                       "{{w{}{{n".format(+self.caller.traits.MV)]]
+                       "{{C{}{{n".format(tr.MV.name)],
+                      ["{{w{}{{n / {{w{}{{n".format(tr.ENC.actual,
+                                                    tr.ENC.max),
+                       "{{w{:+d}{{n".format(tr.MV.mod),
+                       "{{w{}{{n".format(tr.MV.actual)]]
 
             table = EvTable(header=False, table=traits)
         else:
             self.caller.msg("Usage: traits <traitgroup>")
             return
         if not table:
-            table = EvTable(header=False,
-                            table=[["{{C{}{{n".format(self.caller.traits[t].name)
-                                    for t in traits],
-                                   ["{{w{}{{n".format(+self.caller.traits[t])
-                                    for t in traits]])
+            table = EvTable(
+                header=False,
+                table=[["{{C{}{{n".format(tr[t].name)
+                        for t in traits],
+                       ["{{w{}{{n".format(tr[t].actual)
+                        for t in traits]]
+            )
 
         self.caller.msg("{{R[ {{Y{}{{n {{R]{{n".format(title))
         self.caller.msg(unicode(table))

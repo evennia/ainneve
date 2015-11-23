@@ -58,8 +58,7 @@ Example:
     * Gauge - Modified counter type modeling a refillable "gauge".
 
     All traits have a read-only `actual` property that will report the trait's
-    actual value. In addition to normal attribute notation, `Trait` objects
-    support the unary `+` operator as a shortcut to access this property.
+    actual value.
 
     Example:
 
@@ -67,12 +66,7 @@ Example:
         >>> hp = obj.traits.hp
         >>> hp.actual
         100
-        >>> +hp
-        100
         ```
-
-    `Trait` objects support rich comparisons and the four basic arithmetic
-    operators - addition, subtraction, multiplication, and floor division.
 
     They also support storing arbitrary data via either dictionary key or
     attribute syntax. Storage of arbitrary data in this way has the same
@@ -121,13 +115,6 @@ Example:
             >>> strength
             Trait({'name': 'Strength', 'type': 'trait', 'base': 5, 'mod': 0,
             'min': None, 'max': None, 'extra': {'newkey': 'newvalue'}})
-            >>> # Unary `+` shortcut
-            >>> +strength
-            5
-            >>> (strength + 4, 10 - strength, strength * 2, 24 // strength)
-            (9, 5, 10, 4)
-            >>> strength > 5, 10 >= strength
-            False, True
             ```
 
     Counter Trait Configuration
