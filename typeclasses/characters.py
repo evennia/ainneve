@@ -67,14 +67,14 @@ class Character(Object):
         """
         self.execute_cmd('look')
 
-    def at_pre_puppet(self, player, sessid=None):
+    def at_pre_puppet(self, player, session=None):
         """
         This implementation recovers the character again after being "stowed
         away" to the `None` location in `at_post_unpuppet`.
 
         Args:
             player (Player): This is the connecting player.
-            sessid (int): Session id controlling the connection.
+            session (Session): Session controlling the connection.
 
         """
         if self.db.prelogout_location:
@@ -89,7 +89,7 @@ class Character(Object):
             self.location.at_object_receive(self, self.location)
         else:
             player.msg("{r%s has no location and no home is set.{n" % self,
-                       sessid=sessid)
+                       sessid=session)
 
     def at_post_puppet(self):
         """
@@ -103,7 +103,7 @@ class Character(Object):
             self.location.msg_contents("%s has entered the game." % self.name,
                                        exclude=[self])
 
-    def at_post_unpuppet(self, player, sessid=None):
+    def at_post_unpuppet(self, player, session=None):
         """
         We stove away the character when the player goes ooc/logs off,
         otherwise the character object will remain in the room also
@@ -112,7 +112,7 @@ class Character(Object):
         Args:
             player (Player): The player object that just disconnected
                 from this object.
-            sessid (int): Session id controlling the connection that
+            session (Session): Session controlling the connection that
                 just disconnected.
         """
         if self.location:  # have to check, in case of multiple connections
