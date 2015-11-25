@@ -25,7 +25,6 @@ class CmdEquip(Command):
       equip
 
     Show your current equipment.
-
     """
     key = "equip"
     aliases = ["eq"]

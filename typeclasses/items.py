@@ -27,9 +27,13 @@ class Item(Object):
 
     def at_get(self, getter):
         getter.traits.ENC.current += self.db.weight
+        getter.traits.MV.mod = \
+            -(getter.traits.ENC.actual // (2 * getter.traits.STR.actual))
 
     def at_drop(self, dropper):
         dropper.traits.ENC.current -= self.db.weight
+        dropper.traits.MV.mod = \
+            -(dropper.traits.ENC.actual // (2 * dropper.traits.STR.actual))
 
 
 class Equippable(Item):
