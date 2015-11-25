@@ -69,7 +69,7 @@ class Character(Object):
         """
         self.execute_cmd('look')
 
-    def at_pre_puppet(self, player, sessid=None):
+    def at_pre_puppet(self, player, session=None):
         """
         This implementation recovers the character again after being "stowed
         away" to the `None` location in `at_post_unpuppet`.
@@ -105,7 +105,7 @@ class Character(Object):
             self.location.msg_contents("%s has entered the game." % self.name,
                                        exclude=[self])
 
-    def at_post_unpuppet(self, player, sessid=None):
+    def at_post_unpuppet(self, player, session=None):
         """
         We stove away the character when the player goes ooc/logs off,
         otherwise the character object will remain in the room also
@@ -124,7 +124,9 @@ class Character(Object):
             self.location = None
 
     def at_object_creation(self):
+
         self.db.race = None
+        self.db.focus = None
         self.db.archetype = None
 
         # Primary Traits
@@ -258,18 +260,3 @@ class Character(Object):
             return valid_stat
         else:
             return None
-
-    def become_race(self, race):
-        """
-        This method applies a race to the character.
-
-        Args:
-            race (str): Class path for the race
-
-        Returns:
-            bool: True if successful, False if otherwise
-        """
-
-        # set the race
-        self.db.race = races.load_race(race)
-        self.db.slots = self.db.race.slots
