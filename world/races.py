@@ -156,15 +156,15 @@ def _format_bonuses(bonuses):
     if len(bonuses) > 2:
         output = ", ".join(
                     "{{w{:+1}{{n to {{C{}{{n".format(bonuses[t],
-                                                     _ARC.base[t]['name'])
+                                                     _ARC.traits[t]['name'])
                     for t in traits[:-1])
         output += ", and {{w{:+1}{{n to {{C{}{{n".format(
                       bonuses[traits[-1]],
-                      _ARC.base[traits[-1]]['name'])
+                      _ARC.traits[traits[-1]]['name'])
     else:
         output = " and ".join(
                     "{{w{:+1}{{n to {{C{}{{n".format(bonuses[t],
-                                                     _ARC.base[t]['name'])
+                                                     _ARC.traits[t]['name'])
                     for t in traits)
     return output
 
@@ -192,20 +192,23 @@ class Race(object):
             The setter for this property only modifies the content
             of the first paragraph of what is returned.
         """
-        desc = fill(self._desc)
+        desc = "{{g{}{{n".format(self.name)
+        desc += '\n'
+        desc += fill(self._desc)
         desc += '\n\n'
-        desc += fill("{} have a {{Y{}{{n body type and can ".format(self.plural,
+        desc += fill("{} have a {{y{}{{n body type and can ".format(self.plural,
                                                               self.size) +
                      "select a focus from among {}".format(
                          self._format_focus_list(self.foci)
-                     )) + '\n'
+                     ))
         if len(self.bonuses) > 0:
-            desc += '\n'
+            desc += '\n\n'
             desc += fill("{} also gain {} of {}".format(
                         self.plural,
                         'bonuses' if len(self.bonuses) > 1 else 'a bonus',
                         _format_bonuses(self.bonuses))
                     )
+        desc += '\n\n'
         return desc
 
     @desc.setter
@@ -215,10 +218,10 @@ class Race(object):
     def _format_focus_list(self, items):
         """Returns a comma separated list of items with "or" before the last."""
         if len(items) > 2:
-            output = ", ".join(["{{g{}{{n".format(i) for i in items[:-1]])
-            output += ", or {{g{}{{n".format(items[-1])
+            output = ", ".join(["{{b{}{{n".format(i.name) for i in items[:-1]])
+            output += ", or {{b{}{{n".format(items[-1].name)
         else:
-            output = " or ".join(["{{g{}{{n".format(i) for i in items])
+            output = " or ".join(["{{b{}{{n".format(i.name) for i in items])
         return output
 
 
