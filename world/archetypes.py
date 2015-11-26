@@ -21,6 +21,11 @@ Module Functions:
         any existing archetype and initialize the character with only the
         named one.
 
+    - `get_remaining_allocation(traits)`
+
+        Returns the nummber of trait points left for the player to allocate
+        to primary traits.
+
     - `validate_primary_traits(traits)`
 
         Confirms that all primary traits total 30 points, and all but MAG
@@ -85,6 +90,19 @@ def apply_archetype(char, name, reset=False):
     archetype = load_archetype(name)
     char.db.traits = archetype.traits
     char.db.archetype = archetype.name
+
+
+def get_remaining_allocation(traits):
+    """Returns the number of trait points remaining to be assigned.
+
+    Args:
+        traits (TraitFactory): Partially loaded TraitFactory
+
+    Returns:
+        (int): number of trait points left for the player to allocate
+    """
+    allocated = sum(traits[t].base for t in PRIMARY_TRAITS)
+    return TOTAL_PRIMARY_POINTS - allocated
 
 
 def validate_primary_traits(traits):
