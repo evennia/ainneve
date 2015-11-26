@@ -11,7 +11,6 @@ creation commands.
 from evennia.utils import lazy_property
 from world.traits.trait import Trait
 
-from world import races
 from world import rulebook
 from world.equip import EquipHandler
 
