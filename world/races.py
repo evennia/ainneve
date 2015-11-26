@@ -19,7 +19,6 @@ Functions:
         the specified race with the specified focus.
 """
 
-import re
 from evennia.utils import fill
 from world.archetypes import Archetype
 
@@ -171,7 +170,7 @@ def _format_bonuses(bonuses):
 
 
 class Race(object):
-    """Base race class."""
+    """Base class for race attributes"""
     def __init__(self):
         self.name = ""
         self.plural = ""
@@ -229,7 +228,7 @@ class Focus(object):
     Args:
         name (str): display name for the focus
         desc (str): description for the focus
-        bonuses (dict): bonuses for the focus in 'trait': value format
+        bonuses (dict): bonuses for the focus in {'trait': bonus} format
     """
     def __init__(self, name, desc, bonuses):
         self.name = name.capitalize()
@@ -259,6 +258,7 @@ class Focus(object):
 
 
 class Human(Race):
+    """Class representing human attributes."""
     def __init__(self):
         super(Human, self).__init__()
         self.name = "Human"
@@ -274,6 +274,7 @@ class Human(Race):
 
 
 class Elf(Race):
+    """Class representing elf attributes."""
     def __init__(self):
         super(Elf, self).__init__()
         self.name = "Elf"
@@ -293,6 +294,7 @@ class Elf(Race):
 
 
 class Dwarf(Race):
+    """Class representing dwarf attributes."""
     def __init__(self):
         super(Dwarf, self).__init__()
         self.name = "Dwarf"
