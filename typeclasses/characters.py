@@ -8,16 +8,14 @@ creation commands.
 
 """
 # import importlib
+from django.conf import settings
 from evennia.utils import lazy_property
-from world.traits.trait import Trait
 
+from objects import Object
 from world import races
 from world import rulebook
 from world.equip import EquipHandler
-
-from objects import Object
-
-from django.conf import settings
+from world.traits import TraitFactory
 
 
 class Character(Object):
@@ -69,14 +67,14 @@ class Character(Object):
         """
         self.execute_cmd('look')
 
-    def at_pre_puppet(self, player, sessid=None):
+    def at_pre_puppet(self, player, session=None):
         """
         This implementation recovers the character again after being "stowed
         away" to the `None` location in `at_post_unpuppet`.
 
         Args:
             player (Player): This is the connecting player.
-            sessid (int): Session id controlling the connection.
+            session (Session): Session controlling the connection.
 
         """
         if self.db.prelogout_location:
@@ -91,7 +89,7 @@ class Character(Object):
             self.location.at_object_receive(self, self.location)
         else:
             player.msg("{r%s has no location and no home is set.{n" % self,
-                       sessid=sessid)
+                       sessid=session)
 
     def at_post_puppet(self):
         """
@@ -105,7 +103,7 @@ class Character(Object):
             self.location.msg_contents("%s has entered the game." % self.name,
                                        exclude=[self])
 
-    def at_post_unpuppet(self, player, sessid=None):
+    def at_post_unpuppet(self, player, session=None):
         """
         We stove away the character when the player goes ooc/logs off,
         otherwise the character object will remain in the room also
@@ -114,7 +112,7 @@ class Character(Object):
         Args:
             player (Player): The player object that just disconnected
                 from this object.
-            sessid (int): Session id controlling the connection that
+            session (Session): Session controlling the connection that
                 just disconnected.
         """
         if self.location:  # have to check, in case of multiple connections
@@ -126,51 +124,17 @@ class Character(Object):
     def at_object_creation(self):
         self.db.race = None
         self.db.archetype = None
-
-        # Primary Traits
-        self.db.primary_traits = {
-            'strength': Trait('strength', static=True),
-            'perception': Trait('perception', static=True),
-            'intelligence': Trait('intelligence', static=True),
-            'dexterity': Trait('dexterity', static=True),
-            'charisma': Trait('charisma', static=True),
-            'vitality': Trait('vitality', static=True),
-            'magic': Trait('magic', static=True)
-        }
-
-        # Secondary Traits
-        self.db.secondary_traits = {
-            'health': Trait('health'),           # vit
-            'stamina': Trait('stamina'),         # vit
-            'skills': Trait('skills'),
-            'languages': Trait('languages'),     # int
-            # saves
-            'fortitude': Trait('fortitude'),     # vit
-            'reflex': Trait('reflex'),           # dex
-            'will': Trait('will'),               # int
-            # magic
-            'mana': Trait('mana'),               # mag
-            # armor
-            'armor': Trait('armor', static=True)
-        }
-
-        for stat in self.db.primary_traits.itervalues():
-            # roll the stat and set the base accordingly
-            self.base_stat(stat.name.lower(), rulebook.roll_stat())
-
-        # Allow health and stamina to overflow
-        self.get_stat('health').overflow = True
-        self.get_stat('stamina').overflow = True
-        # Cap mana at 10, overflow is default False
-        mana_stat = self.get_stat('mana')
-        mana_stat.base = 10
-        mana_stat.fill()
-
-        # Persistent attributes
-        self.db.slots = []
+        self.db.traits = {}       # trait data
+        self.db.slots = []        # equipment slots
 
         # Non-persistent attributes
         self.ndb.group = None
+
+    @property
+    def traits(self):
+        """TraitFactory that manages character traits."""
+        return TraitFactory(self.db.traits)
+
 
     # TODO: The EquipHandler should be refactored. It's a little complex for
     # what it does
@@ -189,75 +153,6 @@ class Character(Object):
         """
         slots = self.db.slots or []
         return EquipHandler(self, slots=slots)
-
-    # helper method, checks if stat is valid
-    def find_stat(self, stat):
-        if stat in self.db.primary_traits:
-            return self.db.primary_traits[stat]
-        elif stat in self.db.secondary_traits:
-            return self.db.secondary_traits[stat]
-        else:
-            return None
-
-    # helper method, checks if race gets extra language points
-    def determine_language_points(self):
-        if self.db.race and self.db.race.bonuses['languages']:
-            return self.db.race.bonuses['languages']
-        else:
-            return 0
-
-    def base_stat(self, stat, amount):
-        # sets the secondary traits
-        if stat == 'vitality':
-            for secondary in ['health', 'stamina', 'fortitude', 'reflex']:
-                self.db.secondary_traits[secondary].base = amount
-
-        if stat == 'intelligence':
-            bonus_language_points = self.determine_language_points()
-            self.db.secondary_traits[
-                'languages'] = amount + bonus_language_points
-            self.db.secondary_traits['will'] = amount
-
-        # If no secondary stats involved, just verify the stat and base it
-        valid_stat = self.find_stat(stat)
-        if valid_stat:
-            valid_stat.base = amount
-        else:
-            return False
-
-    # TODO: Refactor this. Currently broken. - WN
-
-    # def mod_stat(self, stat, amount):
-    #     # as per the OA blue rulebook mana can never exceed 10 (page 49)
-    #     if stat == 'mana':
-    #         if (self.db.secondary_traits['mana'].base + amount) > 10:
-    #             self.db.secondary_traits['mana'].mod = 10 - \
-    #             self.db.secondary_traits['mana'].base
-    #             return
-    #         elif (self.db.secondary_traits['mana'].base +
-    #               self.db.secondary_traits['mana'].mod + amount) > 10:
-    #             self.db.secondary_traits[
-    #                 'mana'
-    #             ].mod = 10 - (self.db.secondary_traits['mana'].base +
-    #                           self.db.secondary_traits['mana'].mod)
-    #             return
-    #         else:
-    #             self.db.secondary_traits['mana'].mod = amount
-    #             return
-    #
-    #     valid_stat = self.find_stat(stat)
-    #     if valid_stat:
-    #         valid_stat.base = amount
-    #     else:
-    #         return False
-    #
-
-    def get_stat(self, stat):
-        valid_stat = self.find_stat(stat)
-        if valid_stat:
-            return valid_stat
-        else:
-            return None
 
     def become_race(self, race):
         """
