@@ -24,8 +24,9 @@ Module Functions:
         loads an instance of the named Focus class
 
     - `apply_race(char, race, focus)`:
-        make a character "become" a member of the specified race with
-        the specified focus.
+
+        have a character "become" a member of the specified race with
+        the specified focus
 """
 
 from evennia.utils import fill
@@ -141,6 +142,7 @@ def apply_race(char, race, focus):
 
     focus = load_focus(focus)
 
+    # make sure the focus is allowed for the race
     if focus.name not in (f.name for f in race.foci):
         raise RaceException(
             'Invalid focus specified. '
