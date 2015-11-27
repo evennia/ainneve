@@ -150,6 +150,21 @@ class PublicFunctionsTestCase(EvenniaTest):
         is_valid, errmsg = archetypes.validate_primary_traits(self.char1.traits)
         self.assertTrue(is_valid)
 
+    def test_get_remaining(self):
+        """confirm function of `get_remaning_allocation`"""
+        self.assertEqual(
+            archetypes.get_remaining_allocation(self.char1.traits), 8)
+        # do allocations
+        self.char1.traits.STR.base += 2
+        self.char1.traits.PER.base += 1
+        self.char1.traits.INT.base += 1
+        self.char1.traits.DEX.base += 1
+        self.char1.traits.CHA.base += 1
+        self.char1.traits.VIT.base += 2
+        # confirm zero points left
+        self.assertEqual(
+            archetypes.get_remaining_allocation(self.char1.traits), 0)
+
     def test_toomany_points(self):
         """confirm validation of over-allocated traits"""
         # perfect char not allowed
