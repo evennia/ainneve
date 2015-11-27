@@ -121,7 +121,7 @@ def apply_race(char, race, focus):
     """
     # if objects are passed in, reload Race and Focus objects
     # by name to ensure we have un-modified versions of them
-    if issubclass(race, Race):
+    if isinstance(race, Race):
         race = race.name
 
     race = load_race(race)
@@ -192,13 +192,12 @@ class Race(object):
             The setter for this property only modifies the content
             of the first paragraph of what is returned.
         """
-        desc = "{{g{}{{n".format(self.name)
-        desc += '\n'
+        desc = "{{g{}{{n\n".format(self.name)
         desc += fill(self._desc)
         desc += '\n\n'
-        desc += fill("{} have a {{y{}{{n body type and can ".format(self.plural,
-                                                              self.size) +
-                     "select a focus from among {}".format(
+        desc += fill("{} have a ".format(self.plural) +
+                     "{{y{}{{n body type and can ".format(self.size) +
+                     "select a {{wfocus{{n from among {}".format(
                          self._format_focus_list(self.foci)
                      ))
         if len(self.bonuses) > 0:
@@ -247,12 +246,14 @@ class Focus(object):
             The setter for this property only modifies the content
             of the first paragraph of what is returned.
         """
-        desc = fill(self._desc)
+        desc = "{{b{}{{n\n".format(self.name)
+        desc += fill(self._desc)
         desc += "\n\n"
-        desc += fill("Adventurers with the {{g{}{{n focus gain {}.".format(
+        desc += fill("Adventurers with the {{b{}{{n focus gain {}.".format(
                     self.name,
                     _format_bonuses(self.bonuses)
                 ))
+        desc += "\n\n"
         return desc
 
     @desc.setter
