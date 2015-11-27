@@ -6,17 +6,26 @@ public module functions are to be used primarily during the character
 creation process.
 
 Classes:
+
     `Race`: base class for all races
     `Human`: human race class
     `Elf`: elf race class
     `Dwarf`: dwarf race class
     `Focus`: class representing a character's focus; a set of bonuses
 
-Functions:
-    `load_race(str)`: loads an instance of a race class by name
-    `load_focus(str)`: loads an instance of a focus by name
-    `apply_race(char, race, focus)`: make a character "become" a member of
-        the specified race with the specified focus.
+Module Functions:
+
+    - `load_race(str)`:
+
+        loads an instance of the named Race class
+
+    - `load_focus(str)`:
+
+        loads an instance of the named Focus class
+
+    - `apply_race(char, race, focus)`:
+        make a character "become" a member of the specified race with
+        the specified focus.
 """
 
 from evennia.utils import fill
@@ -29,7 +38,7 @@ class RaceException(Exception):
         self.msg = msg
 
 ALL_RACES = ('Human', 'Elf', 'Dwarf')
-ALL_FOCI = {
+_ALL_FOCI = {
     'agility':
         {'desc': 'The Agility focus represents an increase in nimbleness, '
                  'flexibility, and balance. Characters with the agility '
@@ -61,7 +70,8 @@ ALL_FOCI = {
                  'speech givers, negotiators, and magnetic personalities. '
                  'Characters with the prestige focus can win the hearts and '
                  'minds of their peers and pull strings for favors.',
-         'bonuses': {'INT': 1, 'CHA': 2}},  # + 3 language
+         'bonuses':
+             {'INT': 1, 'CHA': 2}},  # + 3 language
     'resilience':
         {'desc': 'The Resilience focus is for characters with naturally '
                  'strong constitutions and fortitudes. Characters with the '
@@ -105,8 +115,8 @@ def load_focus(focus):
         (Focus): instance of the named Focus
     """
     focus = focus.lower()
-    if focus in ALL_FOCI:
-        return Focus(name=focus, **ALL_FOCI[focus])
+    if focus in _ALL_FOCI:
+        return Focus(name=focus, **_ALL_FOCI[focus])
     else:
         raise RaceException('Invalid Focus name.')
 
@@ -144,10 +154,10 @@ def apply_race(char, race, focus):
 
     # apply race-based bonuses
     for trait, bonus in race.bonuses.iteritems():
-        char.traits[trait].base += bonus
+        char.traits[trait].mod += bonus
     # apply focus-based bonuses
     for trait, bonus in focus.bonuses.iteritems():
-        char.traits[trait].base += bonus
+        char.traits[trait].mod += bonus
 
 
 def _format_bonuses(bonuses):
