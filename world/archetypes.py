@@ -33,8 +33,13 @@ Module Functions:
 
     - `calculate_secondary_traits(traits)`
 
-        Called at the end of the character generation process to set initial
-        values for secondary traits and save rolls.
+        Called to set initial base values for secondary traits and save
+        rolls.
+
+    - `finalize_traits(traits)`
+
+        Called at the end of chargen to apply modifiers to base values and
+        reset `mod` values for normal game play.
 
     - `load_archetype(name)`
 
@@ -145,13 +150,26 @@ def calculate_secondary_traits(traits):
     traits.ATKU.base = traits.DEX.actual
     traits.DEF.base = traits.DEX.actual
     # mana
-    traits.BM.max = 10 if traits.MAG.base > 0 else 0
-    traits.WM.max = 10 if traits.MAG.base > 0 else 0
+    traits.BM.max = 10 if traits.MAG.actual > 0 else 0
+    traits.WM.max = 10 if traits.MAG.actual > 0 else 0
     # misc
     traits.STR.carry_factor = 10
     traits.STR.lift_factor = 20
     traits.STR.push_factor = 40
     traits.ENC.max = traits.STR.lift_factor * traits.STR.actual
+
+
+def finalize_traits(traits):
+    """Applies all pending modifications to starting traits.
+
+    During the chargen process, race-based bonuses and player
+    allocations are applied to trait modifiers. This function
+    applies any `mod` values to the traits' `base`, then resets
+    the `mod` property.
+    """
+    for t in PRIMARY_TRAITS + SAVE_ROLLS:
+        traits[t].base = traits[t].actual
+        traits[t].reset_mods()
 
 
 def load_archetype(name):
