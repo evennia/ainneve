@@ -37,18 +37,18 @@ class CharTraitsTestCase(CommandTest):
 "  ~~~~~~~~+~~~~~~~~+~~~~~~~~+~~~~~~~~   ~~~~~~~~~~~~~~   Perception  :   2  \n"
 "    9 / 9   9 / 9   0 / 0   0 / 0                     Intelligence:   1  \n"
 "                                                         Dexterity   :   5  \n"
-"  Description                                            Charisma    :   4  \n"
-"  ~~~~~~~~~~~                                            Vitality    :   9  \n"
-"  None                                                   Magic       :   0  \n"
-+ (39 * " ") + "\n"
-"                                        Save Rolls       Fortitude   :   9  \n"
-"  Encumbrance                           ~~~~~~~~~~       Reflex      :   5  \n"
-"  ~~~~~~~~~~~                                            Will        :   1  \n"
-"  Carry Weight:             0 /  180   \n"
-"  Encumbrance Penalty:             0    Combat Stats     Melee       :   9  \n"
-"  Movement Points:                 5    ~~~~~~~~~~~~     Ranged      :   2  \n"
-"                                        Power Point      Unarmed     :   5  \n"
-"                                        Bonus:    +2     Defense     :   5")
+"  Race:                         None                     Charisma    :   4  \n"
+"  Focus:                        None                     Vitality    :   9  \n"
+"  Description                                            Magic       :   0  \n"
+"  ~~~~~~~~~~~                          \n"
+"  None                                  Save Rolls       Fortitude   :   9  \n"
+"                                        ~~~~~~~~~~       Reflex      :   5  \n"
+"                                                         Will        :   1  \n"
+"  Encumbrance                          \n"
+"  ~~~~~~~~~~~                           Combat Stats     Melee       :   9  \n"
+"  Carry Weight:             0 /  180    ~~~~~~~~~~~~     Ranged      :   2  \n"
+"  Encumbrance Penalty:             0    Power Point      Unarmed     :   5  \n"
+"  Movement Points:                 5    Bonus:    +2     Defense     :   5")
         self.call(CmdSheet(), "", sheet_output)
 
     def test_traits(self):
