@@ -272,12 +272,14 @@ class TraitFactory(object):
 
         Args:
             trait (str): key from the traits dict containing config data
-                for the trait.
+                for the trait. "all" returns a list of all trait keys.
 
         Returns:
             `Trait` class, or `None` if trait key is not found in traits
             collection.
         """
+        if trait == 'all':
+            return self.dbobj.keys()
         if trait not in self.cache:
             if trait not in self.dbobj:
                 return None

@@ -31,6 +31,14 @@ FORM = """
                                        | {CPower Point      Unarmed{n     : xRx  |
                                        | {CBonus{{n:   xTx     {CDefense{n     : xSx  |
                                        +-------------------------------------|
+  {YSkills{n
+ ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ oooooooooooooooooooooooooooooooooooooo3oooooooooooooooooooooooooooooooooooooo
+ ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
+ ooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo
 """
 
 FORM = re.sub(r'\|$', r'', FORM, flags=re.M)

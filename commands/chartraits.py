@@ -4,7 +4,8 @@ Character trait-related commands
 
 from .command import MuxCommand
 from evennia.commands.cmdset import CmdSet
-from evennia.utils.evform import EvForm, EvTable
+from evennia.utils.evform import EvForm
+from evennia.utils.evtable import EvTable, EvColumn, EvCell
 
 
 class CharTraitCmdSet(CmdSet):
@@ -37,6 +38,7 @@ class CmdSheet(MuxCommand):
         """
         form = EvForm('commands.templates.charsheet', align='r')
         tr = self.caller.traits
+        sk = self.caller.skills
 
         fields = {
             'A': self.caller.name,
@@ -81,8 +83,30 @@ class CmdSheet(MuxCommand):
             align='c',
             border="incols"
         )
+        skill_names = sk.all
+        third = len(skill_names) // 3
+        skills = EvTable(
+            header=False,
+            align='l',
+            table=[EvColumn(*["{{M{}{{n".format(sk[s].name)
+                              for s in skill_names[:third]]),
+                   EvColumn(*["{{w{}{{n".format(sk[s].actual)
+                              for s in skill_names[:third]],
+                            align='r'),
+                   EvColumn(*["{{M{}{{n".format(sk[s].name)
+                              for s in skill_names[third:2 * third]]),
+                   EvColumn(*["{{w{}{{n".format(sk[s].actual)
+                              for s in skill_names[third:2 * third]],
+                            align='r'),
+                   EvColumn(*["{{M{}{{n".format(sk[s].name)
+                              for s in skill_names[2 * third:]]),
+                   EvColumn(*["{{w{}{{n".format(sk[s].actual)
+                              for s in skill_names[2 * third:]],
+                            align='r'),
+                   ]
+        )
 
-        form.map(tables={1: gauges, 2: desc})
+        form.map(tables={1: gauges, 2: desc, 3: skills})
 
         self.caller.msg(unicode(form))
 
