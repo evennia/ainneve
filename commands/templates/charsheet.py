@@ -18,18 +18,18 @@ FORM = """
   ooooooooooooooooo1ooooooooooooooooo  | ~~~~~~~~~~~~~~   {CPerception{n  : xGx  |
   ooooooooooooooooooooooooooooooooooo  |                  {CIntelligence{n: xHx  |
                                        |                  {CDexterity{n   : xIx  |
-  {YDescription{n                          |                  {CCharisma{n    : xJx  |
-  ~~~~~~~~~~~                          |                  {CVitality{n    : xKx  |
-  ooooooooooooooooo2ooooooooooooooooo  |                  {CMagic{n       : xLx  |
-  ooooooooooooooooooooooooooooooooooo  |-------------------------------------|
-                                       | {YSave Rolls       {CFortitude{n   : xMx  |
-  {YEncumbrance{n                          | ~~~~~~~~~~       {CReflex{n      : xNx  |
-  ~~~~~~~~~~~                          |                  {CWill{n        : xOx  |
-  {CCarry Weight{n:          xUxx / xVxx   |-------------------------------------|
-  {CEncumbrance Penalty{n:          xWxx   | {YCombat Stats     {CMelee{n       : xPx  |
-  {CMovement Points{n:              xXxx   | ~~~~~~~~~~~~     {CRanged{n      : xQx  |
-                                       | {CPower Point      Unarmed{n     : xRx  |
-                                       | {CBonus{{n:   xTx     {CDefense{n     : xSx  |
+  {YRace{n:           xxxxxxxxxxxYxxxxxx   |                  {CCharisma{n    : xJx  |
+  {YFocus{n:          xxxxxxxxxxxZxxxxxx   |                  {CVitality{n    : xKx  |
+  {YDescription{n                          |                  {CMagic{n       : xLx  |
+  ~~~~~~~~~~~                          |-------------------------------------|
+  ooooooooooooooooo2ooooooooooooooooo  | {YSave Rolls       {CFortitude{n   : xMx  |
+  ooooooooooooooooooooooooooooooooooo  | ~~~~~~~~~~       {CReflex{n      : xNx  |
+                                       |                  {CWill{n        : xOx  |
+  {YEncumbrance{n                          |-------------------------------------|
+  ~~~~~~~~~~~                          | {YCombat Stats     {CMelee{n       : xPx  |
+  {CCarry Weight{n:          xUxx / xVxx   | ~~~~~~~~~~~~     {CRanged{n      : xQx  |
+  {CEncumbrance Penalty{n:          xWxx   | {CPower Point      Unarmed{n     : xRx  |
+  {CMovement Points{n:              xXxx   | {CBonus{{n:   xTx     {CDefense{n     : xSx  |
                                        +-------------------------------------|
 """
 
