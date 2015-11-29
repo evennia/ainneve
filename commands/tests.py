@@ -44,7 +44,7 @@ class CharTraitsTestCase(CommandTest):
 "                                        Save Rolls       Fortitude   :   9  \n"
 "  Encumbrance                           ~~~~~~~~~~       Reflex      :   5  \n"
 "  ~~~~~~~~~~~                                            Will        :   1  \n"
-"  Carry Weight:             0 /  180   \n"
+"  Carry Weight:             0 /  180    \n"
 "  Encumbrance Penalty:             0    Combat Stats     Melee       :   9  \n"
 "  Movement Points:                 5    ~~~~~~~~~~~~     Ranged      :   2  \n"
 "                                        Power Point      Unarmed     :   5  \n"
