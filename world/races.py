@@ -280,7 +280,7 @@ class Human(Race):
         self.name = "Human"
         self.plural = "Humans"
         self.size = "medium"
-        self.desc = ("Humans are the most wide-spread of all the races. The "
+        self.desc = ("Humans are the most widespread of all the races. The "
                      "human traits of curiosity, resourcefulness and "
                      "unyielding courage have helped them to adapt, survive "
                      "and prosper in every world they have explored.")
@@ -318,7 +318,7 @@ class Dwarf(Race):
         self.size = "small"
         self.desc = ("Dwarves are short, stocky demi-humans with long, "
                      "respectable beards and heavy stout bodies. Their skin "
-                     "is earthen tone and their hair black, gray or dark "
+                     "is earthen toned and their hair black, gray or dark "
                      "brown. Stubborn but practical; dwarves love grand "
                      "feasts and strong ale. They can be dangerous opponents, "
                      "able to fight with any weapon, melee or ranged. They "
