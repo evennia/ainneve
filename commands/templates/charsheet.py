@@ -21,11 +21,11 @@ FORM = """
   {YDescription{n                          |                  {CCharisma{n    : xJx  |
   ~~~~~~~~~~~                          |                  {CVitality{n    : xKx  |
   ooooooooooooooooo2ooooooooooooooooo  |                  {CMagic{n       : xLx  |
-  ooooooooooooooooooooooooooooooooooo  |-------------------------------------|
+  ooooooooooooooooooooooooooooooooooo  | ----------------------------------- |
                                        | {YSave Rolls       {CFortitude{n   : xMx  |
   {YEncumbrance{n                          | ~~~~~~~~~~       {CReflex{n      : xNx  |
   ~~~~~~~~~~~                          |                  {CWill{n        : xOx  |
-  {CCarry Weight{n:          xUxx / xVxx   |-------------------------------------|
+  {CCarry Weight{n:          xUxx / xVxx   | ----------------------------------- |
   {CEncumbrance Penalty{n:          xWxx   | {YCombat Stats     {CMelee{n       : xPx  |
   {CMovement Points{n:              xXxx   | ~~~~~~~~~~~~     {CRanged{n      : xQx  |
                                        | {CPower Point      Unarmed{n     : xRx  |

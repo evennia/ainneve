@@ -35,7 +35,7 @@ class AinneveList(object):
         orderby (str, callable): key or function to order dict-based lists
         width (int): total width of the screen in characters; default 79
         lsep (str): separator for label: item pairs
-        layout (dict): optional layout dict
+        layout (list[str]): optional layout dict
     """
 
     def __init__(self,
@@ -68,8 +68,8 @@ class AinneveList(object):
         else:
             self.orderby = lambda x: x[orderby]
 
-        self.data = data
         self.layout = layout
+        self.data = data
 
     @property
     def data(self):
@@ -84,9 +84,14 @@ class AinneveList(object):
     @data.setter
     def data(self, data):
         if isinstance(data, dict) and len(data) > 0:
-            self._data = [{'lbl': l, 'val': v}
+            self._data = [{'lbl': l, 'val': str(v)}
                           for l, v in data.iteritems()]
-        elif data is None or (isinstance(data, list) and len(data) > 0):
+        elif data is None:
+            self._data = data
+        elif isinstance(data, list) and len(data) > 0:
+            if isinstance(data[0], dict):
+                for d in data:
+                    d['val'] = str(d['val'])
             self._data = data
         else:
             raise AnvListException("`data` must be a list, dict, or list of dicts.")
@@ -293,15 +298,15 @@ class AinneveList(object):
 
         cols = []
         ix = 0
-        if self.data is not None:
+        if self.data is not None and len(self.data) > 0:
             if isinstance(self.data[0], dict):
                 for cdata in self.col_data:
                     if cdata['type'] == 'column':
                         lwidth = (cdata['width'] - 4*self.padding
                                   - self.vwidth - len(self.lsep))
                         cols.append(
-                            ("{pad}{lcolor}{{lbl{col}:<{lwidth}}}{lclr}{pad}{sep}"
-                             "{pad}{vcolor}{{val{col}:>{vwidth}}}{vclr}{pad}"
+                            ("{pad}{lcolor}{{lbl{col}:<{lwidth}.{lwidth}s}}{lclr}{pad}{sep}"
+                             "{pad}{vcolor}{{val{col}:>{vwidth}.{vwidth}s}}{vclr}{pad}"
                              ).format(col=ix,
                                       pad=' ' * self.padding,
                                       sep=self.lsep,
@@ -321,7 +326,7 @@ class AinneveList(object):
                 for cdata in self.col_data:
                     if cdata['type'] == 'column':
                         cols.append(
-                            "{pad}{lcolor}{{val{col}:<{width}}}{lclr}{pad}".format(
+                            "{pad}{lcolor}{{val{col}:<{width}.{width}s}}{lclr}{pad}".format(
                                 col=ix,
                                 pad=' ' * self.padding,
                                 lcolor=self.lcolor,
@@ -355,8 +360,8 @@ class AinneveList(object):
         columns = sum(1 for x in self.col_data if x['type'] == 'column')
         if len(items) % columns > 0:
             if isinstance(items[0], dict):
-                items += [{'lbl': '', 'val': ''}
-                          for _ in xrange(len(items) % columns)]
+                items += [{'lbl': ' ', 'val': ' '}
+                          for _ in xrange(columns - (len(items) % columns))]
             else:
                 items += [None for _ in xrange(len(items) % columns)]
 
@@ -373,7 +378,7 @@ class AinneveList(object):
 
         self.lines = []
 
-        if isinstance(items[0], dict):
+        if len(items) > 0 and isinstance(items[0], dict):
             for line in lines:
                 opts = {'lbl{}'.format(i): line[i]['lbl']
                         for i in xrange(len(line))}

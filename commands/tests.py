@@ -40,11 +40,11 @@ class CharTraitsTestCase(CommandTest):
 "  Description                                            Charisma    :   4  \n"
 "  ~~~~~~~~~~~                                            Vitality    :   9  \n"
 "  None                                                   Magic       :   0  \n"
-+ (39 * " ") + "\n"
++ (41 * " ") + "\n"
 "                                        Save Rolls       Fortitude   :   9  \n"
 "  Encumbrance                           ~~~~~~~~~~       Reflex      :   5  \n"
 "  ~~~~~~~~~~~                                            Will        :   1  \n"
-"  Carry Weight:             0 /  180    \n"
+"  Carry Weight:             0 /  180     \n"
 "  Encumbrance Penalty:             0    Combat Stats     Melee       :   9  \n"
 "  Movement Points:                 5    ~~~~~~~~~~~~     Ranged      :   2  \n"
 "                                        Power Point      Unarmed     :   5  \n"
@@ -57,36 +57,25 @@ class CharTraitsTestCase(CommandTest):
         self.call(CmdTraits(), "", "Usage: traits <traitgroup>")
         # test primary traits
         output = (
-"[ Primary Traits ]|\n"
-" Strength      9 \n"
-" Perception    2 \n"
-" Intelligence  1 \n"
-" Dexterity     5 \n"
-" Charisma      4 \n"
-" Vitality      9 \n"
-" Magic         0")
+"YPrimary Traitsn|\n"
+" CStrength         n : w  9n  CPerception       n : w  2n  CIntelligence     n : w  1n \n"
+" CDexterity        n : w  5n  CCharisma         n : w  4n  CVitality         n : w  9n \n"
+" CMagic            n : w  0n  C                 n : w   n  C                 n : w   n \n")
         self.call(CmdTraits(), "pri", output)
         # test secondary traits
         output = (
-"[ Secondary Traits ]|\n"
-" Health      9 \n"
-" Stamina     9 \n"
-" Black Mana  0 \n"
-" White Mana  0")
+"YSecondary Traitsn|\n"
+" CHealth                        n : w  9n  CBlack Mana                    n : w  0n \n"
+" CStamina                       n : w  9n  CWhite Mana                    n : w  0n \n")
         self.call(CmdTraits(), "secondary", output)
         # test save rolls
         output = (
-"[ Save Rolls ]|\n"
-" Fortitude Save  9 \n"
-" Reflex Save     5 \n"
-" Will Save       1")
+"YSave Rollsn|\n"
+" CFortitude Save   n : w  9n  CReflex Save      n : w  5n  CWill Save        n : w  1n \n")
         self.call(CmdTraits(), "sav", output)
         # test combat stats
         output = (
-"[ Combat Stats ]|\n"
-" Melee Attack    9 \n"
-" Ranged Attack   2 \n"
-" Unarmed Attack  5 \n"
-" Defense         5 \n"
-" Power Points    2")
+"YCombat Statsn|\n"
+" CMelee Attack     n : w  9n  CRanged Attack    n : w  2n  CUnarmed Attack   n : w  5n \n"
+" CDefense          n : w  5n  CPower Points     n : w  2n  C                 n : w   n \n")
         self.call(CmdTraits(), "com", output)

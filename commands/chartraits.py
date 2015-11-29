@@ -120,41 +120,55 @@ class CmdTraits(MuxCommand):
     def func(self):
         from world import archetypes
         table = None
+        cols = 1
+        fill_dir = 'h'
         tr = self.caller.traits
         if self.args.startswith('pri'):
             title = 'Primary Traits'
             traits = archetypes.PRIMARY_TRAITS
+            cols = 3
         elif self.args.startswith('sec'):
             title = 'Secondary Traits'
             traits = archetypes.SECONDARY_TRAITS
+            cols = 2
+            fill_dir = 'v'
         elif self.args.startswith('sav'):
             title = 'Save Rolls'
             traits = archetypes.SAVE_ROLLS
+            cols = 3
         elif self.args.startswith('com'):
             title = 'Combat Stats'
             traits = archetypes.COMBAT_TRAITS
+            cols = 3
         elif self.args.startswith('enc') or self.args.startswith('car'):
             title = 'Encumbrance'
-            traits = [["|C{}|n".format(tr.ENC.name),
-                       "|CEncumbrance Penalty|n",
-                       "|C{}|n".format(tr.MV.name)],
-                      ["|w{}|n / |w{}|n".format(tr.ENC.actual,
-                                                    tr.ENC.max),
-                       "|w{:+d}|n".format(tr.MV.mod),
-                       "|w{}|n".format(tr.MV.actual)]]
+            traits = [{'lbl': tr.ENC.name,
+                       'val': "{} / {}".format(tr.ENC.actual, tr.ENC.max),
+                       'sort': 0},
+                      {'lbl': "Encumbrance Penalty",
+                       'val': "{:+d}".format(tr.MV.mod),
+                       'sort': 1},
+                      {'lbl': tr.MV.name,
+                       'val': "{}".format(tr.MV.actual),
+                       'sort': 2}]
 
-            table = EvTable(header=False, table=traits)
+            table = AinneveList(traits,
+                                lcolor='|C',
+                                vcolor='|w',
+                                vwidth=9,
+                                layout=['column-3'],
+                                orderby='sort')
         else:
             self.caller.msg("Usage: traits <traitgroup>")
             return
         if not table:
-            table = EvTable(
-                header=False,
-                table=[["|C{}|n".format(tr[t].name)
-                        for t in traits],
-                       ["|w{}|n".format(tr[t].actual)
-                        for t in traits]]
-            )
+            table = AinneveList({tr[t].name: tr[t].actual for t in traits},
+                                columns=cols,
+                                lcolor='|C',
+                                vcolor='|w',
+                                fill_dir=fill_dir,
+                                orderby=lambda x: [tr[t].name for t
+                                                   in traits].index(x['lbl']))
 
         self.caller.msg("  |Y{}|n".format(title))
         self.caller.msg(unicode(table))
@@ -211,6 +225,7 @@ class CmdSkills(MuxCommand):
         else:
             title = 'Skills'
             list = AinneveList(columns=3,
+                               width=77,
                                lcolor='|M',
                                vcolor='|w',
                                orderby='sort')
