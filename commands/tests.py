@@ -40,7 +40,7 @@ class CharTraitsTestCase(CommandTest):
 "  Description                                            Charisma    :   4  \n"
 "  ~~~~~~~~~~~                                            Vitality    :   9  \n"
 "  None                                                   Magic       :   0  \n"
-+ (39 * " ") + "\n"
++ (40 * " ") + "\n"
 "                                        Save Rolls       Fortitude   :   9  \n"
 "  Encumbrance                           ~~~~~~~~~~       Reflex      :   5  \n"
 "  ~~~~~~~~~~~                                            Will        :   1  \n"
