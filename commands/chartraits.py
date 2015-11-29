@@ -63,6 +63,8 @@ class CmdSheet(MuxCommand):
             'V': tr.ENC.max,
             'W': tr.MV.mod,
             'X': tr.MV.actual,
+            'Y': self.caller.db.race,
+            'Z': self.caller.db.focus,
         }
         bold = lambda v: "{{w{}{{n".format(v)
         form.map({k: bold(v) for k, v in fields.iteritems()})
