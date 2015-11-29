@@ -5,7 +5,13 @@ Character trait-related commands
 from .command import MuxCommand
 from evennia.commands.cmdset import CmdSet
 from evennia.utils.evform import EvForm
-from evennia.utils.evtable import EvTable, EvColumn, EvCell
+from evennia.utils.evtable import EvTable
+from utils.ainnevelist import AinneveList
+
+
+def bold(value):
+    """Returns a value wrapped in bright white 'bolding'."""
+    return "|w{}|n".format(value)
 
 
 class CharTraitCmdSet(CmdSet):
@@ -17,20 +23,23 @@ class CharTraitCmdSet(CmdSet):
         """Populate CmdSet"""
         self.add(CmdSheet())
         self.add(CmdTraits())
+        self.add(CmdSkills())
 
 class CmdSheet(MuxCommand):
     """
     view character status
 
     Usage:
-      sheet
+      sheet[/skills]
 
-    Displays a summary of the your character's information.
+    Switch:
+      sk[ills] - also display a summary of all character skills
+
+    Displays a detailed summary of your character's information.
     """
     key = "sheet"
     aliases = ["sh"]
     locks = "cmd:all()"
-    arg_regex = r"$"
 
     def func(self):
         """
@@ -66,16 +75,10 @@ class CmdSheet(MuxCommand):
             'W': tr.MV.mod,
             'X': tr.MV.actual,
         }
-        bold = lambda v: "{{w{}{{n".format(v)
         form.map({k: bold(v) for k, v in fields.iteritems()})
 
-        desc = EvTable(header=False,
-                       align='l',
-                       table=[[self.caller.long_desc]],
-                       border=None)
-
         gauges = EvTable(
-            "{CHP{n", "{CSP{n", "{CBM{n", "{CWM{n",
+            "|CHP|n", "|CSP|n", "|CBM|n", "|CWM|n",
             table=[["{} / {}".format(bold(tr.HP.actual), bold(tr.HP.max))],
                    ["{} / {}".format(bold(tr.SP.actual), bold(tr.SP.max))],
                    ["{} / {}".format(bold(tr.BM.actual), bold(tr.BM.max))],
@@ -83,33 +86,17 @@ class CmdSheet(MuxCommand):
             align='c',
             border="incols"
         )
-        skill_names = sk.all
-        third = len(skill_names) // 3
-        skills = EvTable(
-            header=False,
-            align='l',
-            table=[EvColumn(*["{{M{}{{n".format(sk[s].name)
-                              for s in skill_names[:third]]),
-                   EvColumn(*["{{w{}{{n".format(sk[s].actual)
-                              for s in skill_names[:third]],
-                            align='r'),
-                   EvColumn(*["{{M{}{{n".format(sk[s].name)
-                              for s in skill_names[third:2 * third]]),
-                   EvColumn(*["{{w{}{{n".format(sk[s].actual)
-                              for s in skill_names[third:2 * third]],
-                            align='r'),
-                   EvColumn(*["{{M{}{{n".format(sk[s].name)
-                              for s in skill_names[2 * third:]]),
-                   EvColumn(*["{{w{}{{n".format(sk[s].actual)
-                              for s in skill_names[2 * third:]],
-                            align='r'),
-                   ]
-        )
+        desc = EvTable(header=False,
+                       align='l',
+                       table=[[self.caller.long_desc]],
+                       border=None)
 
-        form.map(tables={1: gauges, 2: desc, 3: skills})
+        form.map(tables={1: gauges, 2: desc})
 
         self.caller.msg(unicode(form))
 
+        if any(sw.startswith('sk') for sw in self.switches):
+            self.caller.execute_cmd('skills')
 
 
 class CmdTraits(MuxCommand):
@@ -123,7 +110,7 @@ class CmdTraits(MuxCommand):
         traitgroup - one of pri[mary], sec[ondary], sav[es],
                      com[bat], enc[umbrance], or car[ry]
 
-    Displays a summary of the your character's information.
+    Displays a summary of your character's traits by group.
     """
     key = "traits"
     aliases = ["trait", "tr"]
@@ -148,13 +135,13 @@ class CmdTraits(MuxCommand):
             traits = archetypes.COMBAT_TRAITS
         elif self.args.startswith('enc') or self.args.startswith('car'):
             title = 'Encumbrance'
-            traits = [["{{C{}{{n".format(tr.ENC.name),
-                       "{CEncumbrance Penalty{n",
-                       "{{C{}{{n".format(tr.MV.name)],
-                      ["{{w{}{{n / {{w{}{{n".format(tr.ENC.actual,
+            traits = [["|C{}|n".format(tr.ENC.name),
+                       "|CEncumbrance Penalty|n",
+                       "|C{}|n".format(tr.MV.name)],
+                      ["|w{}|n / |w{}|n".format(tr.ENC.actual,
                                                     tr.ENC.max),
-                       "{{w{:+d}{{n".format(tr.MV.mod),
-                       "{{w{}{{n".format(tr.MV.actual)]]
+                       "|w{:+d}|n".format(tr.MV.mod),
+                       "|w{}|n".format(tr.MV.actual)]]
 
             table = EvTable(header=False, table=traits)
         else:
@@ -163,11 +150,86 @@ class CmdTraits(MuxCommand):
         if not table:
             table = EvTable(
                 header=False,
-                table=[["{{C{}{{n".format(tr[t].name)
+                table=[["|C{}|n".format(tr[t].name)
                         for t in traits],
-                       ["{{w{}{{n".format(tr[t].actual)
+                       ["|w{}|n".format(tr[t].actual)
                         for t in traits]]
             )
 
-        self.caller.msg("{{R[ {{Y{}{{n {{R]{{n".format(title))
+        self.caller.msg("  |Y{}|n".format(title))
         self.caller.msg(unicode(table))
+
+
+class CmdSkills(MuxCommand):
+    """
+    view character skills
+
+    Usage:
+      skills <skillgroup>
+
+    Args:
+        skillgroup - one of str[ength], per[ception], int[elligence],
+                     dex[terity], or cha[risma]
+
+    Displays a summary of your character's skills by group.
+    """
+    key = "skills"
+    aliases = ["skill", "sk"]
+    locks = "cmd:all()"
+    arg_regex = r"\s.+|"
+
+    def func(self):
+        from world import skills
+        from functools import partial
+
+
+        sk = self.caller.skills
+        sk_list = []
+
+        if len(self.args.strip()) > 0:
+            if self.args.lower().startswith('str'):
+                title = 'Strength Based Skills'
+                sk_list = skills.STR_SKILLS
+            elif self.args.lower().startswith('per'):
+                title = 'Perception Based Skills'
+                sk_list = skills.PER_SKILLS
+            elif self.args.lower().startswith('int'):
+                title = 'Intelligence Based Skills'
+                sk_list = skills.INT_SKILLS
+            elif self.args.lower().startswith('dex'):
+                title = 'Dexterity Based Skills'
+                sk_list = skills.DEX_SKILLS
+            elif self.args.lower().startswith('cha'):
+                title = 'Charisma Based Skills'
+                sk_list = skills.CHA_SKILLS
+            else:
+                self.msg('Usage: skills [<skillgroup>]')
+                return
+
+            list = AinneveList(columns=3, lcolor='|M', vcolor='|w')
+            list.data = {sk[s].name: sk[s].actual for s in sk_list}
+        else:
+            title = 'Skills'
+            list = AinneveList(columns=3,
+                               lcolor='|M',
+                               vcolor='|w',
+                               orderby='sort')
+            list.data = [
+                {'lbl': sk.escape.name, 'val': sk.escape.actual, 'sort': 0},
+                {'lbl': sk.climb.name, 'val': sk.climb.actual, 'sort': 1},
+                {'lbl': sk.jump.name, 'val': sk.jump.actual, 'sort': 2},
+                {'lbl': sk.lockpick.name, 'val': sk.lockpick.actual, 'sort': 3},
+                {'lbl': sk.listen.name, 'val': sk.listen.actual, 'sort': 4},
+                {'lbl': sk.sense.name, 'val': sk.sense.actual, 'sort': 5},
+                {'lbl': sk.appraise.name, 'val': sk.appraise.actual, 'sort': 6},
+                {'lbl': sk.medicine.name, 'val': sk.medicine.actual, 'sort': 7},
+                {'lbl': sk.survival.name, 'val': sk.survival.actual, 'sort': 8},
+                {'lbl': sk.balance.name, 'val': sk.balance.actual, 'sort': 9},
+                {'lbl': sk.sneak.name, 'val': sk.sneak.actual, 'sort': 10},
+                {'lbl': sk.throwing.name, 'val': sk.throwing.actual, 'sort': 11},
+                {'lbl': sk.animal.name, 'val': sk.animal.actual, 'sort': 12},
+                {'lbl': sk.barter.name, 'val': sk.barter.actual, 'sort': 13},
+                {'lbl': sk.leadership.name, 'val': sk.leadership.actual, 'sort': 14},
+            ]
+        self.caller.msg("  |Y{}".format(title))
+        self.caller.msg(unicode(list))

@@ -150,7 +150,14 @@ _SKILL_DATA = {
                  "and morale of those around you. It also enhances grouping.")
     },
 }
-ALL_SKILLS = _SKILL_DATA.iterkeys()
+
+# skill groupings used in skills command
+ALL_SKILLS = _SKILL_DATA.keys()
+STR_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'STR']
+PER_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'PER']
+INT_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'INT']
+DEX_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'DEX']
+CHA_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'CHA']
 
 def apply_skills(char):
     """Sets up a character's initial skill traits.
