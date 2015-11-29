@@ -194,8 +194,6 @@ class CmdSkills(MuxCommand):
 
     def func(self):
         from world import skills
-        from functools import partial
-
 
         sk = self.caller.skills
         sk_list = []

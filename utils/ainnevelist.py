@@ -1,8 +1,16 @@
 """
 AinneveList module.
 
-List building class that provides standardized formatting
-for Ainneve.
+The main feature of this module is the AinneveList building class that
+provides formatting support for lists in Ainneve. It supports easy
+creation of one, two, or three column lists.
+
+List items can consist of simple string values, or of a dict describing
+label-value pairs. AinneveList also supports custom list item sorting
+by formatting list items with additional sort keys and using the
+`orderby` argument and `fill_dir` provides great flexibility in the
+distribution of items across columns.
+
 """
 import re
 
@@ -28,13 +36,19 @@ class AinneveList(object):
     columns argument, or up to six columns and custom options
 
     Args:
-        data (list, dict): data to list, either a list of items
-            or a dict of label:item pairs
+        data (list, dict): data to list, either a list of items,
+            a dict of label:item pairs, or a dict containing keys
+            'lbl', 'val', and additional data used for sorting
         columns (int): number of columns for list, typically 1-3
         fill_dir (str): one of 'h' for horizontal or 'v' for vertical
         orderby (str, callable): key or function to order dict-based lists
         width (int): total width of the screen in characters; default 79
         lsep (str): separator for label: item pairs
+        lcolor (str): ansi color code for labels
+        vcolor (str): ansi color code for values
+        vwidth (str): columns to allocate for value (label takes remaining)
+        padding (int): number of spaces to pad list cells
+        has_border (bool): draw borders around columns if True
         layout (list[str]): optional layout dict
     """
 
@@ -305,15 +319,13 @@ class AinneveList(object):
                         lwidth = (cdata['width'] - 4*self.padding
                                   - self.vwidth - len(self.lsep))
                         cols.append(
-                            ("{pad}{lcolor}{{lbl{col}:<{lwidth}.{lwidth}s}}{lclr}{pad}{sep}"
-                             "{pad}{vcolor}{{val{col}:>{vwidth}.{vwidth}s}}{vclr}{pad}"
+                            ("{pad}{lcolor}{{lbl{col}:<{{lwidth}}.{{lwidth}}s}}{lclr}{pad}{sep}"
+                             "{pad}{vcolor}{{val{col}:>{{vwidth}}.{{vwidth}}s}}{vclr}{pad}"
                              ).format(col=ix,
                                       pad=' ' * self.padding,
                                       sep=self.lsep,
                                       lcolor=self.lcolor,
                                       vcolor=self.vcolor,
-                                      lwidth=lwidth,
-                                      vwidth=self.vwidth,
                                       lclr='|n' if self.lcolor else '',
                                       vclr='|n' if self.vcolor else '',
                                       ))
@@ -326,12 +338,12 @@ class AinneveList(object):
                 for cdata in self.col_data:
                     if cdata['type'] == 'column':
                         cols.append(
-                            "{pad}{lcolor}{{val{col}:<{width}.{width}s}}{lclr}{pad}".format(
+                            "{pad}{vcolor}{{val{col}:<{{width}}.{{width}}s}}{vclr}{pad}".format(
                                 col=ix,
                                 pad=' ' * self.padding,
-                                lcolor=self.lcolor,
+                                vcolor=self.vcolor,
                                 width=cdata['width'] - 2*self.padding,
-                                lclr='|n' if self.lcolor else '',
+                                vclr='|n' if self.vcolor else '',
                             ))
                         ix += 1
                     elif cdata['type'] == 'offset':

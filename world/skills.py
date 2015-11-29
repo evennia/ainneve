@@ -49,20 +49,20 @@ _SKILL_DATA = {
     'escape': {
         'name': 'Escape',
         'base': 'STR',
-        'desc': ("{mEscape{n represents a character's ability to free "
+        'desc': ("|mEscape|n represents a character's ability to free "
                  "themselves from restraints such as cuffs or shackles. It "
                  "also entails breaking free of prison or jail cells.")
     },
     'climb': {
         'name': 'Climb',
         'base': 'STR',
-        'desc': ("{mClimb{n represents the proficiency in climbing difficult "
+        'desc': ("|mClimb|n represents the proficiency in climbing difficult "
                  "slopes or sheer walls.")
     },
     'jump': {
         'name': 'Jump',
         'base': 'STR',
-        'desc': ("{mJump{n is the ability to leap great distances such as "
+        'desc': ("|mJump|n is the ability to leap great distances such as "
                  "across pits or over obstacles. Encumbrance may affect jump "
                  "distance.")
     },
@@ -70,13 +70,13 @@ _SKILL_DATA = {
     'lockpick': {
         'name': 'Lock Pick',
         'base': 'PER',
-        'desc': ("{mLock Pick{n represents the proficiency in manipulating "
+        'desc': ("|mLock Pick|n represents the proficiency in manipulating "
                  "pins and tumblers to open a lock without a key.")
     },
     'listen': {
         'name': 'Listen',
         'base': 'PER',
-        'desc': ("{mListen{n is the ability to hear distant or quiet noises. "
+        'desc': ("|mListen|n is the ability to hear distant or quiet noises. "
                  "Characters may listen intently near closed doors or long "
                  "hallways for approaching enemies or other hushed "
                  "activities.")
@@ -84,54 +84,54 @@ _SKILL_DATA = {
     'sense': {
         'name': 'Sense Danger',
         'base': 'PER',
-        'desc': ("{mSense Danger{n is the ability to assess the level of "
+        'desc': ("|mSense Danger|n is the ability to assess the level of "
                  "danger that enemies and situations possess.")
     },
     # INT
     'appraise': {
         'name': 'Appraise',
         'base': 'INT',
-        'desc': ("{mAppraise{n is the ability to determine an accurate value "
+        'desc': ("|mAppraise|n is the ability to determine an accurate value "
                  "of an item's worth and abilities.")
     },
     'medicine': {
         'name': 'Medicine',
         'base': 'INT',
-        'desc': ("{mMedicine{n is the practice of healing and nurturing. A "
+        'desc': ("|mMedicine|n is the practice of healing and nurturing. A "
                  "character who practices medicine can remove heal damage or "
                  "adverse conditions, or cure certain poisons. ")
     },
     'survival': {
         'name': 'Survival',
         'base': 'INT',
-        'desc': ("{mSurvival{n is the ability to procure shelter, fire, food "
+        'desc': ("|mSurvival|n is the ability to procure shelter, fire, food "
                  "and drink in an otherwise inhospitable or untamed location.")
     },
     # DEX
     'balance': {
         'name': 'Balance',
         'base': 'DEX',
-        'desc': ("{mBalance{n is the ability to stay centered and not fall from "
+        'desc': ("|mBalance|n is the ability to stay centered and not fall from "
                  "a narrow ledge or walkway. It is a character's ability to "
                  "keep their equilibrium even on unsteady terrain.")
     },
     'sneak': {
         'name': 'Sneak',
         'base': 'DEX',
-        'desc': ("{mSneak{n is the skill of remaining unseen and unheard by "
+        'desc': ("|mSneak|n is the skill of remaining unseen and unheard by "
                  "enemies while moving stealthily.")
     },
     'throwing': {
         'name': 'Throwing',
         'base': 'DEX',
-        'desc': ("{mThrowing{n is the act of tossing an [Item], object or "
+        'desc': ("|mThrowing|n is the act of tossing an [Item], object or "
                  "weapon.")
     },
     # CHA
     'animal': {
         'name': 'Animal Handle',
         'base': 'CHA',
-        'desc': ("{mAnimal Handle){n is the innate feat of being able to calm "
+        'desc': ("|mAnimal Handle)|n is the innate feat of being able to calm "
                  "and communicate non-verbally with a creature of less-than "
                  "humanoid intelligence. The target number to succeed is equal "
                  "to 10 - intelligence of the animal.")
@@ -139,14 +139,14 @@ _SKILL_DATA = {
     'barter': {
         'name': 'Barter',
         'base': 'CHA',
-        'desc': ("{mBarter{n is the the timeless art of negotiation in an "
+        'desc': ("|mBarter|n is the the timeless art of negotiation in an "
                  "effort to lower the price on an item for sale. This ability "
                  "can only be done once per merchant per day.")
     },
     'leadership': {
         'name': 'Leadership',
         'base': 'CHA',
-        'desc': ("{mLeadership{n is the natural ability to raise the spirits "
+        'desc': ("|mLeadership|n is the natural ability to raise the spirits "
                  "and morale of those around you. It also enhances grouping.")
     },
 }
