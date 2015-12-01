@@ -213,7 +213,6 @@ class AinneveList(object):
     @lsep.setter
     def lsep(self, sep):
         self._lsep = sep
-        self._parse_layout()
         self._refresh_list()
 
     @property
@@ -228,7 +227,6 @@ class AinneveList(object):
     def lcolor(self, color):
         if re.match(self.re_colors, color):
             self._lcolor = color
-            self._parse_layout()
             self._refresh_list()
 
     @property
@@ -243,7 +241,6 @@ class AinneveList(object):
     def vcolor(self, color):
         if re.match(self.re_colors, color):
             self._vcolor = color
-            self._parse_layout()
             self._refresh_list()
 
     @property
@@ -258,7 +255,6 @@ class AinneveList(object):
     @vwidth.setter
     def vwidth(self, value):
         self._vwidth = value
-        self._parse_layout()
         self._refresh_list()
 
     @property
@@ -273,7 +269,6 @@ class AinneveList(object):
     @padding.setter
     def padding(self, value):
         self._padding = value
-        self._parse_layout()
         self._refresh_list()
 
     @property
@@ -284,6 +279,7 @@ class AinneveList(object):
     @has_border.setter
     def has_border(self, value):
         self._has_border = bool(value)
+        self._refresh_list()
 
     @property
     def layout(self):
@@ -349,8 +345,8 @@ class AinneveList(object):
 
     def _refresh_list(self):
         """Renders the list data into the layout and stores in lines."""
+        self.lines = []
         if self.data is None:
-            self.lines = []
             return
 
         # handle orderby
@@ -375,8 +371,6 @@ class AinneveList(object):
                      for i in xrange(split)]
         else:
             assert False
-
-        self.lines = []
 
         if len(items) > 0 and isinstance(items[0], dict):
             for line in lines:

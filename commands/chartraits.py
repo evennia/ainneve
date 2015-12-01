@@ -4,14 +4,8 @@ Character trait-related commands
 
 from .command import MuxCommand
 from evennia.commands.cmdset import CmdSet
-from evennia.utils.evform import EvForm
-from evennia.utils.evtable import EvTable
+from evennia.utils.evform import EvForm, EvTable
 from utils.ainnevelist import AinneveList
-
-
-def bold(value):
-    """Returns a value wrapped in bright white 'bolding'."""
-    return "|w{}|n".format(value)
 
 
 class CharTraitCmdSet(CmdSet):
@@ -47,8 +41,6 @@ class CmdSheet(MuxCommand):
         """
         form = EvForm('commands.templates.charsheet', align='r')
         tr = self.caller.traits
-        sk = self.caller.skills
-
         fields = {
             'A': self.caller.name,
             'B': self.caller.db.archetype,
@@ -77,6 +69,7 @@ class CmdSheet(MuxCommand):
             'Y': self.caller.db.race,
             'Z': self.caller.db.focus,
         }
+        bold = lambda v: "{{w{}{{n".format(v)
         form.map({k: bold(v) for k, v in fields.iteritems()})
 
         gauges = EvTable(
