@@ -40,11 +40,11 @@ class CharTraitsTestCase(CommandTest):
 "  Race:                         None                     Charisma    :   4  \n"
 "  Focus:                        None                     Vitality    :   9  \n"
 "  Description                                            Magic       :   0  \n"
-"  ~~~~~~~~~~~                            \n"
+"  ~~~~~~~~~~~                          \n"
 "  None                                  Save Rolls       Fortitude   :   9  \n"
 "                                        ~~~~~~~~~~       Reflex      :   5  \n"
 "                                                         Will        :   1  \n"
-"  Encumbrance                            \n"
+"  Encumbrance                          \n"
 "  ~~~~~~~~~~~                           Combat Stats     Melee       :   9  \n"
 "  Carry Weight:             0 /  180    ~~~~~~~~~~~~     Ranged      :   2  \n"
 "  Encumbrance Penalty:             0    Power Point      Unarmed     :   5  \n"
@@ -60,7 +60,7 @@ class CharTraitsTestCase(CommandTest):
 "YPrimary Traitsn|\n"
 " CStrength         n : w  9n  CPerception       n : w  2n  CIntelligence     n : w  1n \n"
 " CDexterity        n : w  5n  CCharisma         n : w  4n  CVitality         n : w  9n \n"
-" CMagic            n : w  0n  C                 n : w   n  C                 n : w   n \n")
+" CMagic            n : w  0n  w                       n  w                       n \n")
         self.call(CmdTraits(), "pri", output)
         # test secondary traits
         output = (
@@ -77,5 +77,5 @@ class CharTraitsTestCase(CommandTest):
         output = (
 "YCombat Statsn|\n"
 " CMelee Attack     n : w  9n  CRanged Attack    n : w  2n  CUnarmed Attack   n : w  5n \n"
-" CDefense          n : w  5n  CPower Points     n : w  2n  C                 n : w   n \n")
+" CDefense          n : w  5n  CPower Points     n : w  2n  w                       n \n")
         self.call(CmdTraits(), "com", output)

@@ -5,12 +5,47 @@ The main feature of this module is the AinneveList building class that
 provides formatting support for lists in Ainneve. It supports easy
 creation of one, two, or three column lists.
 
-List items can consist of simple string values, or of a dict describing
-label-value pairs. AinneveList also supports custom list item sorting
-by formatting list items with additional sort keys and using the
-`orderby` argument and `fill_dir` provides great flexibility in the
-distribution of items across columns.
+Data for an AinneveList can be a simple list of strings, a dict of
+label: value pairs, or a list of dicts containing keys that describe
+the items' label, value, and additional keys that can override list-level
+arguments passed into the constructor on an individual item basis. See
+the class docstring for more on which arguments can be overridden on a
+per-item basis.
 
+List items do not wrap. Items that are longer than their allotted space
+are truncated.
+
+AinneveList supports custom list item sorting by including additional sort
+keys on list items and using the `orderby` and `fill_dir` arguments.
+Combined, these control the distribution of items across columns.
+
+List items can be colored using the `lcolor` and `vcolor` arguments or
+item keys. List items may also be colored by using ANSI color codes within
+the item text.
+
+For even greater control, a custom `layout` property may be set. Layouts
+consist of a number of defined columns and offset spaces on a `width` / 6
+grid. A layout is a list of strings beginning with either "column" or
+"offset", then a dash, then the number of grid spaces to allocate. Thus
+the default two-column layout is
+
+    ['column-3', 'column-3']
+
+And a custom two column split layout could be:
+
+    ['column-3', 'offset-1', 'column-2']
+
+This would produce two columns of different widths, separated by a single
+empty grid column.
+
+All six grid spaces do not need to be accounted for.
+
+    ['offset-1', 'column-4']
+
+This provides a single column indented from both the left and right sides
+by one grid unit.
+
+If `layout` is specified, it overrides any value entered for `columns`.
 """
 import re
 
@@ -35,6 +70,10 @@ class AinneveList(object):
     Supports standard one, two, or three-column layouts via the
     columns argument, or up to six columns and custom options
 
+    All constructor arguments are optional, but the list will
+    not render until either `columns` or `layout` is set, as well
+    as `data`.
+
     Args:
         data (list, dict): data to list, either a list of items,
             a dict of label:item pairs, or a dict containing keys
@@ -43,10 +82,12 @@ class AinneveList(object):
         fill_dir (str): one of 'h' for horizontal or 'v' for vertical
         orderby (str, callable): key or function to order dict-based lists
         width (int): total width of the screen in characters; default 79
-        lsep (str): separator for label: item pairs
-        lcolor (str): ansi color code for labels
-        vcolor (str): ansi color code for values
-        vwidth (str): columns to allocate for value (label takes remaining)
+        lsep (str): separator for label: item pairs. overrideable per-item
+        lcolor (str): ansi color code for labels. overrideable per-item
+        vcolor (str): ansi color code for values. overrideable per-item
+        vwidth (int): columns to allocate for value. overrideable per-item
+            label gets remaining space. setting to zero hides 'lbl' giving
+            'val' full column width.
         padding (int): number of spaces to pad list cells
         has_border (bool): draw borders around columns if True
         layout (list[str]): optional layout dict
@@ -65,6 +106,7 @@ class AinneveList(object):
                  padding=1,
                  has_border=True,
                  layout=None):
+        self.re_colors = re.compile(r'\|\[?(?:\d{3}|[RrGgBbYyCcMmWwX])(?:\|\[(?:\d{3}|[RrGgBbYyCcMmWwX]))?$')
         self._data = self._layout = self.lines = []
         self.template = {}
         self._columns = columns
@@ -103,14 +145,15 @@ class AinneveList(object):
         elif data is None:
             self._data = data
         elif isinstance(data, list) and len(data) > 0:
-            if isinstance(data[0], dict):
-                for d in data:
-                    d['val'] = str(d['val'])
-            self._data = data
+            if not isinstance(data[0], dict):
+                self._data = [{'val': str(v), 'vwidth': 0}
+                              for v in data]
+            else:
+                self._data = data
         else:
             raise AnvListException("`data` must be a list, dict, or list of dicts.")
-        self._build_template()
-        self._apply_template()
+        self._parse_layout()
+        self._refresh_list()
 
     @property
     def columns(self):
@@ -126,8 +169,8 @@ class AinneveList(object):
     def columns(self, value):
         if 0 < value <= 3:
             self._columns = value
-            self._build_template()
-            self._apply_template()
+            self._parse_layout()
+            self._refresh_list()
         elif value is None and self.layout is not None:
             self._columns = value
         else:
@@ -147,7 +190,7 @@ class AinneveList(object):
     def fill_dir(self, dir):
         if dir in ('h', 'v'):
             self._fill_dir = dir
-            self._apply_template()
+            self._refresh_list()
         else:
             raise AnvListException('Invalid fill_dir specified.')
 
@@ -159,8 +202,8 @@ class AinneveList(object):
     @width.setter
     def width(self, value):
         self._width = value
-        self._build_template()
-        self._apply_template()
+        self._parse_layout()
+        self._refresh_list()
 
     @property
     def lsep(self):
@@ -170,8 +213,8 @@ class AinneveList(object):
     @lsep.setter
     def lsep(self, sep):
         self._lsep = sep
-        self._build_template()
-        self._apply_template()
+        self._parse_layout()
+        self._refresh_list()
 
     @property
     def lcolor(self):
@@ -183,10 +226,10 @@ class AinneveList(object):
 
     @lcolor.setter
     def lcolor(self, color):
-        if re.match(r'\|', color):
+        if re.match(self.re_colors, color):
             self._lcolor = color
-            self._build_template()
-            self._apply_template()
+            self._parse_layout()
+            self._refresh_list()
 
     @property
     def vcolor(self):
@@ -198,10 +241,10 @@ class AinneveList(object):
 
     @vcolor.setter
     def vcolor(self, color):
-        if re.match(r'\|', color):
+        if re.match(self.re_colors, color):
             self._vcolor = color
-            self._build_template()
-            self._apply_template()
+            self._parse_layout()
+            self._refresh_list()
 
     @property
     def vwidth(self):
@@ -215,8 +258,8 @@ class AinneveList(object):
     @vwidth.setter
     def vwidth(self, value):
         self._vwidth = value
-        self._build_template()
-        self._apply_template()
+        self._parse_layout()
+        self._refresh_list()
 
     @property
     def padding(self):
@@ -230,8 +273,8 @@ class AinneveList(object):
     @padding.setter
     def padding(self, value):
         self._padding = value
-        self._build_template()
-        self._apply_template()
+        self._parse_layout()
+        self._refresh_list()
 
     @property
     def has_border(self):
@@ -254,8 +297,8 @@ class AinneveList(object):
     @layout.setter
     def layout(self, value):
         self._layout = self._validate_layout(value)
-        self._build_template()
-        self._apply_template()
+        self._parse_layout()
+        self._refresh_list()
 
     def _validate_layout(self, layout):
         """Validates any passed-in layout or assigns a builtin layout."""
@@ -272,115 +315,60 @@ class AinneveList(object):
         else:
             raise AnvListException('`layout` and `columns` cannot both be None.')
 
-    def _build_template(self):
+    def _parse_layout(self):
         """Builds the internal representation of the layout."""
-        self.num_cols = len(self.layout)
-        adj_width = (self.width - self.num_cols - 1 if self.has_border
-                                                    else self.width)
-        self.col_data = []
-        self.template = {}
         # calculate an even 6 column split
+        num_cols = len(self.layout)
+        adj_width = (self.width - num_cols - 1
+                     if self.has_border else self.width)
         splitsize = 1.0 / 6 * adj_width
-        col_widths = []
-        for i in xrange(6):
-            col_widths.append(
-                int(round((i+1)*splitsize)) - int(round(i*splitsize))
-            )
+        grid_widths = [int(round((i+1)*splitsize)) - int(round(i*splitsize))
+                       for i in xrange(6)]
 
         # then combine columns as described in the layout
+        self.col_data = []
         cur = 0
         for col in self.layout:
             type, width = col.split('-')
             self.col_data.append({
                 'type': type,
-                'width': sum(col_widths[cur:cur+int(width)])
+                'width': sum(grid_widths[cur:cur+int(width)])
             })
             cur += int(width)
 
-        if self.has_border:
-            border_char = {'column': _CHAR_H, 'offset': _CHAR_S}
-            col_borders = [border_char[cdata['type']] * cdata['width']
-                           for cdata in self.col_data]
+        self.col_data.append({})
+        border_char = {'column': _CHAR_H, 'offset': _CHAR_S}
+        col_borders = [border_char[cdata['type']] * cdata['width']
+                       for cdata in self.col_data[:-1]]
 
-            self.template['border'] = (
-                _CHAR_J +
-                _CHAR_J.join(col_borders) +
-                _CHAR_J
-            )
-        else:
-            self.template['border'] = ''
-
-        cols = []
-        ix = 0
-        if self.data is not None and len(self.data) > 0:
-            if isinstance(self.data[0], dict):
-                for cdata in self.col_data:
-                    if cdata['type'] == 'column':
-                        lwidth = (cdata['width'] - 4*self.padding
-                                  - self.vwidth - len(self.lsep))
-                        cols.append(
-                            ("{pad}{lcolor}{{lbl{col}:<{{lwidth}}.{{lwidth}}s}}{lclr}{pad}{sep}"
-                             "{pad}{vcolor}{{val{col}:>{{vwidth}}.{{vwidth}}s}}{vclr}{pad}"
-                             ).format(col=ix,
-                                      pad=' ' * self.padding,
-                                      sep=self.lsep,
-                                      lcolor=self.lcolor,
-                                      vcolor=self.vcolor,
-                                      lclr='|n' if self.lcolor else '',
-                                      vclr='|n' if self.vcolor else '',
-                                      ))
-                        ix += 1
-                    elif cdata['type'] == 'offset':
-                        cols.append(_CHAR_S * cdata['width'])
-                    else:
-                        raise AnvListException('Invalid format specified.')
-            else:
-                for cdata in self.col_data:
-                    if cdata['type'] == 'column':
-                        cols.append(
-                            "{pad}{vcolor}{{val{col}:<{{width}}.{{width}}s}}{vclr}{pad}".format(
-                                col=ix,
-                                pad=' ' * self.padding,
-                                vcolor=self.vcolor,
-                                width=cdata['width'] - 2*self.padding,
-                                vclr='|n' if self.vcolor else '',
-                            ))
-                        ix += 1
-                    elif cdata['type'] == 'offset':
-                        cols.append(_CHAR_S * cdata['width'])
-                    else:
-                        raise AnvListException('Invalid format specified.')
-
-        colsep = _CHAR_V if self.has_border else ''
-        self.template['body'] = (
-            colsep +
-            colsep.join(cols) +
-            colsep
+        self._border = (
+            _CHAR_J +
+            _CHAR_J.join(col_borders) +
+            _CHAR_J
         )
 
-    def _apply_template(self):
-        """Renders the list data into the template."""
+    def _refresh_list(self):
+        """Renders the list data into the layout and stores in lines."""
         if self.data is None:
             self.lines = []
             return
 
+        # handle orderby
         if self.orderby:
             items = sorted(self.data, key=self.orderby)
         else:
             items = self.data
 
-        columns = sum(1 for x in self.col_data if x['type'] == 'column')
+        # pad the items collection if needed for even columns
+        columns = sum(1 for x in self.col_data[:-1] if x['type'] == 'column')
         if len(items) % columns > 0:
-            if isinstance(items[0], dict):
-                items += [{'lbl': ' ', 'val': ' '}
-                          for _ in xrange(columns - (len(items) % columns))]
-            else:
-                items += [None for _ in xrange(len(items) % columns)]
+            items += [{'val': '', 'vwidth': 0}
+                      for _ in xrange(columns - (len(items) % columns))]
 
+        # break the items into rows using fill_dir
         if self.fill_dir == 'h':
             lines = [items[i:i+columns]
                      for i in xrange(0, len(items), columns)]
-
         elif self.fill_dir == 'v':
             split = len(items) // columns
             lines = [[items[i+j*split] for j in xrange(columns)]
@@ -392,23 +380,82 @@ class AinneveList(object):
 
         if len(items) > 0 and isinstance(items[0], dict):
             for line in lines:
-                opts = {'lbl{}'.format(i): line[i]['lbl']
-                        for i in xrange(len(line))}
-                opts.update({'val{}'.format(i): line[i]['val']
-                             for i in xrange(len(line))})
+                cols = []
+                i = 0
+                for item in line:
+                    vwidth = item.get('vwidth', self.vwidth)
+
+                    if vwidth <= 0:
+                        vwidth = self.col_data[i]['width'] - 2 * self.padding
+
+                    lwidth = (self.col_data[i]['width'] - 4 * self.padding -
+                              len(item.get('lsep', self.lsep)) - vwidth)
+
+                    vwidth += self._ansi_count(item['val'])
+                    lwidth += self._ansi_count(item.get('lbl', ''))
+
+                    # set widths to zero if they are negative
+                    vwidth = 0 if vwidth < 0 else vwidth
+                    lwidth = 0 if lwidth < 0 else lwidth
+
+                    vcolor = item.get('vcolor', self.vcolor)
+                    lcolor = item.get('lcolor', self.lcolor)
+
+                    opts = dict(
+                        lbl=str(item.get('lbl', '')),
+                        lcolor=lcolor,
+                        lclear='|n' if lcolor else '',
+                        lwidth=lwidth,
+                        lsep=item.get('lsep', self.lsep),
+                        val=str(item['val']),
+                        vcolor=vcolor,
+                        vclear='|n' if vcolor else '',
+                        vwidth=vwidth
+                    )
+
+                    if 'lbl' in item:
+                        cols.append(
+                            ("{pad}{lcolor}"
+                             "{lbl:<{lwidth}.{lwidth}s}"
+                             "{lclear}{pad}{lsep}{pad}{vcolor}"
+                             "{val:>{vwidth}.{vwidth}s}"
+                             "{vclear}{pad}"
+                             ).format(
+                                pad=' ' * self.padding,
+                                **opts)
+                        )
+                    else:
+                        cols.append(
+                            ("{pad}{vcolor}"
+                             "{val:<{vwidth}.{vwidth}s}"
+                             "{vclear}{pad}"
+                             ).format(
+                                pad=' ' * self.padding,
+                                **opts)
+                        )
+                    # check the next column to the right;
+                    # if it is of type "offset", we include its spaces
+                    i += 1
+                    if self.col_data[i].get('type', '') == 'offset':
+                        cols.append(' ' * self.col_data[i]['width'])
+                        i += 1
+
+                colsep = _CHAR_V if self.has_border else ''
                 self.lines.append(
-                    self.template['body'].format(**opts)
+                    colsep +
+                    colsep.join(cols) +
+                    colsep
                 )
-        else:
-            for line in lines:
-                opts = {'val{}'.format(i): line[i]
-                        for i in xrange(len(line))}
-                self.lines.append(
-                    self.template['body'].format(**opts)
-                )
+
         if self.has_border:
-            self.lines.insert(0, self.template['border'])
-            self.lines.append(self.template['border'])
+            self.lines.insert(0, self._border)
+            self.lines.append(self._border)
+
+    def _ansi_count(self, string):
+        """Returns the number of ansi color characters."""
+        from evennia.utils.ansi import strip_ansi
+        string = str(string)
+        return len(string) - len(strip_ansi(string))
 
     def __unicode__(self):
         """Display the output list."""

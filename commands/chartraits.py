@@ -145,7 +145,7 @@ class CmdTraits(MuxCommand):
         elif self.args.startswith('enc') or self.args.startswith('car'):
             title = 'Encumbrance'
             traits = [{'lbl': tr.ENC.name,
-                       'val': "{} / {}".format(tr.ENC.actual, tr.ENC.max),
+                       'val': "{}|n / |w{}".format(tr.ENC.actual, tr.ENC.max),
                        'sort': 0},
                       {'lbl': "Encumbrance Penalty",
                        'val': "{:+d}".format(tr.MV.mod),
@@ -246,5 +246,6 @@ class CmdSkills(MuxCommand):
                 {'lbl': sk.barter.name, 'val': sk.barter.actual, 'sort': 13},
                 {'lbl': sk.leadership.name, 'val': sk.leadership.actual, 'sort': 14},
             ]
-        self.caller.msg("  |Y{}".format(title))
+
+        self.caller.msg("  |Y{}|n".format(title))
         self.caller.msg(unicode(list))
