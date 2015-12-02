@@ -18,7 +18,8 @@ Module Functions:
     - `apply_skills(char)`
 
         Initializes a character's db.skills attribute to support skill
-        traits. In OA, all skills start at 0 and can be negative.
+        traits. In OA, all skills start matching their base trait before
+        the player allocates a number of +1 and -1 counters.
 
     - `load_skill(skill)`
 
@@ -33,8 +34,8 @@ Module Functions:
 
     - `finalize_skills(skills)`
 
-        Finalizes and "saves" the player's allocations, freeing the
-        `mod` property of its particular use during chargen.
+        Finalizes and "saves" the player's allocations and deletes the
+        'plus' and 'minus' extra keys used during chargen.
 """
 from math import ceil
 
@@ -169,7 +170,8 @@ def apply_skills(char):
         {skill: {'type': 'trait',
                  'base': char.traits[data['base']].actual,
                  'mod': 0,
-                 'name': data['name']}
+                 'name': data['name'],
+                 'extra': {'plus': 0, 'minus': 0}}
             for skill, data in _SKILL_DATA.iteritems()}
 
 
@@ -199,9 +201,12 @@ def validate_skills(char):
         (tuple[bool, str]): first value is whether the skills are valid,
             second value is error message
     """
-    target = -3 + ceil(char.traits.INT.actual / 3.0)
-    if sum(char.skills[s].mod for s in ALL_SKILLS) != target:
-        return False, 'Incorrect number of skill counters allocated.'
+    minus_count = 3
+    plus_count = ceil(char.traits.INT.actual / 3.0)
+    if sum(char.skills[s].minus for s in ALL_SKILLS) != minus_count:
+        return False, 'Not enough -1 counters allocated.'
+    if sum(char.skills[s].plus for s in ALL_SKILLS) != plus_count:
+        return False, 'Not enough +1 counters allocated.'
     return True, ''
 
 
@@ -218,8 +223,10 @@ def finalize_skills(skills):
         and reset `mod` to zero for game play.
     """
     for skill in ALL_SKILLS:
-        skills[skill].base = skills[skill].actual
-        skills[skill].reset_mod()
+        skills[skill].base += skills[skill].plus
+        skills[skill].base -= skills[skill].minus
+        del skills[skill].plus
+        del skills[skill].minus
 
 
 class Skill(object):
