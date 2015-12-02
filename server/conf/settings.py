@@ -39,6 +39,7 @@ PROTOTYPE_MODULES = ('world.content.prototypes_armor',
                      'world.content.prototypes_mobs',
                      'world.content.prototypes_weapons'
                      )
+BASE_BATCHPROCESS_PATHS = ['world.build']
 
 ######################################################################
 # Evennia Database config
