@@ -56,6 +56,8 @@ _CHAR_S = ' '
 _LAYOUTS = {'1col': ['column-6'],
             '2col': ['column-3', 'column-3'],
             '3col': ['column-2', 'column-2', 'column-2']}
+_ALIGNMENTS = {'l': '<', 'r': '>', 'c': '^',
+               '<': '<', '>': '>', '^': '^'}
 
 
 class AnvListException(Exception):
@@ -84,10 +86,12 @@ class AinneveList(object):
         width (int): total width of the screen in characters; default 79
         lsep (str): separator for label: item pairs. overrideable per-item
         lcolor (str): ansi color code for labels. overrideable per-item
+        lalign (ltr): label alignment
         vcolor (str): ansi color code for values. overrideable per-item
         vwidth (int): columns to allocate for value. overrideable per-item
             label gets remaining space. setting to zero hides 'lbl' giving
             'val' full column width.
+        valign (str): value alignment (not vertical)
         padding (int): number of spaces to pad list cells
         has_border (bool): draw borders around columns if True
         layout (list[str]): optional layout dict
@@ -101,29 +105,39 @@ class AinneveList(object):
                  width=79,
                  lsep=':',
                  lcolor='',
+                 lalign='<',
                  vcolor='',
                  vwidth=3,
+                 valign='>',
                  padding=1,
                  has_border=True,
+                 truncate_ind='..',
                  layout=None):
-        self.re_colors = re.compile(r'\|\[?(?:\d{3}|[RrGgBbYyCcMmWwX])(?:\|\[(?:\d{3}|[RrGgBbYyCcMmWwX]))?$')
         self._data = self._layout = self.lines = []
-        self.template = {}
-        self._columns = columns
-        self._fill_dir = fill_dir
-        self._width = width
-        self._lsep = lsep
-        self._lcolor = lcolor
-        self._vcolor = vcolor
-        self._vwidth = vwidth
-        self._padding = padding
-        self._has_border = has_border
+        self._fill_dir = self._lalign = self._valign = ''
+        self._lsep = self._lcolor = self._vcolor = self._truncate_ind = ''
+        self._columns = self._width = self._vwidth = self._padding = 0
+        self._has_border = False
+
+        self.re_colors = re.compile(r'\|\[?(?:\d{3}|[RrGgBbYyCcMmWwX])(?:\|\[(?:\d{3}|[RrGgBbYyCcMmWwX]))?$')
 
         if orderby is None or callable(orderby):
             self.orderby = orderby
         else:
             self.orderby = lambda x: x[orderby]
 
+        self.columns = columns
+        self.width = width
+        self.lsep = lsep
+        self.lcolor = lcolor
+        self.lalign = lalign
+        self.vcolor = vcolor
+        self.valign = valign
+        self.vwidth = vwidth
+        self.truncate_ind = truncate_ind
+        self.has_border = has_border
+        self.fill_dir = fill_dir
+        self.padding = padding
         self.layout = layout
         self.data = data
 
@@ -148,6 +162,7 @@ class AinneveList(object):
             if not isinstance(data[0], dict):
                 self._data = [{'val': str(v), 'vwidth': 0}
                               for v in data]
+                self.valign = '<'
             else:
                 self._data = data
         else:
@@ -230,6 +245,25 @@ class AinneveList(object):
             self._refresh_list()
 
     @property
+    def lalign(self):
+        """Label alignment property.
+
+        Allowed Values:
+            'l' or '<': left aligned
+            'r' or '>': right aligned
+            'c' or '^': centered
+        """
+        return self._lalign
+
+    @lalign.setter
+    def lalign(self, value):
+        if value in _ALIGNMENTS:
+            self._lalign = _ALIGNMENTS[value]
+            self._refresh_list()
+        else:
+            raise AnvListException("Invalid value for 'lalign'.")
+
+    @property
     def vcolor(self):
         """Value color.
 
@@ -258,6 +292,25 @@ class AinneveList(object):
         self._refresh_list()
 
     @property
+    def valign(self):
+        """Value alignment property.
+
+        Allowed Values:
+            'l' or '<': left aligned
+            'r' or '>': right aligned
+            'c' or '^': centered
+        """
+        return self._valign
+
+    @valign.setter
+    def valign(self, value):
+        if value in _ALIGNMENTS:
+            self._valign = _ALIGNMENTS[value]
+            self._refresh_list()
+        else:
+            raise AnvListException("Invalid value for 'valign'.")
+
+    @property
     def padding(self):
         """Horizontal padding for all list items.
 
@@ -280,6 +333,17 @@ class AinneveList(object):
     def has_border(self, value):
         self._has_border = bool(value)
         self._refresh_list()
+
+    @property
+    def truncate_ind(self):
+        """Stores the char or string indicating an item has been truncated."""
+        return self._truncate_ind
+
+    @truncate_ind.setter
+    def truncate_ind(self, value):
+        if isinstance(value, str):
+            self._truncate_ind = value
+
 
     @property
     def layout(self):
@@ -357,93 +421,111 @@ class AinneveList(object):
 
         # pad the items collection if needed for even columns
         columns = sum(1 for x in self.col_data[:-1] if x['type'] == 'column')
-        if len(items) % columns > 0:
-            items += [{'val': '', 'vwidth': 0}
-                      for _ in xrange(columns - (len(items) % columns))]
+        if columns:
+            if len(items) % columns > 0:
+                items += [{'val': '', 'vwidth': 0}
+                          for _ in xrange(columns - (len(items) % columns))]
 
-        # break the items into rows using fill_dir
-        if self.fill_dir == 'h':
-            lines = [items[i:i+columns]
-                     for i in xrange(0, len(items), columns)]
-        elif self.fill_dir == 'v':
-            split = len(items) // columns
-            lines = [[items[i+j*split] for j in xrange(columns)]
-                     for i in xrange(split)]
-        else:
-            assert False
+            # break the items into rows using fill_dir
+            if self.fill_dir == 'h':
+                lines = [items[i:i+columns]
+                         for i in xrange(0, len(items), columns)]
+            elif self.fill_dir == 'v':
+                split = len(items) // columns
+                lines = [[items[i+j*split] for j in xrange(columns)]
+                         for i in xrange(split)]
+            else:
+                assert False
 
-        if len(items) > 0 and isinstance(items[0], dict):
-            for line in lines:
-                cols = []
-                i = 0
-                for item in line:
-                    vwidth = item.get('vwidth', self.vwidth)
+            if len(items) > 0 and isinstance(items[0], dict):
+                for line in lines:
+                    cols = []
+                    i = 0
+                    for item in line:
+                        vwidth = item.get('vwidth', self.vwidth)
 
-                    if vwidth <= 0:
-                        vwidth = self.col_data[i]['width'] - 2 * self.padding
+                        if vwidth <= 0:
+                            vwidth = self.col_data[i]['width'] - 2 * self.padding
 
-                    lwidth = (self.col_data[i]['width'] - 4 * self.padding -
-                              len(item.get('lsep', self.lsep)) - vwidth)
+                        lwidth = (self.col_data[i]['width'] - 4 * self.padding -
+                                  len(item.get('lsep', self.lsep)) - vwidth)
 
-                    vwidth += self._ansi_count(item['val'])
-                    lwidth += self._ansi_count(item.get('lbl', ''))
+                        vwidth += self._ansi_count(item['val'])
+                        lwidth += self._ansi_count(item.get('lbl', ''))
 
-                    # set widths to zero if they are negative
-                    vwidth = 0 if vwidth < 0 else vwidth
-                    lwidth = 0 if lwidth < 0 else lwidth
+                        # set widths to zero if they are negative
+                        vwidth = 0 if vwidth < 0 else vwidth
+                        lwidth = 0 if lwidth < 0 else lwidth
 
-                    vcolor = item.get('vcolor', self.vcolor)
-                    lcolor = item.get('lcolor', self.lcolor)
+                        vcolor = item.get('vcolor', self.vcolor)
+                        lcolor = item.get('lcolor', self.lcolor)
 
-                    opts = dict(
-                        lbl=str(item.get('lbl', '')),
-                        lcolor=lcolor,
-                        lclear='|n' if lcolor else '',
-                        lwidth=lwidth,
-                        lsep=item.get('lsep', self.lsep),
-                        val=str(item['val']),
-                        vcolor=vcolor,
-                        vclear='|n' if vcolor else '',
-                        vwidth=vwidth
+                        # data cleanup/truncation
+                        trunc=item.get('truncate_ind', self.truncate_ind)
+                        lbl = str(item.get('lbl', ''))
+                        lbl = re.sub(r'\r?\n', ' ', lbl)
+                        if len(lbl) > lwidth:
+                            lbl = re.sub('(.{{{}}}).*'.format(lwidth-len(trunc)),
+                                         '\\1{}'.format(trunc),
+                                         lbl)
+
+                        val = str(item['val'])
+                        val = re.sub(r'\r?\n', ' ', val)
+                        if len(val) > vwidth:
+                            val = re.sub('(.{{{}}}).*'.format(vwidth-len(trunc)),
+                                         '\\1{}'.format(trunc),
+                                         val)
+                        opts = dict(
+                            lbl=lbl,
+                            lcolor=lcolor,
+                            lclear='|n' if lcolor else '',
+                            lwidth=lwidth,
+                            lalign=item.get('lalign', self.lalign),
+                            lsep=item.get('lsep', self.lsep),
+                            val=val,
+                            vcolor=vcolor,
+                            vclear='|n' if vcolor else '',
+                            vwidth=vwidth,
+                            valign=item.get('valign', self.valign),
+                        )
+
+                        if 'lbl' in item:
+                            cols.append(
+                                ("{pad}{lcolor}"
+                                 "{lbl:{lalign}{lwidth}.{lwidth}s}"
+                                 "{lclear}{pad}{lsep}{pad}{vcolor}"
+                                 "{val:{valign}{vwidth}.{vwidth}s}"
+                                 "{vclear}{pad}"
+                                 ).format(
+                                    pad=' ' * self.padding,
+                                    **opts)
+                            )
+                        else:
+                            cols.append(
+                                ("{pad}{vcolor}"
+                                 "{val:{lalign}{vwidth}.{vwidth}s}"
+                                 "{vclear}{pad}"
+                                 ).format(
+                                    pad=' ' * self.padding,
+                                    **opts)
+                            )
+                        # check the next column to the right;
+                        # if it is of type "offset", we include its spaces
+                        i += 1
+                        if self.col_data[i].get('type', '') == 'offset':
+                            cols.append(' ' * self.col_data[i]['width'])
+                            i += 1
+
+                    colsep = _CHAR_V if self.has_border else ''
+                    self.lines.append(
+                        colsep +
+                        colsep.join(cols) +
+                        colsep
                     )
 
-                    if 'lbl' in item:
-                        cols.append(
-                            ("{pad}{lcolor}"
-                             "{lbl:<{lwidth}.{lwidth}s}"
-                             "{lclear}{pad}{lsep}{pad}{vcolor}"
-                             "{val:>{vwidth}.{vwidth}s}"
-                             "{vclear}{pad}"
-                             ).format(
-                                pad=' ' * self.padding,
-                                **opts)
-                        )
-                    else:
-                        cols.append(
-                            ("{pad}{vcolor}"
-                             "{val:<{vwidth}.{vwidth}s}"
-                             "{vclear}{pad}"
-                             ).format(
-                                pad=' ' * self.padding,
-                                **opts)
-                        )
-                    # check the next column to the right;
-                    # if it is of type "offset", we include its spaces
-                    i += 1
-                    if self.col_data[i].get('type', '') == 'offset':
-                        cols.append(' ' * self.col_data[i]['width'])
-                        i += 1
-
-                colsep = _CHAR_V if self.has_border else ''
-                self.lines.append(
-                    colsep +
-                    colsep.join(cols) +
-                    colsep
-                )
-
-        if self.has_border:
-            self.lines.insert(0, self._border)
-            self.lines.append(self._border)
+            if self.has_border:
+                self.lines.insert(0, self._border)
+                self.lines.append(self._border)
 
     def _ansi_count(self, string):
         """Returns the number of ansi color characters."""

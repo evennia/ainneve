@@ -48,7 +48,7 @@ class AinneveListTestCase(TestCase):
         lst = AinneveList(self.structured_dict, columns=3)
         output = """\
 +-------------------------+-------------------------+-------------------------+
-|| Carry Wei =>   50|n / |w180 || Encumbrance       :  +2 || |bMovement         |n : |y  5|n ||
+|| Carry W.. =>   50|n / |w180 || Encumbrance       :  +2 || |bMovement         |n : |y  5|n ||
 +-------------------------+-------------------------+-------------------------+"""
         self.assertEqual(str(lst), output)
 
@@ -250,4 +250,53 @@ class AinneveListTestCase(TestCase):
         output = (' Monday           Tuesday         Wednesday       \n'
                   ' Thursday         Friday          Saturday        \n'
                   ' Sunday                                           ')
+        self.assertEqual(str(lst), output)
+
+    def test_lalign(self):
+        """test label alignment property"""
+        lst = AinneveList(self.simple_dict, columns=3, lalign='r')
+        output = """\
++-------------------------+-------------------------+-------------------------+
+||         Dexterity :   3 ||        Perception :   5 ||             Magic :   0 ||
+||      Intelligence :   4 ||          Vitality :   1 ||          Charisma :   2 ||
+||          Strength :   6 ||                         ||                         ||
++-------------------------+-------------------------+-------------------------+"""
+        self.assertEqual(str(lst), output)
+        lst.lalign = '^'
+        output = """\
++-------------------------+-------------------------+-------------------------+
+||     Dexterity     :   3 ||    Perception     :   5 ||       Magic       :   0 ||
+||   Intelligence    :   4 ||     Vitality      :   1 ||     Charisma      :   2 ||
+||     Strength      :   6 ||                         ||                         ||
++-------------------------+-------------------------+-------------------------+"""
+        self.assertEqual(str(lst), output)
+
+    def test_valign(self):
+        """test value alignment property"""
+        lst = AinneveList(self.simple_dict, columns=3, valign='l')
+        output = """\
++-------------------------+-------------------------+-------------------------+
+|| Dexterity         : 3   || Perception        : 5   || Magic             : 0   ||
+|| Intelligence      : 4   || Vitality          : 1   || Charisma          : 2   ||
+|| Strength          : 6   ||                         ||                         ||
++-------------------------+-------------------------+-------------------------+"""
+        self.assertEqual(str(lst), output)
+        lst.valign = '^'
+        output = """\
++-------------------------+-------------------------+-------------------------+
+|| Dexterity         :  3  || Perception        :  5  || Magic             :  0  ||
+|| Intelligence      :  4  || Vitality          :  1  || Charisma          :  2  ||
+|| Strength          :  6  ||                         ||                         ||
++-------------------------+-------------------------+-------------------------+"""
+        self.assertEqual(str(lst), output)
+
+    def test_no_line_breaks(self):
+        """test linebreak removal"""
+        lst = AinneveList(['one line', 'two\nlines',
+                           'windows style\r\nsomehow'],
+                          columns=3)
+        output = """\
++-------------------------+-------------------------+-------------------------+
+|| one line                || two lines               || windows style somehow   ||
++-------------------------+-------------------------+-------------------------+"""
         self.assertEqual(str(lst), output)
