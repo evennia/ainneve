@@ -153,7 +153,11 @@ _SKILL_DATA = {
 }
 
 # skill groupings used in skills command
-ALL_SKILLS = _SKILL_DATA.keys()
+ALL_SKILLS = ('escape', 'climb', 'jump',
+              'lockpick', 'listen', 'sense',
+              'appraise', 'medicine', 'survival',
+              'balance', 'sneak', 'throwing',
+              'animal', 'barter', 'leadership')
 STR_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'STR']
 PER_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'PER']
 INT_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'INT']

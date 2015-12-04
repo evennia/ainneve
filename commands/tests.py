@@ -58,24 +58,24 @@ class CharTraitsTestCase(CommandTest):
         # test primary traits
         output = (
 "YPrimary Traitsn|\n"
-" CStrength         n : w  9n  CPerception       n : w  2n  CIntelligence     n : w  1n \n"
-" CDexterity        n : w  5n  CCharisma         n : w  4n  CVitality         n : w  9n \n"
-" CMagic            n : w  0n  w                       n  w                       n \n")
+" Strength         :   9  Perception       :   2  Intelligence     :   1 \n"
+" Dexterity        :   5  Charisma         :   4  Vitality         :   9 \n"
+" Magic            :   0")
         self.call(CmdTraits(), "pri", output)
         # test secondary traits
         output = (
 "YSecondary Traitsn|\n"
-" CHealth                        n : w  9n  CBlack Mana                    n : w  0n \n"
-" CStamina                       n : w  9n  CWhite Mana                    n : w  0n \n")
+" Health                        :   9  Black Mana                   :   0 \n"
+" Stamina                       :   9  White Mana                   :   0")
         self.call(CmdTraits(), "secondary", output)
         # test save rolls
         output = (
 "YSave Rollsn|\n"
-" CFortitude Save   n : w  9n  CReflex Save      n : w  5n  CWill Save        n : w  1n \n")
+" Fortitude Save   :   9  Reflex Save      :   5  Will Save        :   1")
         self.call(CmdTraits(), "sav", output)
         # test combat stats
         output = (
 "YCombat Statsn|\n"
-" CMelee Attack     n : w  9n  CRanged Attack    n : w  2n  CUnarmed Attack   n : w  5n \n"
-" CDefense          n : w  5n  CPower Points     n : w  2n  w                       n \n")
+" Melee Attack     :   9  Ranged Attack    :   2  Unarmed Attack   :   5 \n"
+" Defense          :   5  Power Points     :   2")
         self.call(CmdTraits(), "com", output)

@@ -5,7 +5,6 @@ Character trait-related commands
 from .command import MuxCommand
 from evennia.commands.cmdset import CmdSet
 from evennia.utils.evform import EvForm, EvTable
-from utils.ainnevelist import AinneveList
 
 
 class CharTraitCmdSet(CmdSet):
@@ -69,15 +68,18 @@ class CmdSheet(MuxCommand):
             'Y': self.caller.db.race,
             'Z': self.caller.db.focus,
         }
-        bold = lambda v: "{{w{}{{n".format(v)
-        form.map({k: bold(v) for k, v in fields.iteritems()})
+        form.map({k: self._format_trait_val(v) for k, v in fields.iteritems()})
 
         gauges = EvTable(
             "|CHP|n", "|CSP|n", "|CBM|n", "|CWM|n",
-            table=[["{} / {}".format(bold(tr.HP.actual), bold(tr.HP.max))],
-                   ["{} / {}".format(bold(tr.SP.actual), bold(tr.SP.max))],
-                   ["{} / {}".format(bold(tr.BM.actual), bold(tr.BM.max))],
-                   ["{} / {}".format(bold(tr.WM.actual), bold(tr.WM.max))]],
+            table=[["{} / {}".format(self._format_trait_val(tr.HP.actual),
+                                     self._format_trait_val(tr.HP.max))],
+                   ["{} / {}".format(self._format_trait_val(tr.SP.actual),
+                                     self._format_trait_val(tr.SP.max))],
+                   ["{} / {}".format(self._format_trait_val(tr.BM.actual),
+                                     self._format_trait_val(tr.BM.max))],
+                   ["{} / {}".format(self._format_trait_val(tr.WM.actual),
+                                     self._format_trait_val(tr.WM.max))]],
             align='c',
             border="incols"
         )
@@ -93,6 +95,9 @@ class CmdSheet(MuxCommand):
         if any(sw.startswith('sk') for sw in self.switches):
             self.caller.execute_cmd('skills')
 
+    def _format_trait_val(self, val):
+        """Format trait values as bright white."""
+        return "|w{}|n".format(val)
 
 class CmdTraits(MuxCommand):
     """
@@ -115,58 +120,55 @@ class CmdTraits(MuxCommand):
     def func(self):
         from world import archetypes
         table = None
-        cols = 1
-        fill_dir = 'h'
         tr = self.caller.traits
+        traits = []
         if self.args.startswith('pri'):
             title = 'Primary Traits'
             traits = archetypes.PRIMARY_TRAITS
-            cols = 3
-        elif self.args.startswith('sec'):
-            title = 'Secondary Traits'
-            traits = archetypes.SECONDARY_TRAITS
-            cols = 2
-            fill_dir = 'v'
         elif self.args.startswith('sav'):
             title = 'Save Rolls'
             traits = archetypes.SAVE_ROLLS
-            cols = 3
         elif self.args.startswith('com'):
             title = 'Combat Stats'
             traits = archetypes.COMBAT_TRAITS
-            cols = 3
+        elif self.args.startswith('sec'):
+            title = 'Secondary Traits'
+            data = [["|C{:<29.29}|n : |w{:>3}|n".format(
+                        tr[t].name, tr[t].actual)
+                    for t in ('HP', 'SP')],
+                    ["|C{:<28.28}|n : |w{:>3}|n".format(
+                        tr[t].name, tr[t].actual)
+                    for t in ('BM', 'WM')]]
+            table = EvTable(header=False, table=data)
         elif self.args.startswith('enc') or self.args.startswith('car'):
             title = 'Encumbrance'
-            traits = [{'lbl': tr.ENC.name,
-                       'val': "{}|n / |w{}".format(tr.ENC.actual, tr.ENC.max),
-                       'sort': 0},
-                      {'lbl': "Encumbrance Penalty",
-                       'val': "{:+d}".format(tr.MV.mod),
-                       'sort': 1},
-                      {'lbl': tr.MV.name,
-                       'val': "{}".format(tr.MV.actual),
-                       'sort': 2}]
-
-            table = AinneveList(traits,
-                                lcolor='|C',
-                                vcolor='|w',
-                                vwidth=9,
-                                layout=['column-3'],
-                                orderby='sort')
+            data = [["|C{:<30.30s}|n : |w{:>4}|n / |w{:>5}|n".format(
+                        tr.ENC.name, tr.ENC.actual, tr.ENC.max
+                     ),
+                     "|C{:30.30s}|n : |w{:>+12}|n".format(
+                         'Encumbrance Penalty', tr.MV.mod
+                     ),
+                     "|C{:30.30s}|n : |w{:>12}|n".format(
+                         tr.MV.name, tr.MV.actual
+                     )]]
+            table = EvTable(header=False, table=data)
         else:
             self.caller.msg("Usage: traits <traitgroup>")
             return
         if not table:
-            table = AinneveList({tr[t].name: tr[t].actual for t in traits},
-                                columns=cols,
-                                lcolor='|C',
-                                vcolor='|w',
-                                fill_dir=fill_dir,
-                                orderby=lambda x: [tr[t].name for t
-                                                   in traits].index(x['lbl']))
+            data = []
+            for i in xrange(3):
+                data.append([self._format_trait_3col(tr[t])
+                             for t in traits[i::3]])
+            table = EvTable(header=False, table=data)
 
         self.caller.msg("  |Y{}|n".format(title))
         self.caller.msg(unicode(table))
+
+    def _format_trait_3col(self, trait):
+        """Return a trait : value pair formatted for 3col layout"""
+        return "|C{:<16.16}|n : |w{:>3}|n".format(
+                    trait.name, trait.actual)
 
 
 class CmdSkills(MuxCommand):
@@ -213,32 +215,22 @@ class CmdSkills(MuxCommand):
                 self.msg('Usage: skills [<skillgroup>]')
                 return
 
-            list = AinneveList(columns=3, lcolor='|M', vcolor='|w')
-            list.data = {sk[s].name: sk[s].actual for s in sk_list}
+            table = EvTable(header=False,
+                            table=[[self._format_skill_3col(sk[s])]
+                                  for s in sk_list])
         else:
             title = 'Skills'
-            list = AinneveList(columns=3,
-                               width=77,
-                               lcolor='|M',
-                               vcolor='|w',
-                               orderby='sort')
-            list.data = [
-                {'lbl': sk.escape.name, 'val': sk.escape.actual, 'sort': 0},
-                {'lbl': sk.climb.name, 'val': sk.climb.actual, 'sort': 1},
-                {'lbl': sk.jump.name, 'val': sk.jump.actual, 'sort': 2},
-                {'lbl': sk.lockpick.name, 'val': sk.lockpick.actual, 'sort': 3},
-                {'lbl': sk.listen.name, 'val': sk.listen.actual, 'sort': 4},
-                {'lbl': sk.sense.name, 'val': sk.sense.actual, 'sort': 5},
-                {'lbl': sk.appraise.name, 'val': sk.appraise.actual, 'sort': 6},
-                {'lbl': sk.medicine.name, 'val': sk.medicine.actual, 'sort': 7},
-                {'lbl': sk.survival.name, 'val': sk.survival.actual, 'sort': 8},
-                {'lbl': sk.balance.name, 'val': sk.balance.actual, 'sort': 9},
-                {'lbl': sk.sneak.name, 'val': sk.sneak.actual, 'sort': 10},
-                {'lbl': sk.throwing.name, 'val': sk.throwing.actual, 'sort': 11},
-                {'lbl': sk.animal.name, 'val': sk.animal.actual, 'sort': 12},
-                {'lbl': sk.barter.name, 'val': sk.barter.actual, 'sort': 13},
-                {'lbl': sk.leadership.name, 'val': sk.leadership.actual, 'sort': 14},
-            ]
+            data = []
+            for i in xrange(3):
+                data.append([self._format_skill_3col(sk[s])
+                             for s in skills.ALL_SKILLS[i::3]])
+
+            table = EvTable(header=False, table=data)
 
         self.caller.msg("  |Y{}|n".format(title))
-        self.caller.msg(unicode(list))
+        self.caller.msg(unicode(table))
+
+    def _format_skill_3col(self, skill):
+        """Return a trait : value pair formatted for 3col layout"""
+        return "|M{:<16.16}|n : |w{:>3}|n".format(
+                    skill.name, skill.actual)
