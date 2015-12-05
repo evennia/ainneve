@@ -1,7 +1,7 @@
 # A trivial test for Travis
 
 from evennia.commands.default.tests import CommandTest
-from commands.equip_commands import CmdEquip
+from commands.equip import CmdEquip
 from typeclasses.characters import Character
 
 class TestEquip(CommandTest):

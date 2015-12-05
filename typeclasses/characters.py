@@ -125,7 +125,8 @@ class Character(Object):
         self.db.focus = None
         self.db.archetype = None
         self.db.traits = {}       # trait data
-        self.db.slots = []        # equipment slots
+        self.db.slots = {}        # equipment slots
+        self.db.limbs = ()        # limb/slot mappings
 
         # Non-persistent attributes
         self.ndb.group = None
@@ -135,21 +136,7 @@ class Character(Object):
         """TraitFactory that manages character traits."""
         return TraitFactory(self.db.traits)
 
-
-    # TODO: The EquipHandler should be refactored. It's a little complex for
-    # what it does
-    @property
-    def inventory(self):
-        """
-        Return inventory items.
-        """
-        eq = hasattr(self, 'equip') and self.equip.items or []
-        return [obj for obj in self.contents if obj not in eq]
-
     @lazy_property
     def equip(self):
-        """
-        An handler to administrate characters equipment.
-        """
-        slots = self.db.slots or []
-        return EquipHandler(self, slots=slots)
+        """Handler for equipped items."""
+        return EquipHandler(self)

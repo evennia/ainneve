@@ -153,6 +153,7 @@ def apply_race(char, race, focus):
     char.db.race = race.name
     char.db.focus = focus.name
     char.db.slots = race.slots
+    char.db.limbs = race.limbs
 
     # apply race-based bonuses
     for trait, bonus in race.bonuses.iteritems():
@@ -188,11 +189,16 @@ class Race(object):
         self.plural = ""
         self.size = ""
         self._desc = ""
-        self.slots = [
-            'wield1',
-            'wield2',
-            'armor',
-        ]
+        self.slots = {
+            'wield1': None,
+            'wield2': None,
+            'armor': None,
+        }
+        self.limbs = (
+            ('r_arm', ('wield1',)),
+            ('l_arm', ('wield2',)),
+            ('body', ('armor',)),
+        )
         self.foci = []
         self.bonuses = {}
 

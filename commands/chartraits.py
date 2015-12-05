@@ -10,7 +10,7 @@ from evennia.utils.evform import EvForm, EvTable
 class CharTraitCmdSet(CmdSet):
 
     key = "chartrait_cmdset"
-    priority = 2
+    priority = 1
 
     def at_cmdset_creation(self):
         """Populate CmdSet"""
@@ -131,8 +131,8 @@ class CmdTraits(MuxCommand):
                        "{{C{}{{n".format(tr.MV.name)],
                       ["{{w{}{{n / {{w{}{{n".format(tr.ENC.actual,
                                                     tr.ENC.max),
-                       "{{w{:+d}{{n".format(tr.MV.mod),
-                       "{{w{}{{n".format(tr.MV.actual)]]
+                       "{{w{:>+9d}{{n".format(int(tr.MV.mod)),
+                       "{{w{:>9d}{{n".format(int(tr.MV.actual))]]
 
             table = EvTable(header=False, table=traits)
         else:

@@ -3,7 +3,6 @@ Armor typeclasses
 """
 
 from typeclasses.items import Equippable
-from commands.item_commands import EmpoweredArmorCmdSet
 
 class Armor(Equippable):
     """
@@ -31,10 +30,3 @@ class Shield(Armor):
     slots = ['wield1', 'wield2']
     multi_slot = False
 
-
-class EmpoweredArmor(Armor):
-    """Armor that allows the user to boost their Defense stat."""
-    def at_object_creation(self):
-        super(Armor, self).at_object_creation()
-        self.db.ability_cost = [(0, 'activate')]
-        self.cmdset.add(EmpoweredArmorCmdSet())
