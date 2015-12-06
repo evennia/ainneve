@@ -7,8 +7,8 @@ from evennia.utils.evtable import EvTable
 from typeclasses.items import Equippable
 
 
-__all__ = ('CmdInventory', 'CmdDrop', 'CmdStow',
-           'CmdEquip', 'CmdWear', 'CmdWield', 'CmdRemove')
+__all__ = ('CmdInventory', 'CmdEquip',
+           'CmdWear', 'CmdWield', 'CmdRemove')
 
 
 class EquipCmdSet(CmdSet):
@@ -40,7 +40,6 @@ class CmdInventory(MuxCommand):
     arg_regex = r"$"
 
     def func(self):
-        "check inventory"
         items = [i for i in self.caller.contents
                  if i not in self.caller.equip]
         if not items:
@@ -50,8 +49,8 @@ class CmdInventory(MuxCommand):
             for item in items:
                 data[0].append("|C{}|n".format(item.name))
                 data[1].append(item.db.desc or "")
-            table = EvTable("Name", "Description", table=data, border=False)
-            string = "|wYou are carrying:|n\n{}".format(table)
+            table = EvTable(header=False, table=data, border=None)
+            string = "|YYou are carrying:|n\n{}".format(table)
         self.caller.msg(string)
 
 
@@ -76,17 +75,17 @@ class CmdEquip(MuxCommand):
             if not item or not item.access(caller, 'view'):
                 continue
             data.append(
-                "|M{slot:>{swidth}.{swidth}}|n: |w{item}|n".format(
+                "  |b{slot:>{swidth}.{swidth}}|n: {item}".format(
                     slot=slot.capitalize(),
-                    swid=s_width,
+                    swidth=s_width,
                     item=item.name
                 )
             )
         if len(data) <= 0:
             output = "You have nothing in your equipment."
         else:
-            table = EvTable(header=False, border=False, table=data)
-            output = "|wYour equipment:|n\n{}".format(table)
+            table = EvTable(header=False, border=None, table=[data])
+            output = "|YYour equipment:|n\n{}".format(table)
 
         self.caller.msg(output)
 
@@ -131,7 +130,11 @@ class CmdWear(MuxCommand):
 
         if wield:
             if not any(s.startswith('wield') for s in obj.db.slots):
-                caller.msg("You can't wield %s." % obj)
+                caller.msg("You can't wield {}.".format(obj.name))
+                return
+        else:
+            if all(s.startswith('wield') for s in obj.db.slots):
+                caller.msg("You can't wear {}.".format(obj.name))
                 return
 
         # equip primary and secondary hands with the proper feedback
@@ -189,9 +192,7 @@ class CmdWield(MuxCommand):
             caller.msg("Wield what?")
             return
 
-        cmd = self.cmdset.get("wear")
-        cmd.wield = True
-        caller.execute_cmd("wear {}".format(args))
+        caller.execute_cmd("wear {}".format(args), wield=True)
 
 
 class CmdRemove(MuxCommand):
@@ -222,7 +223,7 @@ class CmdRemove(MuxCommand):
             return
 
         if obj not in caller.equip:
-            caller.msg("You are not wearing {}.".format(obj.name))
+            caller.msg("You do not have {} equipped.".format(obj.name))
             return
 
         if not caller.equip.remove(obj):

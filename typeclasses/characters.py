@@ -128,6 +128,8 @@ class Character(Object):
         self.db.slots = {}        # equipment slots
         self.db.limbs = ()        # limb/slot mappings
 
+        self.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}
+
         # Non-persistent attributes
         self.ndb.group = None
 

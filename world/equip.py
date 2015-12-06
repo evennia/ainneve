@@ -30,7 +30,7 @@ Setup:
     To use the EquipHandler, add it to a character typeclass as follows:
     ```python
     from world.equip import EquipHandler
-
+      ...
     @property
     def equip(self):
         return EquipHandler(self)
@@ -99,7 +99,7 @@ class EquipHandler(object):
 
         if obj.db.limbs and len(obj.db.limbs) > 0:
             self.limbs = {limb: slots for limb, slots in obj.db.limbs}
-            self.slot_order = reduce(lambda x, y: x+y, (s for l, s in obj.db_limbs))
+            self.slot_order = reduce(lambda x, y: x+y, (s for l, s in obj.db.limbs))
             # check that all slots are accounted for
             if set(self.slot_order) != set(self.obj.db.slots.iterkeys()):
                 raise EquipException('Invalid limb configuration: slot/limb mismatch')
@@ -141,7 +141,9 @@ class EquipHandler(object):
 
     def __contains__(self, item):
         """Implement the __contains__ method."""
-        return item in self.obj.db.slots.iteritems()
+        return item.id in (i.id for i
+                           in self.obj.db.slots.itervalues()
+                           if i)
 
     def __getattr__(self, slot):
         """Implement slot item access as attributes."""
@@ -187,6 +189,3 @@ class EquipHandler(object):
                 self._set(slot, None)
                 removed = True
         return removed
-
-
-

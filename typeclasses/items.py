@@ -28,12 +28,12 @@ class Item(Object):
     def at_get(self, getter):
         getter.traits.ENC.current += self.db.weight
         getter.traits.MV.mod = \
-            -(getter.traits.ENC.actual // (2 * getter.traits.STR.actual))
+            int(-(getter.traits.ENC.actual // (2 * getter.traits.STR.actual)))
 
     def at_drop(self, dropper):
         dropper.traits.ENC.current -= self.db.weight
         dropper.traits.MV.mod = \
-            -(dropper.traits.ENC.actual // (2 * dropper.traits.STR.actual))
+            int(-(dropper.traits.ENC.actual // (2 * dropper.traits.STR.actual)))
 
 
 class Equippable(Item):
@@ -51,8 +51,9 @@ class Equippable(Item):
     def at_object_creation(self):
         super(Equippable, self).at_object_creation()
         self.locks.add("puppet:false();equip:true()")
-        self.db.slot = self.slots
+        self.db.slots = self.slots
         self.db.multi_slot = self.multi_slot
+        self.db.used_by = None
 
     def at_equip(self, character):
         """
@@ -72,4 +73,8 @@ class Equippable(Item):
         """
         pass
 
-
+    def at_drop(self, dropper):
+        super(Equippable, self).at_drop(dropper)
+        if self in dropper.equip:
+            dropper.equip.remove(self)
+            self.at_remove(dropper)
