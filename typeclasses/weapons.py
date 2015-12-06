@@ -14,7 +14,7 @@ class Weapon(Equippable):
         handedness (int): indicates single- or double-handed weapon
     """
     slots = ['wield1', 'wield2']
-    slot_operator = 'OR'
+    multi_slot = False
 
     damage = 0
     handedness = 1

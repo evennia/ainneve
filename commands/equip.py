@@ -197,12 +197,12 @@ class CmdWield(MuxCommand):
 
 class CmdRemove(MuxCommand):
     """
-    remove
+    remove item
 
     Usage:
       remove <obj>
 
-    Remove an object from equip.
+    Remove an equipped object and return it to your inventory.
     """
     key = "remove"
     aliases = ["rem"]

@@ -123,6 +123,8 @@ class EquipHandler(object):
         """Return the item in the named slot."""
         if slot in self.obj.db.slots:
             return self.obj.db.slots[slot]
+        else:
+            return None
 
     def __len__(self):
         """Returns the number of equipped objects."""
@@ -151,6 +153,7 @@ class EquipHandler(object):
 
     @property
     def slots(self):
+        """Returns a list of all equipment slots."""
         return self.slot_order
 
     @property
@@ -172,9 +175,9 @@ class EquipHandler(object):
                 return False
             for slot in free_slots:
                 self._set(slot, obj)
-            return True
-        slot = free_slots[0]
-        self._set(slot, obj)
+        else:
+            slot = free_slots[0]
+            self._set(slot, obj)
         return True
 
     def remove(self, obj):

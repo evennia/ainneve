@@ -1,5 +1,5 @@
 """
-Money module.
+Economy module.
 """
 
 # Constants
