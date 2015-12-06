@@ -125,6 +125,7 @@ class Character(Object):
         self.db.focus = None
         self.db.archetype = None
         self.db.traits = {}       # trait data
+        self.db.skills = {}       # skills data
         self.db.slots = {}        # equipment slots
         self.db.limbs = ()        # limb/slot mappings
 
@@ -137,6 +138,11 @@ class Character(Object):
     def traits(self):
         """TraitFactory that manages character traits."""
         return TraitFactory(self.db.traits)
+
+    @property
+    def skills(self):
+        """TraitFactory that manages character traits."""
+        return TraitFactory(self.db.skills)
 
     @lazy_property
     def equip(self):
