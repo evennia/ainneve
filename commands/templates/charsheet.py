@@ -7,7 +7,6 @@ import re
 FORMCHAR = "x"
 TABLECHAR = "o"
 
-
 FORM = """
 -=-=-=-=-=-=-=-=-=-=-=-=-=-=|C[ |rCharacter Info |C]|n-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-|
                                                                              |
@@ -21,11 +20,11 @@ FORM = """
   |YRace|n:           xxxxxxxxxxxYxxxxxx   |                  |CCharisma|n    : xJx  |
   |YFocus|n:          xxxxxxxxxxxZxxxxxx   |                  |CVitality|n    : xKx  |
   |YDescription|n                          |                  |CMagic|n       : xLx  |
-  ~~~~~~~~~~~                          | ----------------------------------- |
+  ~~~~~~~~~~~                          ||-------------------------------------|
   ooooooooooooooooo2ooooooooooooooooo  | |YSave Rolls       |CFortitude|n   : xMx  |
   ooooooooooooooooooooooooooooooooooo  | ~~~~~~~~~~       |CReflex|n      : xNx  |
                                        |                  |CWill|n        : xOx  |
-  |YEncumbrance|n                          | ----------------------------------- |
+  |YEncumbrance|n                          ||-------------------------------------|
   ~~~~~~~~~~~                          | |YCombat Stats     |CMelee|n       : xPx  |
   |CCarry Weight|n:          xUxx / xVxx   | ~~~~~~~~~~~~     |CRanged|n      : xQx  |
   |CEncumbrance Penalty|n:          xWxx   | |CPower Point      Unarmed|n     : xRx  |
