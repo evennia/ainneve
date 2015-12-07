@@ -4,7 +4,8 @@ Item and equipment-related command module.
 from evennia import CmdSet
 from commands.command import Command, MuxCommand
 from evennia.utils.evtable import EvTable
-from typeclasses.items import Equippable
+from typeclasses.weapons import Weapon
+from typeclasses.armors import Armor, Shield
 
 
 __all__ = ('CmdInventory', 'CmdEquip',
@@ -59,9 +60,13 @@ class CmdEquip(MuxCommand):
     view equipment
 
     Usage:
-      equip
+      equip[/swap] [<item>]
 
-    Shows your current equipment.
+    Switches:
+      s[wap] - replaces any currently equipped item
+
+    Equips an item to its required slot(s). If no item
+    specified, lists your current equipment.
     """
     key = "equip"
     aliases = ["eq"]
@@ -69,25 +74,103 @@ class CmdEquip(MuxCommand):
 
     def func(self):
         caller = self.caller
-        data = []
-        s_width = max(len(s) for s in caller.equip.slots)
-        for slot, item in caller.equip:
-            if not item or not item.access(caller, 'view'):
-                continue
-            data.append(
-                "  |b{slot:>{swidth}.{swidth}}|n: {item}".format(
-                    slot=slot.capitalize(),
-                    swidth=s_width,
-                    item=item.name
-                )
-            )
-        if len(data) <= 0:
-            output = "You have nothing in your equipment."
+        args = self.args.strip()
+        swap = any(s.startswith('s') for s in self.switches)
+        
+        if hasattr(self, "item"):
+            obj = self.item
+            del self.item
         else:
-            table = EvTable(header=False, border=None, table=[data])
-            output = "|YYour equipment:|n\n{}".format(table)
+            obj = caller.search(args) if args else None
 
-        self.caller.msg(output)
+        if obj:
+            if hasattr(self, "action"):
+                action = self.action
+                del self.action
+            else:
+                if any(isinstance(obj, i) for i in (Weapon, Shield)):
+                    action = 'wield'
+                elif isinstance(obj, Armor):
+                    action = 'wear'
+                else:
+                    caller.msg("You can't equip {}.".format(obj.name))
+
+            if obj not in caller.contents:
+                caller.msg(
+                    "You don't have {} in your inventory.".format(obj.name))
+                return
+
+            if not obj.access(caller, 'equip'):
+                caller.msg("You can't {} {}.".format(action,
+                                                     obj.name))
+                return
+
+            if obj in caller.equip:
+                caller.msg("You're already {}ing {}.".format(action,
+                                                             obj.name))
+                return
+
+            # check whether slots are occupied
+            occupied_slots = [caller.equip.get(s) for s in obj.db.slots
+                              if caller.equip.get(s)]
+            if obj.db.multi_slot:
+                if len(occupied_slots) > 0:
+                    if swap:
+                        for item in occupied_slots:
+                            caller.equip.remove(item)
+                    else:
+                        caller.msg("You can't {} {}. ".format(action,
+                                                              obj.name) +
+                                   "You already have something there.")
+                        return
+            else:
+                if len(occupied_slots) == len(obj.db.slots):
+                    if swap:
+                        caller.equip.remove(occupied_slots[0])
+                    else:
+                        caller.msg("You can't {} {}. ".format(action,
+                                                              obj.name) +
+                                   "You have no open {} slot{}.".format(
+                                       ", or ".join(obj.db.slots),
+                                       "s" if len(obj.db.slots) != 1 else ""
+                                   ))
+                        return
+
+            if not caller.equip.add(obj):
+                caller.msg("You can't {} {}.".format(action, obj.name))
+                return
+
+            # call hook
+            if hasattr(obj, "at_equip"):
+                obj.at_equip(caller)
+
+            caller.msg("You {} {}.".format(action, obj))
+            caller.location.msg_contents(
+                "{} {}s {}.".format(caller.name.capitalize(),
+                                    action,
+                                    obj.name),
+                exclude=caller)
+        else:
+            # no arguments; display current equip
+            data = []
+            s_width = max(len(s) for s in caller.equip.slots)
+            for slot, item in caller.equip:
+                if not item or not item.access(caller, 'view'):
+                    continue
+                data.append(
+                    "  |b{slot:>{swidth}.{swidth}}|n: {item}".format(
+                        slot=slot.capitalize(),
+                        swidth=s_width,
+                        item=item.name
+                    )
+                )
+            if len(data) <= 0:
+                output = "You have nothing in your equipment."
+            else:
+                table = EvTable(header=False, border=None, table=[data])
+                output = "|YYour equipment:|n\n{}".format(table)
+
+            self.caller.msg(output)
 
 
 class CmdWear(MuxCommand):
@@ -95,9 +178,12 @@ class CmdWear(MuxCommand):
     wear an item
 
     Usage:
-      wear <obj>
+      wear[/swap] <item>
 
-    Equips an item from your inventory to an available non-weapon
+    Switches:
+      s[wap] - replaces any currently equipped item
+
+    Equips a set of armor from your inventory to an available armor
     equipment slot on your character.
     """
     key = "wear"
@@ -107,11 +193,6 @@ class CmdWear(MuxCommand):
     def func(self):
         caller = self.caller
         args = self.args.strip()
-        wield = self.wield
-
-        # reset flag, this should stay at the beginning of the command
-        if wield:
-            self.wield = False
 
         if not args:
             caller.msg("Wear what?")
@@ -123,52 +204,17 @@ class CmdWear(MuxCommand):
         if not obj:
             return
 
-        if obj not in caller.contents:
-            caller.msg(
-                "You don't have {} in your inventory.".format(obj.name))
-            return
+        elif obj.is_typeclass(Armor, exact=True):
+            sw = ("/{}".format("/".join(self.switches))
+                  if self.switches else "")
 
-        if wield:
-            if not any(s.startswith('wield') for s in obj.db.slots):
-                caller.msg("You can't wield {}.".format(obj.name))
-                return
+            caller.execute_cmd('equip',
+                               args=' '.join((sw, args)),
+                               item=obj,
+                               action='wear')
+
         else:
-            if all(s.startswith('wield') for s in obj.db.slots):
-                caller.msg("You can't wear {}.".format(obj.name))
-                return
-
-        # equip primary and secondary hands with the proper feedback
-        if any(s.startswith('wield') for s in obj.db.slots):
-            action = 'wield'
-        else:
-            action = 'wear'
-
-        if not obj.access(caller, 'equip'):
-            caller.msg("You can't equip {}.".format(obj.name))
-            return
-
-        if obj in caller.equip:
-            caller.msg("You're already {}ing {}.".format(action,
-                                                         obj.name))
-            return
-
-        if not caller.equip.add(obj):
-            string = "You can't equip {}.".format(obj.name)
-            if any(caller.get(s) for s in obj.db.slots):
-                string += " You already have something there."
-            caller.msg(string)
-            return
-
-        # call hook
-        if hasattr(obj, "at_equip"):
-            obj.at_equip(caller)
-
-        caller.msg("You {} {}.".format(action, obj))
-        caller.location.msg_contents(
-            "{} {}s {}.".format(caller.name.capitalize(),
-                                action,
-                                obj.name),
-            exclude=caller)
+            caller.msg("You can't wear {}.".format(obj.name))
 
 
 class CmdWield(MuxCommand):
@@ -176,7 +222,10 @@ class CmdWield(MuxCommand):
     wield an item
 
     Usage:
-      wield <obj>
+      wield[/swap] <item>
+
+    Switches:
+      s[wap] - replaces any currently equipped item
 
     Equips a weapon or shield from your inventory to an available
     "wield" equipment slot on your character.
@@ -192,7 +241,19 @@ class CmdWield(MuxCommand):
             caller.msg("Wield what?")
             return
 
-        caller.execute_cmd("wear {}".format(args), wield=True)
+        obj = caller.search(args)
+        if not obj:
+            return
+        elif any(obj.is_typeclass(i, exact=False) for i in (Weapon, Shield)):
+            sw = ("/{}".format("/".join(self.switches))
+                  if self.switches else "")
+
+            caller.execute_cmd('equip',
+                               args=' '.join((sw, args)),
+                               item=obj,
+                               action='wield')
+        else:
+            caller.msg("You can't wield {}.".format(obj.name))
 
 
 class CmdRemove(MuxCommand):

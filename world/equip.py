@@ -119,7 +119,7 @@ class EquipHandler(object):
                 raise EquipException("Slot not available: {}".format(slot))
         self.obj.db.slots[slot] = item
 
-    def _get(self, slot):
+    def get(self, slot):
         """Return the item in the named slot."""
         if slot in self.obj.db.slots:
             return self.obj.db.slots[slot]
@@ -139,17 +139,13 @@ class EquipHandler(object):
         if not self.obj.db.slots:
             return
         for slot in self.slot_order:
-                yield slot, self._get(slot)
+                yield slot, self.get(slot)
 
     def __contains__(self, item):
         """Implement the __contains__ method."""
         return item.id in (i.id for i
                            in self.obj.db.slots.itervalues()
                            if i)
-
-    def __getattr__(self, slot):
-        """Implement slot item access as attributes."""
-        return self._get(slot)
 
     @property
     def slots(self):

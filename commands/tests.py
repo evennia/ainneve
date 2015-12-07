@@ -97,7 +97,7 @@ class EquipTestCase(CommandTest):
         self.char1.execute_cmd('get Obj')
         self.call(CmdWear(), 'Obj', "You can't wear Obj.")
 
-    def test_equip(self):
+    def test_equip_list(self):
         """test the equip command"""
         self.call(CmdEquip(), "", "You have nothing in your equipment.")
         self.char1.execute_cmd('get Obj')
@@ -107,6 +107,13 @@ class EquipTestCase(CommandTest):
         self.call(CmdEquip(), "", "YYour equipment:n\n   Wield1: Obj  \n    Armor: Obj2")
         self.char1.execute_cmd('drop Obj')
         self.call(CmdEquip(), "", "YYour equipment:n\n    Armor: Obj2")
+
+    def test_equip_item(self):
+        """test equipping items with equip"""
+        self.char1.execute_cmd('get Obj')
+        self.char1.execute_cmd('get Obj2')
+        self.call(CmdEquip(), "Obj", "You wield Obj.")
+        self.call(CmdEquip(), "Obj2", "You wear Obj2.")
 
     def test_remove(self):
         """test the remove command"""
