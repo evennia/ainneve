@@ -12,8 +12,6 @@ from django.conf import settings
 from evennia.utils import lazy_property
 
 from objects import Object
-from world import races
-from world import rulebook
 from world.equip import EquipHandler
 from world.traits import TraitFactory
 
@@ -122,9 +120,12 @@ class Character(Object):
             self.location = None
 
     def at_object_creation(self):
+
         self.db.race = None
+        self.db.focus = None
         self.db.archetype = None
         self.db.traits = {}       # trait data
+        self.db.skills = {}       # skills data
         self.db.slots = []        # equipment slots
 
         # Non-persistent attributes
@@ -134,6 +135,11 @@ class Character(Object):
     def traits(self):
         """TraitFactory that manages character traits."""
         return TraitFactory(self.db.traits)
+
+    @property
+    def skills(self):
+        """TraitFactory that manages character traits."""
+        return TraitFactory(self.db.skills)
 
 
     # TODO: The EquipHandler should be refactored. It's a little complex for
@@ -153,18 +159,3 @@ class Character(Object):
         """
         slots = self.db.slots or []
         return EquipHandler(self, slots=slots)
-
-    def become_race(self, race):
-        """
-        This method applies a race to the character.
-
-        Args:
-            race (str): Class path for the race
-
-        Returns:
-            bool: True if successful, False if otherwise
-        """
-
-        # set the race
-        self.db.race = races.load_race(race)
-        self.db.slots = self.db.race.slots
