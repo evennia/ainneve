@@ -45,8 +45,7 @@ MAUL_HAMMER = {
     "aliases": ["maul hammer", "maul", "hammer"],
     "typeclass": "typeclasses.weapons.TwoHandedWeapon",
     "desc": "A heavy mass of metal mounted atop a sturdy staff, "
-            "ready to deliver crushing blows to your enemies."
-            "to wield it.",
+            "ready to deliver crushing blows to your enemies.",
     "weight": 5,
     "value": 2*SC,
     "damage": 4,
