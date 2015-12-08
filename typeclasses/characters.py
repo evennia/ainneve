@@ -14,6 +14,7 @@ from evennia.utils import lazy_property
 from objects import Object
 from world.equip import EquipHandler
 from world.traits import TraitFactory
+from world.economy import GC, SC, CC
 
 
 class Character(Object):
@@ -148,3 +149,9 @@ class Character(Object):
     def equip(self):
         """Handler for equipped items."""
         return EquipHandler(self)
+
+    @property
+    def wealth(self):
+        """Return the character's total wealth in CC."""
+        wal = self.db.wallet
+        return wal['GC'] * GC + wal['SC'] * SC + wal['CC'] + CC

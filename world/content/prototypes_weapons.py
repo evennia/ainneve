@@ -198,6 +198,26 @@ LIGHT_CROSSBOW = {
     "ammunition": "quarrels",
 }
 
+# Ammunition
+
+ARROW = {
+    "key": "an obsidian-tipped arrow",
+    "aliases": ["arrow"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "Arrows crafted from reed wood and obsidian stone.",
+    "weight": 1,
+    "value": 2*CC,
+}
+
+QUARREL = {
+    "key": "a crossbow quarrel",
+    "aliases": ["quarrel", "qua"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A quarrel for use in a crossbow.",
+    "weight": 0.5,
+    "value": 3*CC
+}
+
 # Thrown Ranged
 
 THROWING_AXE = {
