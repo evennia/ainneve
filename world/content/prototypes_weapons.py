@@ -167,7 +167,7 @@ LONG_BOW = {
             "of your enemies.",
     "weight": 1,
     "value": 40*CC,
-    "damage": 0,
+    "damage": 1,
     "range": 16,
     "ammunition": "arrows",
 }

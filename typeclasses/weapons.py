@@ -47,10 +47,10 @@ class RangedWeapon(Weapon):
         self.db.ammunition = self.ammunition
 
     def at_equip(self, character):
-        character.traits.ATKR += self.db.damage
+        character.traits.ATKR.mod += self.db.damage
 
     def at_remove(self, character):
-        character.traits.ATKR -= self.db.damage
+        character.traits.ATKR.mod -= self.db.damage
 
 
 class TwoHanded(object):
@@ -65,7 +65,7 @@ class TwoHandedWeapon(Weapon, TwoHanded):
     pass
 
 
-class TwoHandedRanged(RangedWeapon, TwoHanded):
+class TwoHandedRanged(TwoHanded, RangedWeapon):
     """Typeclass for two-handed ranged weapons."""
     pass
 

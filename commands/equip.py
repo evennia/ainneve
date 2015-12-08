@@ -46,10 +46,18 @@ class CmdInventory(MuxCommand):
         if not items:
             string = "You are not carrying anything."
         else:
-            data = [[],[]]
+            data = [[],[],[]]
             for item in items:
                 data[0].append("|C{}|n".format(item.name))
                 data[1].append(item.db.desc or "")
+                stat = ""
+                if item.db.damage:
+                    stat += "(|rDamage: {:>2d}|n) ".format(item.db.damage)
+                if item.db.range:
+                    stat += "(|GRange: {:>2d}|n) ".format(item.db.range)
+                if item.db.toughness:
+                    stat += "(|yToughness: {:>2d}|n) ".format(item.db.toughness)
+                data[2].append(stat)
             table = EvTable(header=False, table=data, border=None)
             string = "|YYou are carrying:|n\n{}".format(table)
         self.caller.msg(string)
@@ -157,11 +165,20 @@ class CmdEquip(MuxCommand):
             for slot, item in caller.equip:
                 if not item or not item.access(caller, 'view'):
                     continue
+                stat = ""
+                if item.db.damage:
+                    stat += "(|rDamage: {:>2d}|n) ".format(item.db.damage)
+                if item.db.range:
+                    stat += "(|GRange: {:>2d}|n) ".format(item.db.range)
+                if item.db.toughness:
+                    stat += "(|yToughness: {:>2d}|n) ".format(item.db.toughness)
+
                 data.append(
-                    "  |b{slot:>{swidth}.{swidth}}|n: {item}".format(
+                    "  |b{slot:>{swidth}.{swidth}}|n: {item:<20.20} {stat}".format(
                         slot=slot.capitalize(),
                         swidth=s_width,
-                        item=item.name
+                        item=item.name,
+                        stat=stat,
                     )
                 )
             if len(data) <= 0:
