@@ -10,7 +10,7 @@ from evennia.utils.evform import EvForm, EvTable
 class CharTraitCmdSet(CmdSet):
 
     key = "chartrait_cmdset"
-    priority = 2
+    priority = 1
 
     def at_cmdset_creation(self):
         """Populate CmdSet"""

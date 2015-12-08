@@ -243,7 +243,7 @@ class Archetype(object):
             'PP': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Power Points'},
             # misc
             'ENC': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Carry Weight'},
-            'MV': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Movement Points'},
+            'MV': {'type': 'trait', 'base': 6, 'mod': 0, 'name': 'Movement Points'},
             'LV': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Level'},
             'XP': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Experience',
                    'extra': {'level_boundaries': (500, 2000, 4500, 'unlimited')}},

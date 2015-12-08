@@ -1,214 +1,190 @@
 # -*- coding: UTF-8 -*-
-from django.conf import settings
-from evennia import utils
- 
-PRIMARY_HAND = 'wield1'
-SECONDARY_HAND = 'wield2'
-HOLD_SLOT = 'holds'
+"""
+Equipment handler module.
 
-DEFAULT = (PRIMARY_HAND, SECONDARY_HAND, HOLD_SLOT)
+The `EquipHandler` provides an interface to maniplate a character's
+"equipped" or worn items. The handler is instantiated as a property on a
+character typeclass, with the character passed as an argument. It looks
+for certain properties in the character's db attributes handler to
+initialize itself and provide persistence.
 
-class EquipHandler(object):
-    """
-    Simple handler for characters equipment.
-    This is actually an interface to easily read, write and manage
-    the equipment of a character. Slots/objects can be accessed by
-    getter and setter methods.
-    Add and remove methods are also present, they add a little bit
-    of error checking to the set method.
-    The handler can also check for the presence of an item in the equip
-    with the simple syntax `obj in char.equip` and it is iterable.
-    To implement it add it to the main character
-    typeclass as a property:
-    
-    `
+Config Properties:
+    slots (dict): mapping of slots: equipped items
+    limbs (tuple[tuple[str, tuple]]): nested tuple describing character
+        limbs and which slots map to which limbs.
+
+        This attribute should be of nested ordered types, preferably tuples.
+        The format for its data is:
+
+            limbs = (
+                (limb1, (slot1,)),
+                (limb2, (slot2, slot3)),
+                (limb3, (slot4, ...)
+            )
+
+        Slot names will be displayed in-game in the order they appear
+        in the limbs attribute. If missing or empty, slots are displayed
+        in alphabetical order.
+
+Setup:
+    To use the EquipHandler, add it to a character typeclass as follows:
+    ```python
     from world.equip import EquipHandler
-    
+      ...
     @property
     def equip(self):
-        return EquipHandler(self, list_of_slots)
-    `
-    
-    list_of_slots is a list or a tuple of named slots
-    
-    Also see commands/equip_commands.py for the commands
-    related to this handler.
+        return EquipHandler(self)
+    ```
+
+Use:
+    Equippable items are equipped and unequipped using the `add` and `remove`
+    methods, respectively.
+
+    The EquipHandler can be iterated over to access the contents of its slots
+    in an ordered fashion. It also supports `obj in character.equip` syntax
+    to check whether an item is equipped
+
+Commands:
+    See commands/equip.py for the commands related to this handler.
+
+Example usage:
+    # Say obj is a hat.
+    > obj in character.equip
+    False
+    > character.equip.add(obj)
+    True
+    > obj in equip
+    True
+    > for slot, item in character.equip:
+    >     print "%s: %s" % (slot, item)
+    'head: a hat'
+    > character.equip.head
+    'a hat'
+    > character.equip.remove(obj)
+    True
+"""
+from typeclasses.items import Equippable
 
 
-    EquipHandler attributes:
-    
-        obj:    the parent typeclass
-        slots:  a tuple of slots available for the character
+class EquipException(Exception):
+    """Base exception class for EquipHandler."""
+    def __init__(self, msg):
+        self.msg = msg
 
-    EquipHandler methods:
-        add(item):          add an item to the equipment, returns True
-                            if the item is successfully equipped
-        remove(item)        remove an item from the equipment, returns
-                            True if the item is correctly removed.
-        get(slot):          returns the item in the corresponding slot,
-                            if present, otherwise returns None
-        set(slot, item):    set an item in the corresponding slot,
-                            raise ValueError if the item can't be set
-                            in equip, raise KeyError if slot is not
-                            already defined in equip. This set method
-                            replace objects in equipment, use the remove
-                            method to correctly handle real-life
-                            situations
-        items():            returns a list of equipped items. Does not
-                            returns unoccupied slots
-        empty_slots():      returns a list of empty slots
 
-    Example usage:
-        Say obj is a hat.
-        > obj in character.equip
-        False
-        > character.equip.add(obj)
-        True
-        > obj in equip
-        True
-        > for slot, item in character.equip:
-        >     print "%s: %s" % (slot, item)
-        head: a hat
-        > character.equip.remove(obj)
-        True
-        
+class EquipHandler(object):
+    """Handler for a character's "equipped" items.
 
+    Args:
+        obj (Character): parent character object. see module docstring
+            for character attribute configuration info.
+
+    Properties
+        slots (tuple): returns a tuple of all slots in order
+        empty_slots (list): returns a list of empty slots
+
+    Note:
+        Individual slots' items can be accessed as attributes
+
+    Methods:
+        add (Equippable): "equip" an item from the character's inventory.
+        remove (Equippable): "un-equip" an item and move it to inventory.
     """
-
-    primary_hand = PRIMARY_HAND
-    secondary_hand = SECONDARY_HAND
-
-    def __init__(self, obj, slots=()):
-        """
-        Init class.
-        """
+    def __init__(self, obj):
         # save the parent typeclass
         self.obj = obj
-        # initialize equipment
-        if not self.obj.db.equip:
-            slots = tuple(slots) + DEFAULT
-            self.obj.db.equip = {x: None for x in slots}
+
+        if not self.obj.db.slots:
+            raise EquipException('`EquipHandler` requires `db.slots` attribute on `obj`.')
+
+        if obj.db.limbs and len(obj.db.limbs) > 0:
+            self.limbs = {limb: slots for limb, slots in obj.db.limbs}
+            self.slot_order = reduce(lambda x, y: x+y, (s for l, s in obj.db.limbs))
+            # check that all slots are accounted for
+            if set(self.slot_order) != set(self.obj.db.slots.iterkeys()):
+                raise EquipException('Invalid limb configuration: slot/limb mismatch')
+        else:
+            self.limbs = {}
+            self.slot_order = sorted(obj.db.slots.keys())
 
     def _set(self, slot, item):
-        """
-        set an item in the corresponding slot, raise ValueError if the
-        item can't be set in equip, raise KeyError if slot is not already
-        defined in equip. This set method replace objects in equipment,
-        use the remove method to correctly handle real-life situations.
-        """
+        """Set a slot's contents."""
         # allows None values to pass all checks
-        if item != None:
-            # first check, allows typeclasses to pass;
-            # at the same time all expected errors are converted
-            # to ValueError
-            try:
-                if not item.is_typeclass(settings.BASE_OBJECT_TYPECLASS,
-                                         exact=False):
-                    raise AttributeError
-            except AttributeError:
-                raise ValueError("Item can't be set in equip.")
-            # second check, allows objects that are
-            # correctly defined to be equipped, i.e. they have a slot
-            # and that slot exist in the current equip.
-            # At the same time all expected errors are converted
-            # to KeyError
-            try:
-                if slot not in self.slots:
-                    raise TypeError
-            except TypeError:
-                raise KeyError("Slot not available: %s" % slot)
-        self.obj.db.equip[slot] = item
+        if item is not None:
+            # confirm the item is equippable
+            if not item.is_typeclass(Equippable, exact=False):
+                raise EquipException("Item is not equippable.")
+            # confirm the requested slot is valid
+            if slot not in self.slots:
+                raise EquipException("Slot not available: {}".format(slot))
+        self.obj.db.slots[slot] = item
 
-    # implement the set method
-    set = _set
-
-    def _get(self, slot, default=None):
-        """
-        Getter method. Returns the item in the corresponding slot,
-        if present, otherwise returns `default`
-        """
-        return self.obj.db.equip.get(slot, default)
-
-    # implement the get method
-    get = _get
+    def get(self, slot):
+        """Return the item in the named slot."""
+        if slot in self.obj.db.slots:
+            return self.obj.db.slots[slot]
+        else:
+            return None
 
     def __len__(self):
-        """
-        Returns the number of equipped objects.
-        """
-        return len(self.items)
+        """Returns the number of equipped objects."""
+        return len(self.obj.db.slots) - len(self.empty_slots)
 
     def __str__(self):
-        """
-        Shows the equipment.
-        """
-        return str(self.obj.db.equip)
+        """Shows the equipment."""
+        return str(self.obj.db.slots)
 
     def __iter__(self):
-        """
-        Iterate over the equip in an ordered way.
-        """
-        if not self.slots:
+        """Iterate over the equip in an ordered way."""
+        if not self.obj.db.slots:
             return
-        for slot in self.slots:
-                yield (slot, self.obj.db.equip.get(slot))
+        for slot in self.slot_order:
+                yield slot, self.get(slot)
 
     def __contains__(self, item):
-        """
-        Implement the __contains__ method.
-        """
-        return item in self.items
+        """Implement the __contains__ method."""
+        return item.id in (i.id for i
+                           in self.obj.db.slots.itervalues()
+                           if i)
 
     @property
     def slots(self):
-        return self.obj.db.equip.keys()
-
-    @property
-    def items(self):
-        """
-        Shows equipped items.
-        """
-        return [obj for obj in self.obj.db.equip.values() if obj]
+        """Returns a list of all equipment slots."""
+        return self.slot_order
 
     @property
     def empty_slots(self):
-        """
-        Returns empty slots.
-        """
+        """Returns a list of empty slots."""
         return [k for k, v in self if v is None]
 
     def add(self, obj):
-        """ 
-        Add an object to character's equip.
+        """Add an object to character's equip.
+
+        Args:
+            obj (Equippable): the item to be equipped
         """
-        slots = utils.make_iter(obj.db.slot)
-        free_slots = [sl for sl in slots if sl in self.empty_slots]
+        free_slots = [sl for sl in obj.db.slots if sl in self.empty_slots]
         if not free_slots:
             return False
-        if obj.db.slot_operator == 'AND':
-            if len(free_slots) != len(slots):
+        if obj.db.multi_slot:
+            if len(free_slots) != len(obj.db.slots):
                 return False
             for slot in free_slots:
                 self._set(slot, obj)
-            return True
-        slot = free_slots[0]
-        self._set(slot, obj)
+        else:
+            slot = free_slots[0]
+            self._set(slot, obj)
         return True
 
-    def hold(self, obj):
-        """ 
-        Add an object to the 'hold' slot of character's equip.
-        """
-        
     def remove(self, obj):
-        """ 
-        Remove an object from character's equip.
+        """Remove an object from character's equip.
+
+        Args:
+            obj (Equippable): the item to be un-equipped
         """
+        removed = False
         for slot, item in self:
             if item == obj:
                 self._set(slot, None)
-                return True
-        return False
-
-
-
+                removed = True
+        return removed

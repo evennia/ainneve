@@ -1,17 +1,141 @@
-# A trivial test for Travis
-
+"""
+Command test module
+"""
+from evennia.utils.test_resources import EvenniaTest
 from evennia.commands.default.tests import CommandTest
-from commands.equip_commands import CmdEquip
-from typeclasses.characters import Character
-
-class TestEquip(CommandTest):
-    character_typeclass = Character
-    def test_equip(self):
-        self.call(CmdEquip(), "", "You have nothing in your equipment.")
-
-
+from commands.equip import *
 from commands.chartraits import CmdSheet, CmdTraits
+from typeclasses.characters import Character
+from typeclasses.weapons import Weapon
+from world.races import apply_race
 from world.archetypes import apply_archetype, calculate_secondary_traits
+
+
+class ItemEncumbranceTestCase(EvenniaTest):
+    """Test case for at_get/at_drop hooks."""
+    character_typeclass = Character
+    object_typeclass = Weapon
+
+    def setUp(self):
+        super(ItemEncumbranceTestCase, self).setUp()
+        apply_archetype(self.char1, 'warrior')
+        apply_race(self.char1, 'human', 'cunning')
+        self.char1.traits.STR.base += 3
+        self.char1.traits.VIT.base += 3
+        self.char1.traits.DEX.base += 2
+        calculate_secondary_traits(self.char1.traits)
+        self.obj1.db.desc = 'Test Obj'
+        self.obj1.db.damage = 1
+        self.obj1.db.weight = 1.0
+        self.obj2.swap_typeclass('typeclasses.armors.Armor',
+                                 clean_attributes=True,
+                                 run_start_hooks=True)
+        self.obj2.db.toughness = 1
+        self.obj2.db.weight = 18.0
+
+    def test_get_item(self):
+        """test that item get hook properly affects encumbrance"""
+        self.assertEqual(self.char1.traits.ENC.actual, 0)
+        self.assertEqual(self.char1.traits.MV.actual, 5)
+        self.char1.execute_cmd('get Obj')
+        self.assertEqual(self.char1.traits.ENC.actual, 1.0)
+        self.assertEqual(self.char1.traits.MV.actual, 5)
+        # Obj2 is heavy enough to incur a movement penalty
+        self.char1.execute_cmd('get Obj2')
+        self.assertEqual(self.char1.traits.ENC.actual, 19.0)
+        self.assertEqual(self.char1.traits.MV.actual, 4)
+
+    def test_drop_item(self):
+        """test that item drop hook properly affects encumbrance"""
+        self.char1.execute_cmd('get Obj')
+        self.char1.execute_cmd('get Obj2')
+        self.assertEqual(self.char1.traits.ENC.actual, 19.0)
+        self.assertEqual(self.char1.traits.MV.actual, 4)
+        self.char1.execute_cmd('drop Obj2')
+        self.assertEqual(self.char1.traits.ENC.actual, 1.0)
+        self.assertEqual(self.char1.traits.MV.actual, 5)
+
+
+class EquipTestCase(CommandTest):
+    """Test case for EquipHandler and commands."""
+    character_typeclass = Character
+    object_typeclass = Weapon
+
+    def setUp(self):
+        super(EquipTestCase, self).setUp()
+        apply_archetype(self.char1, 'warrior')
+        apply_race(self.char1, 'human', 'cunning')
+        self.obj1.db.desc = 'Test Obj'
+        self.obj1.db.damage = 1
+        self.obj1.db.weight = 1.0
+        self.obj2.db.desc = 'Test Obj2'
+        self.obj2.swap_typeclass('typeclasses.armors.Armor',
+                                 clean_attributes=True,
+                                 run_start_hooks=True)
+        self.obj2.db.toughness = 1
+        self.obj2.db.weight = 2.0
+
+    def test_wield(self):
+        """test wield command"""
+        # can't wield from the ground
+        self.call(CmdWield(), 'Obj', "You don't have Obj in your inventory.")
+        # pick it up to wield a weapon
+        self.char1.execute_cmd('get Obj')
+        self.call(CmdWield(), 'Obj', "You wield Obj.")
+        # can't wield armor
+        self.char1.execute_cmd('get Obj2')
+        self.call(CmdWield(), 'Obj2', "You can't wield Obj2.")
+
+    def test_wear(self):
+        """test wear command"""
+        # can't wear from the ground
+        self.call(CmdWear(), 'Obj2', "You don't have Obj2 in your inventory.")
+        # pick it up to wield a weapon
+        self.char1.execute_cmd('get Obj2')
+        self.call(CmdWear(), 'Obj2', "You wear Obj2.")
+        # wear does wield a weapon
+        self.char1.execute_cmd('get Obj')
+        self.call(CmdWear(), 'Obj', "You can't wear Obj.")
+
+    def test_equip_list(self):
+        """test the equip command"""
+        self.call(CmdEquip(), "", "You have nothing in your equipment.")
+        self.char1.execute_cmd('get Obj')
+        self.char1.execute_cmd('wield Obj')
+        self.char1.execute_cmd('get Obj2')
+        self.char1.execute_cmd('wear Obj2')
+        output = (
+"YYour equipment:n\n"
+"   Wield1: Obj                  (Damage:  1)     \n"
+"    Armor: Obj2                 (Toughness:  1)")
+        self.call(CmdEquip(), "", output)
+        self.char1.execute_cmd('drop Obj')
+        self.call(CmdEquip(), "", "YYour equipment:n\n    Armor: Obj2")
+
+    def test_equip_item(self):
+        """test equipping items with equip"""
+        self.char1.execute_cmd('get Obj')
+        self.char1.execute_cmd('get Obj2')
+        self.call(CmdEquip(), "Obj", "You wield Obj.")
+        self.call(CmdEquip(), "Obj2", "You wear Obj2.")
+
+    def test_remove(self):
+        """test the remove command"""
+        self.call(CmdRemove(), "Obj", "You do not have Obj equipped.")
+        self.char1.execute_cmd('get Obj')
+        self.char1.execute_cmd('wield Obj')
+        self.call(CmdRemove(), "Obj", "You remove Obj.")
+
+    def test_inventory(self):
+        """test the inventory command"""
+        # empty inventory
+        self.call(CmdInventory(), "", "You are not carrying anything.")
+        # can see an object when picked up
+        self.char1.execute_cmd('get Obj')
+        self.call(CmdInventory(), "", "YYou are carrying:n\n Obj  Test Obj")
+        # but not when equipped
+        self.char1.execute_cmd('wield Obj')
+        self.call(CmdInventory(), "", "You are not carrying anything.")
 
 
 class CharTraitsTestCase(CommandTest):

@@ -1,0 +1,4 @@
+"""
+Prototype module containing mobs.
+"""
+

@@ -14,6 +14,7 @@ from evennia.utils import lazy_property
 from objects import Object
 from world.equip import EquipHandler
 from world.traits import TraitFactory
+from world.economy import GC, SC, CC
 
 
 class Character(Object):
@@ -126,7 +127,10 @@ class Character(Object):
         self.db.archetype = None
         self.db.traits = {}       # trait data
         self.db.skills = {}       # skills data
-        self.db.slots = []        # equipment slots
+        self.db.slots = {}        # equipment slots
+        self.db.limbs = ()        # limb/slot mappings
+
+        self.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}
 
         # Non-persistent attributes
         self.ndb.group = None
@@ -141,21 +145,13 @@ class Character(Object):
         """TraitFactory that manages character traits."""
         return TraitFactory(self.db.skills)
 
-
-    # TODO: The EquipHandler should be refactored. It's a little complex for
-    # what it does
-    @property
-    def inventory(self):
-        """
-        Return inventory items.
-        """
-        eq = hasattr(self, 'equip') and self.equip.items or []
-        return [obj for obj in self.contents if obj not in eq]
-
     @lazy_property
     def equip(self):
-        """
-        An handler to administrate characters equipment.
-        """
-        slots = self.db.slots or []
-        return EquipHandler(self, slots=slots)
+        """Handler for equipped items."""
+        return EquipHandler(self)
+
+    @property
+    def wealth(self):
+        """Return the character's total wealth in CC."""
+        wal = self.db.wallet
+        return wal['GC'] * GC + wal['SC'] * SC + wal['CC'] + CC
