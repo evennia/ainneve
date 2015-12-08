@@ -169,7 +169,7 @@ def finalize_traits(traits):
     applies any `mod` values to the traits' `base`, then resets
     the `mod` property.
     """
-    for t in PRIMARY_TRAITS + SAVE_ROLLS:
+    for t in PRIMARY_TRAITS + SECONDARY_TRAITS + SAVE_ROLLS:
         traits[t].base = traits[t].actual
         traits[t].reset_mods()
 
@@ -286,6 +286,7 @@ class Archetype(object):
         desc += "  Base |CMovement Points|n:    |w{mv:>2d}|n\n"
         desc += "  |CStamina|n Modifier:        |w{sp_mod:+>2d}|n\n"
         desc += "  |CPower Points|n Modifier:   |w{pp_mod:+>2d}|n\n"
+        desc += "  |CReflex Save|n Modifier:    |w{refl_mod:+>2d}|n\n"
         desc += ("  When leveling up, |c{archetype}s|n gain "
                  "|w{health_roll}|C HP|n.\n")
 
@@ -300,7 +301,8 @@ class Archetype(object):
                            health_roll=self.health_roll,
                            mv=self.traits['MV']['base'],
                            sp_mod=self.traits['SP']['mod'],
-                           pp_mod=self.traits['PP']['base'])
+                           pp_mod=self.traits['PP']['base'],
+                           refl_mod=self.traits['REFL']['mod'])
 
     @desc.setter
     def desc(self, desc):
@@ -371,6 +373,7 @@ class Warrior(Archetype):
         self.traits['DEX']['base'] = 4
         self.traits['CHA']['base'] = 4
         self.traits['VIT']['base'] = 6
+        self.traits['REFL']['mod'] = -2
         self.traits['PP']['base'] = 2
         self.traits['MV']['base'] = 5
 
