@@ -104,7 +104,11 @@ class EquipTestCase(CommandTest):
         self.char1.execute_cmd('wield Obj')
         self.char1.execute_cmd('get Obj2')
         self.char1.execute_cmd('wear Obj2')
-        self.call(CmdEquip(), "", "YYour equipment:n\n   Wield1: Obj  \n    Armor: Obj2")
+        output = (
+"YYour equipment:n\n"
+"   Wield1: Obj                  (Damage:  1)     \n"
+"    Armor: Obj2                 (Toughness:  1)")
+        self.call(CmdEquip(), "", output)
         self.char1.execute_cmd('drop Obj')
         self.call(CmdEquip(), "", "YYour equipment:n\n    Armor: Obj2")
 
