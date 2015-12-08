@@ -204,12 +204,12 @@ class Race(object):
             The setter for this property only modifies the content
             of the first paragraph of what is returned.
         """
-        desc = "{{g{}{{n\n".format(self.name)
+        desc = "|g{}|n\n".format(self.name)
         desc += fill(self._desc)
         desc += '\n\n'
         desc += fill("{} have a ".format(self.plural) +
-                     "{{y{}{{n body type and can ".format(self.size) +
-                     "select a {{wfocus{{n from among {}".format(
+                     "|y{}|n body type and can ".format(self.size) +
+                     "select a |wfocus|n from among {}".format(
                          self._format_focus_list(self.foci)
                      ))
         if len(self.bonuses) > 0:
@@ -229,10 +229,10 @@ class Race(object):
     def _format_focus_list(self, items):
         """Returns a comma separated list of items with "or" before the last."""
         if len(items) > 2:
-            output = ", ".join(["{{b{}{{n".format(i.name) for i in items[:-1]])
+            output = ", ".join(["|b{}|n".format(i.name) for i in items[:-1]])
             output += ", or {{b{}{{n".format(items[-1].name)
         else:
-            output = " or ".join(["{{b{}{{n".format(i.name) for i in items])
+            output = " or ".join(["|b{}|n".format(i.name) for i in items])
         return output
 
 
@@ -258,10 +258,10 @@ class Focus(object):
             The setter for this property only modifies the content
             of the first paragraph of what is returned.
         """
-        desc = "{{b{}{{n\n".format(self.name)
+        desc = "|b{}|n\n".format(self.name)
         desc += fill(self._desc)
         desc += "\n\n"
-        desc += fill("Adventurers with the {{b{}{{n focus gain {}.".format(
+        desc += fill("Adventurers with the |b{}|n focus gain {}.".format(
                     self.name,
                     _format_bonuses(self.bonuses)
                 ))

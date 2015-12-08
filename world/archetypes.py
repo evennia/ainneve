@@ -47,6 +47,8 @@ Module Functions:
 """
 
 from world.rulebook import roll_max
+from evennia.utils import fill
+from evennia.utils.evtable import EvTable
 
 
 class ArchetypeException(Exception):
@@ -220,6 +222,9 @@ def _make_dual(a, b):
                         b.traits.get(key, trait)['mod']) // 2
     dual.health_roll = min(a.health_roll, b.health_roll, key=roll_max)
     dual.name = names[frozenset([a.name, b.name])]
+    desc = "|c{}s|n have a blend of the qualities of both component archetypes.\n\n"
+    desc += a._desc + '\n\n' + b._desc
+    dual.desc = desc.format(dual.name)
     dual.__class__.__name__ = dual.name.replace('-', '')
     return dual
 
@@ -231,6 +236,7 @@ class Archetype(object):
     """Base archetype class containing default values for all traits."""
     def __init__(self):
         self.name = None
+        self._desc = None
 
         # base traits data
         self.traits = {
@@ -268,12 +274,53 @@ class Archetype(object):
         }
         self.health_roll = None
 
+    @property
+    def desc(self):
+        """Returns a formatted description of the Archetype."""
+        desc = "Archetype: |c{archetype}|n\n"
+        desc += '~' * (11 + len(self.name)) + '\n'
+        desc += self._desc
+        desc += '\n\n'
+        desc += "|c{archetype}s|n start with the following base primary traits:"
+        desc += "\n{traits}\n"
+        desc += "  Base |CMovement Points|n:    |w{mv:>2d}|n\n"
+        desc += "  |CStamina|n Modifier:        |w{sp_mod:+>2d}|n\n"
+        desc += "  |CPower Points|n Modifier:   |w{pp_mod:+>2d}|n\n"
+        desc += ("  When leveling up, |c{archetype}s|n gain "
+                 "|w{health_roll}|C HP|n.\n")
+
+        data = []
+        for i in xrange(3):
+            data.append([self._format_trait_3col(self.traits[t])
+                         for t in PRIMARY_TRAITS[i::3]])
+        traits = EvTable(header=False, table=data)
+
+        return desc.format(archetype=self.name,
+                           traits=traits,
+                           health_roll=self.health_roll,
+                           mv=self.traits['MV']['base'],
+                           sp_mod=self.traits['SP']['mod'],
+                           pp_mod=self.traits['PP']['base'])
+
+    @desc.setter
+    def desc(self, desc):
+        self._desc = desc
+
+    def _format_trait_3col(self, trait):
+        """Return a trait : value pair formatted for 3col layout"""
+        return "|C{:<16.16}|n : |w{:>3}|n".format(
+                    trait['name'], trait['base'])
 
 class Arcanist(Archetype):
     """Represents the Arcanist archetype."""
     def __init__(self):
         super(Arcanist, self).__init__()
         self.name = 'Arcanist'
+        self.desc = fill(
+            "|cArcanists|n harness mysterious, arcane powers they pull from "
+            "the ether. These magic and paranormal wielders employ occult "
+            "powers that only they truly understand."
+        )
 
         # set starting trait values
         self.traits['PER']['base'] = 4
@@ -285,12 +332,18 @@ class Arcanist(Archetype):
 
         self.health_roll = '1d6-1'
 
-
 class Scout(Archetype):
     """Represents the Scout archetype."""
     def __init__(self):
         super(Scout, self).__init__()
         self.name = 'Scout'
+        self.desc = fill(
+            "|cScouts|n are highly intelligent and well-trained individuals "
+            "who prefer to work their secret craft in the shadows where "
+            "they remain unseen. Scouts go by many names such as thieves, "
+            "rogues and rangers but little is known by general society of "
+            "their closely guarded secrets. "
+        )
 
         # set starting trait values
         self.traits['STR']['base'] = 4
@@ -306,6 +359,12 @@ class Warrior(Archetype):
     def __init__(self):
         super(Warrior, self).__init__()
         self.name = 'Warrior'
+        self.desc = fill(
+            "|cWarriors|n are individual soldiers, mercenaries, bounty "
+            "hunters or various types of combatants. They believe no "
+            "problem can't be solved with their melee weapon and choose "
+            "strength as their highest primary trait."
+        )
 
         # set starting trait values
         self.traits['STR']['base'] = 6
