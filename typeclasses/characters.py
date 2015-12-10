@@ -125,8 +125,6 @@ class Character(Object):
         self.db.race = None
         self.db.focus = None
         self.db.archetype = None
-        self.db.traits = {}       # trait data
-        self.db.skills = {}       # skills data
         self.db.slots = {}        # equipment slots
         self.db.limbs = ()        # limb/slot mappings
 
