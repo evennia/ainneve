@@ -3,13 +3,14 @@ Unit test module for Trait classes.
 """
 
 from django.test import TestCase
+from evennia.utils.test_resources import EvenniaTest
 from .traits import *
 
 
 class TraitTestCase(TestCase):
     """Test case for basic Trait functionality."""
     def setUp(self):
-        # direct instantiation for testing only; use TraitFactory in production
+        # direct instantiation for testing only; use TraitHandler in production
         self.trait = Trait({
             'type': 'static',
             'name': 'Strength',
@@ -51,7 +52,7 @@ class TraitTestCase(TestCase):
 class TraitExtraPropsTestCase(TestCase):
     """Test case for Trait extra properties functionality."""
     def setUp(self):
-        # direct instantiation for testing only; use TraitFactory in production
+        # direct instantiation for testing only; use TraitHandler in production
         self.trait = Trait({
             'type': 'static',
             'name': 'Strength',
@@ -95,7 +96,7 @@ class TraitExtraPropsTestCase(TestCase):
 class TraitOperatorsTestCase(TestCase):
     """Test case for numeric magic method implementations."""
     def setUp(self):
-        # direct instantiation for testing only; use TraitFactory in production
+        # direct instantiation for testing only; use TraitHandler in production
         self.st = Trait({
             'name': 'Strength',
             'type': 'static',
@@ -184,7 +185,7 @@ class TraitOperatorsTestCase(TestCase):
 class CounterTraitTestCase(TestCase):
     """Test case for counter trait functionality."""
     def setUp(self):
-        # direct instantiation for testing only; use TraitFactory in production
+        # direct instantiation for testing only; use TraitHandler in production
         self.trait = Trait({
             'type': 'counter',
             'name': 'Bonus/Penalty',
@@ -291,7 +292,7 @@ class CounterTraitTestCase(TestCase):
 class GaugeTraitTestCase(TestCase):
     """Test case for `GaugeTrait` functionality"""
     def setUp(self):
-        # direct instantiation for testing only; use TraitFactory in production
+        # direct instantiation for testing only; use TraitHandler in production
         self.trait = Trait({
             'name': 'HP',
             'type': 'gauge',
@@ -393,37 +394,60 @@ class GaugeTraitTestCase(TestCase):
         self.assertEqual(self.trait.percent(), '150.0%')
 
 
-class TraitFactoryTestCase(TestCase):
-    """Test case for the TraitFactory class."""
+class TraitFactoryTestCase(EvenniaTest):
+    """Test case for the TraitHandler class."""
     def setUp(self):
-        self._traits = {
-            # static trait
-            'str': {'name': 'Strength',
-                    'type': 'static'},
-            # counter trait
-            'bonus': {'name': 'Bonus',
-                      'type': 'counter'},
-            # gauge trait
-            'hp': {'name': 'HP',
-                   'type': 'gauge'},
-            # invalid
-            'bad1': {'type': 'static'},
-            'bad2': {'name': 'Naughty'}
-        }
-        self.traits = TraitFactory(self._traits)
+        super(TraitFactoryTestCase, self).setUp()
+        self.traits = TraitHandler(self.char1)
 
-    def tearDown(self):
-        self._traits, self.traits = None, None
+    def test_add_get(self):
+        """test adding and getting Traits via TraitHandler"""
+        self.traits.add(
+            key='str', name='Strength', type='static')
 
-    def test_access_by_attr(self):
-        """test `Trait` access by key"""
+        t = self.traits.get('str')
+        self.assertIsInstance(t, Trait)
+        self.assertEqual(t.name, "Strength")
+        self.assertEqual(t._type, "static")
+
+    def test_len_remove(self):
+        """test response to len() and removing Traits from TraitHandler"""
+        self.traits.add(
+            key='str', name='Strength', type='static')
+
+        self.assertEqual(len(self.traits), 1)
+        self.traits.remove('str')
+        self.assertEqual(len(self.traits), 0)
+
+    def test_all_clear(self):
+        """test `all` property and clear function on TraitHandler"""
+        self.traits.add(
+            key='str', name='Strength', type='static')
+        self.traits.add(
+            key='bonus', name='Bonus', type='counter')
+        self.traits.add(
+            key='hp', name='HP', type='gauge')
+
+        self.assertEqual(frozenset(self.traits.all),
+                         frozenset(['str', 'bonus', 'hp']))
+        self.assertEqual(len(self.traits), 3)
+        self.traits.clear()
+        self.assertEqual(len(self.traits), 0)
+
+    def test_alternate_access(self):
+        """test `Trait` access by attribute and dict item syntax"""
+        self.traits.add(
+            key='str', name='Strength', type='static')
+
         # as attribute
         self.assertIsInstance(self.traits.str, Trait)
+        self.assertEqual(self.traits.str.name, 'Strength')
         # as dict key
         self.assertIsInstance(self.traits['str'], Trait)
+        self.assertEqual(self.traits['str'].name, 'Strength')
 
     def test_assignment_error(self):
-        """ensure attempting to assign to a Trait key on a TraitFactory fails."""
+        """ensure attempting to assign to a Trait key on a TraitHandler fails."""
         with self.assertRaises(TraitException):
             self.traits.str = 5
         with self.assertRaises(TraitException):
@@ -431,6 +455,9 @@ class TraitFactoryTestCase(TestCase):
 
     def test_defaults_static(self):
         """check defaults for static trait optional parameters in config"""
+        self.traits.add(
+            key='str', name='Strength', type='static')
+
         st = self.traits.str
         self.assertEqual(st._type, 'static')
         self.assertEqual(st.base, 0)
@@ -444,6 +471,9 @@ class TraitFactoryTestCase(TestCase):
 
     def test_defaults_counter(self):
         """check defaults for counter trait optional parameters in config"""
+        self.traits.add(
+            key='bonus', name='Bonus', type='counter')
+
         bo = self.traits.bonus
         self.assertEqual(bo._type, 'counter')
         self.assertEqual(bo.base, 0)
@@ -454,6 +484,9 @@ class TraitFactoryTestCase(TestCase):
 
     def test_defaults_gauge(self):
         """check defaults for gauge trait optional parameters in config"""
+        self.traits.add(
+            key='hp', name='HP', type='gauge')
+
         hp = self.traits.hp
         self.assertEqual(hp._type, 'gauge')
         self.assertEqual(hp.name, 'HP')
@@ -463,12 +496,3 @@ class TraitFactoryTestCase(TestCase):
         self.assertEqual(hp.min, 0)
         self.assertEqual(hp.max, 0)
         self.assertEqual(hp.extra, [])
-
-    def test_config_errors(self):
-        """test for required keys in trait config data"""
-        # missing name
-        with self.assertRaises(TraitException):
-            bad1 = self.traits.bad1
-        # missing type
-        with self.assertRaises(TraitException):
-            bad2 = self.traits.bad2

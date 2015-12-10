@@ -170,13 +170,15 @@ def apply_skills(char):
     Args:
         char (Character): the character being initialized
     """
-    char.db.skills = \
-        {skill: {'type': 'trait',
-                 'base': char.traits[data['base']].actual,
-                 'mod': 0,
-                 'name': data['name'],
-                 'extra': {'plus': 0, 'minus': 0}}
-            for skill, data in _SKILL_DATA.iteritems()}
+    for skill, data in _SKILL_DATA.iteritems():
+        char.skills.add(
+            key=skill,
+            type='static',
+            base=char.traits[data['base']].actual,
+            mod=0,
+            name=data['name'],
+            extra=dict(plus=0, minus=0)
+        )
 
 
 def load_skill(skill):
@@ -199,7 +201,7 @@ def validate_skills(char):
     """Validates a player's skill allocations during chargen.
 
     Args:
-        char (Character): character with populated skills TraitFactory
+        char (Character): character with populated skills TraitHandler
 
     Returns:
         (tuple[bool, str]): first value is whether the skills are valid,
@@ -218,7 +220,7 @@ def finalize_skills(skills):
     """Sets/calculates the permanent skill values at the end of chargen.
 
     Args:
-        skills (TraitFactory): validated skills TraitFactory collection
+        skills (TraitHandler): validated skills TraitHandler collection
 
     Note:
         During chargen, penalty counters are applied to the `base`

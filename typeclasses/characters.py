@@ -13,7 +13,7 @@ from evennia.utils import lazy_property
 
 from objects import Object
 from world.equip import EquipHandler
-from world.traits import TraitFactory
+from world.traits import TraitHandler
 from world.economy import GC, SC, CC
 
 
@@ -135,15 +135,15 @@ class Character(Object):
         # Non-persistent attributes
         self.ndb.group = None
 
-    @property
+    @lazy_property
     def traits(self):
-        """TraitFactory that manages character traits."""
-        return TraitFactory(self.db.traits)
+        """TraitHandler that manages character traits."""
+        return TraitHandler(self)
 
-    @property
+    @lazy_property
     def skills(self):
-        """TraitFactory that manages character traits."""
-        return TraitFactory(self.db.skills)
+        """TraitHandler that manages character traits."""
+        return TraitHandler(self, db_attribute='skills')
 
     @lazy_property
     def equip(self):

@@ -86,17 +86,21 @@ def apply_archetype(char, name, reset=False):
                 raise ArchetypeException('Character is already a {}'.format(name))
 
             name = '-'.join((char.db.archetype, name))
+            reset = True
 
     archetype = load_archetype(name)
-    char.db.traits = archetype.traits
     char.db.archetype = archetype.name
+    if reset:
+        char.traits.clear()
+    for key, kwargs in archetype.traits.iteritems():
+        char.traits.add(key, **kwargs)
 
 
 def get_remaining_allocation(traits):
     """Returns the number of trait points remaining to be assigned.
 
     Args:
-        traits (TraitFactory): Partially loaded TraitFactory
+        traits (TraitHandler): Partially loaded TraitHandler
 
     Returns:
         (int): number of trait points left for the player to allocate
@@ -109,14 +113,14 @@ def validate_primary_traits(traits):
     """Validates proposed primary trait allocations during chargen.
 
     Args:
-        traits (TraitFactory): TraitFactory loaded with proposed final
+        traits (TraitHandler): TraitHandler loaded with proposed final
             primary traits
 
     Returns:
         (tuple[bool, str]): first value is whether the traits are valid,
             second value is error message
     """
-    total = sum(traits[t].base for t in PRIMARY_TRAITS)
+    total = sum(traits[t].actual for t in PRIMARY_TRAITS)
     if total > TOTAL_PRIMARY_POINTS:
         return False, 'Too many trait points allocated.'
     if total < TOTAL_PRIMARY_POINTS:
@@ -129,7 +133,7 @@ def calculate_secondary_traits(traits):
     """Calculates secondary traits
 
     Args:
-        traits (TraitFactory): factory attribute with primary traits
+        traits (TraitHandler): factory attribute with primary traits
         populated.
     """
     # secondary traits
@@ -217,35 +221,35 @@ class Archetype(object):
         # base traits data
         self.traits = {
             # primary
-            'STR': {'type': 'trait', 'base': 1, 'mod': 0, 'name': 'Strength'},
-            'PER': {'type': 'trait', 'base': 1, 'mod': 0, 'name': 'Perception'},
-            'INT': {'type': 'trait', 'base': 1, 'mod': 0, 'name': 'Intelligence'},
-            'DEX': {'type': 'trait', 'base': 1, 'mod': 0, 'name': 'Dexterity'},
-            'CHA': {'type': 'trait', 'base': 1, 'mod': 0, 'name': 'Charisma'},
-            'VIT': {'type': 'trait', 'base': 1, 'mod': 0, 'name': 'Vitality'},
+            'STR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Strength'},
+            'PER': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Perception'},
+            'INT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Intelligence'},
+            'DEX': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Dexterity'},
+            'CHA': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Charisma'},
+            'VIT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Vitality'},
             # magic
-            'MAG': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Magic'},
+            'MAG': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Magic'},
             'BM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 0, 'name': 'Black Mana'},
             'WM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 0, 'name': 'White Mana'},
             # secondary
             'HP': {'type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Health'},
             'SP': {'type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Stamina'},
             # saves
-            'FORT': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Fortitude Save'},
-            'REFL': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Reflex Save'},
-            'WILL': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Will Save'},
+            'FORT': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Fortitude Save'},
+            'REFL': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Reflex Save'},
+            'WILL': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Will Save'},
             # combat
-            'ATKM': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Melee Attack'},
-            'ATKR': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Ranged Attack'},
-            'ATKU': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Unarmed Attack'},
-            'DEF': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Defense'},
+            'ATKM': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Melee Attack'},
+            'ATKR': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Ranged Attack'},
+            'ATKU': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Unarmed Attack'},
+            'DEF': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Defense'},
             'ACT': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Action Points'},
             'PP': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Power Points'},
             # misc
             'ENC': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Carry Weight'},
-            'MV': {'type': 'trait', 'base': 6, 'mod': 0, 'name': 'Movement Points'},
-            'LV': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Level'},
-            'XP': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Experience',
+            'MV': {'type': 'static', 'base': 6, 'mod': 0, 'name': 'Movement Points'},
+            'LV': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Level'},
+            'XP': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Experience',
                    'extra': {'level_boundaries': (500, 2000, 4500, 'unlimited')}},
         }
         self.health_roll = None
