@@ -286,8 +286,8 @@ class Human(Race):
         self.name = "Human"
         self.plural = "Humans"
         self.size = "medium"
-        self.desc = ("Humans are the most widespread of all the races. The "
-                     "human traits of curiosity, resourcefulness and "
+        self.desc = ("|gHumans|n are the most widespread of all the races. "
+                     "The human traits of curiosity, resourcefulness and "
                      "unyielding courage have helped them to adapt, survive "
                      "and prosper in every world they have explored.")
         self.foci = [load_focus(f) for f
@@ -302,7 +302,7 @@ class Elf(Race):
         self.name = "Elf"
         self.plural = "Elves"
         self.size = "medium"
-        self.desc = ("Elves are graceful, slender demi-humans with delicate "
+        self.desc = ("|gElves|n are graceful, slender demi-humans with delicate "
                      "features and pointy ears. Elves are known to use magic "
                      "spells, but prefer to spend their time feasting and "
                      "frolicking in wooded glades. They rarely visit cities of "
@@ -322,7 +322,7 @@ class Dwarf(Race):
         self.name = "Dwarf"
         self.plural = "Dwarves"
         self.size = "small"
-        self.desc = ("Dwarves are short, stocky demi-humans with long, "
+        self.desc = ("|gDwarves|n are short, stocky demi-humans with long, "
                      "respectable beards and heavy stout bodies. Their skin "
                      "is earthen toned and their hair black, gray or dark "
                      "brown. Stubborn but practical; dwarves love grand "

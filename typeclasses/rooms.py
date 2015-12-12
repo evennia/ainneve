@@ -4,7 +4,9 @@ Room
 Rooms are simple containers that has no location of their own.
 
 """
-
+from evennia import DefaultRoom
+from commands.chargen import ChargenCmdSet
+from typeclasses.characters import Character
 from objects import Object
 
 class Room(Object):
@@ -105,3 +107,13 @@ class Room(Object):
                                  "puppet:false()"])) # would be weird to puppet a room ...
         self.location = None
 
+
+class ChargenRoom(DefaultRoom):
+    """Room typeclass for character generation process."""
+    def at_object_creation(self):
+        self.cmdset.add_default(ChargenCmdSet, permanent=True)
+
+    def at_object_receive(self, moved_obj, source_location):
+        if moved_obj.is_typeclass(Character):
+            print(moved_obj)
+            moved_obj.execute_cmd('chargen')

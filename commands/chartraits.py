@@ -3,7 +3,7 @@ Character trait-related commands
 """
 
 from .command import MuxCommand
-from evennia.commands.cmdset import CmdSet
+from evennia import CmdSet
 from evennia.utils.evform import EvForm, EvTable
 
 
@@ -85,7 +85,7 @@ class CmdSheet(MuxCommand):
         )
         desc = EvTable(header=False,
                        align='l',
-                       table=[[self.caller.long_desc]],
+                       table=[[self.caller.db.desc]],
                        border=None)
 
         form.map(tables={1: gauges, 2: desc})

@@ -120,9 +120,3 @@ TOWER_SHIELD = {
     "value": 3*SC,
     "toughness": 3,
 }
-
-# format all `desc` properties consistently
-for proto in globals().values():
-    if isinstance(proto, dict) and 'desc' in proto:
-        proto['desc'] = fill(proto['desc'])
-

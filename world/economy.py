@@ -12,3 +12,62 @@ SC = 100
 
 #: (int) gold coins
 GC = 10000
+
+
+_WALLET_KEYS = ('GC', 'SC', 'CC')
+
+
+class TransferException(Exception):
+    """Represents an error in a financial transaction."""
+    def __init__(self, msg):
+        self.msg = msg
+
+
+def value_to_coin(value):
+    """Given a base value in CC, return smallest number of coins."""
+    if value and isinstance(value, int):
+        gc = value / GC
+        value %= SC
+        sc = value / SC
+        cc = value % SC
+        return dict(CC=cc, SC=sc, GC=gc)
+    else:
+        return None
+
+def coin_to_value(coins):
+    """Given a dict of coin: value pairs, return the total value in CC.
+
+    Args:
+        coins (int, dict): dict of coin names and values; assumes CC if an int
+    """
+    if not isinstance(coins, (int, dict)) or coins is None:
+        raise TypeError("'coins' must be a dict of 'coin': count pairs.")
+    if coins is None:
+        return None
+    if isinstance(coins, int):
+        coins = {'CC': coins}
+    return (coins.get('GC', 0) * GC +
+            coins.get('SC', 0) * SC +
+            coins.get('CC', 0))
+
+
+def transfer_funds(src, dst, value_or_coin):
+    """Transfers a given value from src wallet to dst wallet.
+
+    Note:
+        If either 'src' or 'dst' are None, the money is created
+        or destroyed by this function.
+    """
+    src_val = coin_to_value(src.db.wallet) if src else 0
+    dst_val = coin_to_value(dst.db.wallet) if dst else 0
+    xfr_val = coin_to_value(value_or_coin)
+    # check there's enough
+    if src is not None and src_val < xfr_val:
+        raise TransferException("Insufficient funds.")
+
+    if src is not None:
+        src.db.wallet = value_to_coin(src_val - xfr_val)
+
+    if dst is not None:
+        dst.db.wallet = value_to_coin(dst_val + xfr_val)
+

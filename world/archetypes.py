@@ -55,8 +55,9 @@ class ArchetypeException(Exception):
     def __init__(self, msg):
         self.msg = msg
 
-
-VALID_ARCHETYPES = ('Arcanist', 'Scout', 'Warrior')
+BASE_ARCHETYPES = ('Arcanist', 'Scout', 'Warrior')
+DUAL_ARCHETYPES = ('Warrior-Scout', 'Warrior-Arcanist', 'Arcanist-Scout')
+VALID_ARCHETYPES = BASE_ARCHETYPES + DUAL_ARCHETYPES
 
 PRIMARY_TRAITS = ('STR', 'PER', 'INT', 'DEX', 'CHA', 'VIT', 'MAG')
 SECONDARY_TRAITS = ('HP', 'SP', 'BM', 'WM')
@@ -83,7 +84,7 @@ def apply_archetype(char, name, reset=False):
         reset (bool): if True, remove any current archetype and apply the
             named archetype as new.
     """
-    name = name.capitalize()
+    name = name.title()
     if name not in VALID_ARCHETYPES:
         raise ArchetypeException('Invalid archetype.')
 
@@ -108,7 +109,7 @@ def get_remaining_allocation(traits):
     Returns:
         (int): number of trait points left for the player to allocate
     """
-    allocated = sum(traits[t].base for t in PRIMARY_TRAITS)
+    allocated = sum(traits[t].actual for t in PRIMARY_TRAITS)
     return TOTAL_PRIMARY_POINTS - allocated
 
 
@@ -249,8 +250,8 @@ class Archetype(object):
             'VIT': {'type': 'trait', 'base': 1, 'mod': 0, 'name': 'Vitality'},
             # magic
             'MAG': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Magic'},
-            'BM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 0, 'name': 'Black Mana'},
-            'WM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 0, 'name': 'White Mana'},
+            'BM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 10, 'name': 'Black Mana'},
+            'WM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 10, 'name': 'White Mana'},
             # secondary
             'HP': {'type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Health'},
             'SP': {'type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Stamina'},
@@ -275,11 +276,11 @@ class Archetype(object):
         self.health_roll = None
 
     @property
-    def desc(self):
+    def ldesc(self):
         """Returns a formatted description of the Archetype."""
         desc = "Archetype: |c{archetype}|n\n"
         desc += '~' * (11 + len(self.name)) + '\n'
-        desc += self._desc
+        desc += self.desc
         desc += '\n\n'
         desc += "|c{archetype}s|n start with the following base primary traits:"
         desc += "\n{traits}\n"
@@ -303,6 +304,11 @@ class Archetype(object):
                            sp_mod=self.traits['SP']['mod'],
                            pp_mod=self.traits['PP']['base'],
                            refl_mod=self.traits['REFL']['mod'])
+
+    @property
+    def desc(self):
+        """The narrative description of the Archetype."""
+        return self._desc
 
     @desc.setter
     def desc(self, desc):
