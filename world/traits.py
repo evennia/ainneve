@@ -3,47 +3,28 @@
 Traits Module
 
 `Trait` classes represent modifiable traits on objects or characters. They
-are instantiated by a `TraitFactory` object, which is typically set up
+are instantiated by a `TraitHandler` object, which is typically set up
 as a property on the object or character's typeclass.
 
-Data persistence for `Trait` objects is handled by passing a dict from
-a typeclass instance's `db` attribute handler loaded with the appropriate
-keys to the factory which map to properties of the eventual `Trait` object.
-See _Trait Configuration_ below for more details.
-
 **Setup**
-    To use traits on an object, add a dict containing trait configuration
-    keys to the object's `db` property in the `at_object_creation` hook,
-    and define a property on the object's class that passes that Attribute
-    into the constructor and returns a `TraitFactory`.
+    To use traits on an object, add a function that passes the object
+    itself into the constructor and returns a `TraitHandler`. This function
+    should be decorated with the `lazy_property` decorator.
+
+    If desired, multiple `TraitHandler` properties can be defined on one
+    object. The optional `db_attribute` argument should be used to specify
+    a different storage key for each `TraitHandler`. The default is `traits`.
 
 Example:
     ```python
-    from world.traits import TraitFactory
+    from evennia.utils import lazy_property
+    from world.traits import TraitHandler
         ...
     class Object(DefaultObject):
         ...
-        def at_object_creation(self):
-            self.db.traits = {
-                # static trait example
-                'str': {'name': 'Strength',
-                        'type': 'static',
-                        'base': 5},
-                # counter trait example
-                'carry': {'name': 'Carry Weight',
-                          'type': 'counter',
-                          'base': 0,
-                          'min': 0,
-                          'max': None},
-                # gauge trait example
-                'hp': {'name': 'HP',
-                       'type': 'gauge',
-                       'base': 10}
-            }
-        ...
-        @property
+        @lazy_property
         def traits(self):
-            return TraitFactory(self.db.traits)
+            return TraitHandler(self)
     ```
 
 **Trait Configuration**
@@ -82,7 +63,7 @@ Example:
         Strength, Character Level, or Defense Rating in many tabletop gaming
         systems.
 
-        Configuration Keys:
+        Constructor Args:
             name (str): name of the trait
             type (str): 'static' for static traits
             base (int, float): base value of the trait
@@ -130,10 +111,8 @@ Example:
         carrying weight, alignment points, a money system, or bonus/penalty
         counters.
 
-        Configuration Keys:
+        Constructor Args:
             (all keys listed above for 'static', plus:)
-            current Optional(int, float): default `base`
-                the current value of the trait
             min Optional(int, float, None): default None
                 minimum allowable value for current; unbounded if None
             max Optional(int, float, None): default None
@@ -185,10 +164,8 @@ Example:
         Gauge type traits are best used to represent traits such as health
         points, stamina points, or magic points.
 
-        Configuration Keys:
+        Constructor Args:
             (all keys listed above for 'static', plus:)
-            current Optional(int, float): default `base`+`mod`
-                the current value of the trait
             min Optional(int, float, None): default 0
                 minimum allowable value for current; unbounded if None
             max Optional(int, float, None, 'base'): default 'base'
@@ -238,11 +215,12 @@ Example:
 """
 
 from evennia.utils.dbserialize import _SaverDict
-from evennia.utils import logger
+from evennia.utils import logger, lazy_property
 from functools import total_ordering
 
-ALL_TRAITS = ('static', 'counter', 'gauge')
+TRAIT_TYPES = ('static', 'counter', 'gauge')
 RANGE_TRAITS = ('counter', 'gauge')
+
 
 class TraitException(Exception):
     """Base exception class raised by `Trait` objects.
@@ -254,43 +232,28 @@ class TraitException(Exception):
         self.msg = msg
 
 
-class TraitFactory(object):
+class TraitHandler(object):
     """Factory class that instantiates Trait objects.
 
     Args:
-        dbobj (_SaverDict): attribute from an Evennia typeclass object's
-            `self.db` attribute handler that has been initalized to a dict
-            with config parameter keys. See module docstring for config
-            details.
+        obj (Object): parent Object typeclass for this TraitHandler
+        db_attribute (str): name of the DB attribute for trait data storage
     """
-    def __init__(self, dbobj):
-        self.dbobj = dbobj
+    def __init__(self, obj, db_attribute='traits'):
+        if not obj.attributes.has(db_attribute):
+            obj.attributes.add(db_attribute, {})
+
+        self.attr_dict = obj.attributes.get(db_attribute)
         self.cache = {}
 
-    def __getattr__(self, trait):
-        """Returns Trait instances accessed as attributes.
-
-        Args:
-            trait (str): key from the traits dict containing config data
-                for the trait. "all" returns a list of all trait keys.
-
-        Returns:
-            `Trait` class, or `None` if trait key is not found in traits
-            collection.
-        """
-        if trait == 'all':
-            return self.dbobj.keys()
-        if trait not in self.cache:
-            if trait not in self.dbobj:
-                return None
-            data = self.dbobj[trait]
-            self.cache[trait] = Trait(data)
-        return self.cache[trait]
+    def __len__(self):
+        """Return number of Traits in 'attr_dict'."""
+        return len(self.attr_dict)
 
     def __setattr__(self, key, value):
         """Returns error message if trait objects are assigned directly."""
-        if key in ('dbobj', 'cache'):
-            super(TraitFactory, self).__setattr__(key, value)
+        if key in ('attr_dict', 'cache'):
+            super(TraitHandler, self).__setattr__(key, value)
         else:
             raise TraitException(
                 "Trait object not settable. Assign one of "
@@ -298,13 +261,75 @@ class TraitFactory(object):
                 "properties instead."
             )
 
-    def __getitem__(self, item):
-        """Returns `Trait` instances accessed as dict keys."""
-        return self.__getattr__(item)
-
     def __setitem__(self, key, value):
         """Returns error message if trait objects are assigned directly."""
         return self.__setattr__(key, value)
+
+    def __getattr__(self, trait):
+        """Returns Trait instances accessed as attributes."""
+        return self.get(trait)
+
+    def __getitem__(self, trait):
+        """Returns `Trait` instances accessed as dict keys."""
+        return self.get(trait)
+
+    def get(self, trait):
+        """
+        Args:
+            trait (str): key from the traits dict containing config data
+                for the trait. "all" returns a list of all trait keys.
+
+        Returns:
+            (`Trait` or `None`): named Trait class or None if trait key
+            is not found in traits collection.
+        """
+        if trait not in self.cache:
+            if trait not in self.attr_dict:
+                return None
+            data = self.attr_dict[trait]
+            self.cache[trait] = Trait(data)
+        return self.cache[trait]
+
+    def add(self, key, name, type='static',
+            base=0, mod=0, min=None, max=None, extra={}):
+        """Create a new Trait and add it to the handler."""
+        if key in self.attr_dict:
+            raise TraitException("Trait '{}' already exists.".format(key))
+
+        if type in TRAIT_TYPES:
+            trait = dict(name=name,
+                         type=type,
+                         base=base,
+                         mod=mod,
+                         extra=extra)
+            if min:
+                trait.update(dict(min=min))
+            if max:
+                trait.update(dict(max=max))
+
+            self.attr_dict[key] = trait
+        else:
+            raise TraitException("Invalid trait type specified.")
+
+    def remove(self, trait):
+        """Remove a Trait from the handler's parent object."""
+        if trait not in self.attr_dict:
+            raise TraitException("Trait not found: {}".format(trait))
+
+        if trait in self.cache:
+            del self.cache[trait]
+        del self.attr_dict[trait]
+
+    def clear(self):
+        """Remove all Traits from the handler's parent object."""
+        for trait in self.all:
+            self.remove(trait)
+
+    @property
+    def all(self):
+        """Return a list of all trait keys in this TraitHandler."""
+        return self.attr_dict.keys()
+
 
 @total_ordering
 class Trait(object):
