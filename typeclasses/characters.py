@@ -46,8 +46,3 @@ class Character(DefaultCharacter):
         """Handler for equipped items."""
         return EquipHandler(self)
 
-    @property
-    def wealth(self):
-        """Return the character's total wealth in CC."""
-        wal = self.db.wallet
-        return wal['GC'] * GC + wal['SC'] * SC + wal['CC'] + CC

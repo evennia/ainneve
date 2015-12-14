@@ -1,13 +1,22 @@
 """
 Chargen EvMenu module.
 """
+from evennia import spawn, CmdSet
 from evennia.utils import fill, dedent
 from evennia.utils.evtable import EvTable
+
+from commands.equip import CmdInventory
+from commands.chartraits import CmdSheet, CmdSkills
 from world import archetypes, races, skills
 from world.rulebook import d_roll
-from evennia.utils.spawner import spawn
+from world.economy import format_coin as as_price, TransferException
+from world.economy import transfer_funds
+
 from math import ceil
 import re
+
+
+
 
 
 # Organize starter equipment prototypes by category
@@ -28,13 +37,15 @@ EQUIPMENT_CATEGORIES = {
     'Shields':
         (4, 'BUCKLER_SHIELD', 'HERALDIC_SHIELD', 'TOWER_SHIELD'),
 }
+CATEGORY_LIST = sorted(EQUIPMENT_CATEGORIES.iterkeys(),
+                       key=lambda c: EQUIPMENT_CATEGORIES[c][0])
 RE_ARTCL = re.compile(r'^an?\s', re.IGNORECASE)
 
 
 def menunode_welcome_archetypes(caller):
     """Starting page and Archetype listing."""
     text = dedent("""\
-        |wWelcome to |mAinneve|n, the example game for |yEvennia|n.
+        |wWelcome to |mAinneve|w, the example game for |yEvennia|w.|n
 
         To begin, select an |cArchetype|n. There are three base
         archetypes to choose from, plus three dual archetypes which
@@ -104,9 +115,10 @@ def menunode_allocate_traits(caller, raw_input):
                 "goto": "menunode_allocate_traits"}
                for t in archetypes.PRIMARY_TRAITS]
     options.append({"desc": "Start Over",
-                    "exec": lambda caller: archetypes.apply_archetype(caller,
-                                                                      caller.db.archetype,
-                                                                      reset=True),
+                    "exec": lambda char: archetypes.apply_archetype(
+                                               char,
+                                               char.db.archetype,
+                                               reset=True),
                     "goto": "menunode_allocate_traits"})
 
     if remaining > 0:
@@ -141,11 +153,9 @@ def menunode_race_and_focuses(caller, raw_input):
     text = race.desc + "Select a focus below to continue."
     help = fill("After selecting a focus, you will be prompted "
                 "to save your race/focus combination.")
-    def save_race(caller):
-        caller.ndb.race = race
+    caller.ndb._menutree.race = race
 
     options = [{"desc": f.name,
-                "exec": save_race,
                 "goto": "menunode_select_race_focus"}
                for f in race.foci]
     options.append({"desc": "Return to Race selection",
@@ -156,14 +166,11 @@ def menunode_race_and_focuses(caller, raw_input):
 
 def menunode_select_race_focus(caller, raw_input):
     """Focus detail and final race/focus selection menu node."""
-    race = caller.ndb.race
+    race = caller.ndb._menutree.race
     focus = race.foci[int(raw_input)-1]
     text = "|wRace|n: |g{}|n\n|wFocus|n: ".format(race.name)
     text += focus.desc
     text += "Confirm this Race and Focus selection?"
-
-    def del_race(caller):
-        del caller.ndb.race
 
     options = ({"key": ("Yes", "ye", "y"),
                 "desc": "Become {} {} with the {} focus".format(
@@ -174,7 +181,6 @@ def menunode_select_race_focus(caller, raw_input):
                 "goto": "menunode_allocate_mana"},
                {"key": ("No", "n", "_default"),
                 "desc": "Return to Race selection",
-                "exec": del_race,
                 "goto": "menunode_races"})
 
     return text, options
@@ -223,6 +229,9 @@ def menunode_allocate_mana(caller, raw_input):
             output += "  |xBlack Mana|n: |w{}|n\n\n".format(tr.BM.actual)
         else:
             output = ""
+
+        archetypes.calculate_secondary_traits(caller.traits)
+        archetypes.finalize_traits(caller.traits)
         skills.apply_skills(caller)
         return menunode_allocate_skills(caller, output)
 
@@ -304,23 +313,30 @@ def menunode_allocate_skills(caller, raw_input):
         output += "{skills}\n"
         output += "You get |w{coins}|n SC (Silver Coins) to start out.\n"
 
-        caller.db.wallet['SP'] = d_roll('2d6+3')
+        caller.db.wallet['SC'] = d_roll('2d6+3')
 
         return menunode_equipment_cats(
             caller,
             output.format(skills=table,
-                          coins=caller.db.wallet['SP'])
+                          coins=caller.db.wallet['SC'])
         )
 
 
 def menunode_equipment_cats(caller, raw_input):
     """Initial equipment "shopping" - choose a category"""
     text = raw_input if raw_input and raw_input[0] == 'F' else ""
+    text += "Type '|winventory|n' to see your current equipment.\n"
     text += "Select a category of equipment to view."
-    category_list = sorted(EQUIPMENT_CATEGORIES.iterkeys(),
-                           key=lambda c: EQUIPMENT_CATEGORIES[c][0])
     options = [{"desc": cat, "goto": "menunode_equipment_list"}
-               for cat in category_list]
+               for cat in CATEGORY_LIST]
+
+    options.append({"key": "Done",
+                    "desc": "Continue to character description",
+                    "goto": "menunode_character_desc"})
+
+    menucmdset = caller.cmdset.all()[-1]
+    menucmdset.add(CmdInventory())
+    caller.cmdset.update()
     return (text, help), options
 
 
@@ -328,22 +344,19 @@ def menunode_equipment_list(caller, raw_input):
     """Initial equipment "shopping" - list items in a category"""
     text = "Select an item to view details and buy."
 
-    category_list = sorted(EQUIPMENT_CATEGORIES.iterkeys(),
-                           key=lambda c: EQUIPMENT_CATEGORIES[c][0])
-    category = ''
-    if raw_input.isdigit() and int(raw_input) <= len(category_list):
-        category = category_list[int(raw_input)-1]
+    if raw_input.isdigit() and int(raw_input) <= len(CATEGORY_LIST):
+        caller.ndb._menutree.item_category = CATEGORY_LIST[int(raw_input)-1]
+
+    category = (caller.ndb._menutree.item_category
+                if hasattr(caller.ndb._menutree, 'item_category')
+                else '')
+
     prototypes = spawn(return_prototypes=True)
     options = []
-    for proto in EQUIPMENT_CATEGORIES[category][1:]:
-        def save_item(char):
-            char.ndb.item_prototype = proto
 
+    for proto in EQUIPMENT_CATEGORIES[category][1:]:
         options.append({
-            "key": [RE_ARTCL.sub('', prototypes[proto]["key"]).title()] +
-                   prototypes[proto].get("aliases", []),
             "desc": _format_menuitem_desc(prototypes[proto]),
-            "exec": save_item,
             "goto": "menunode_examine_and_buy"
         })
     options.append({
@@ -357,36 +370,105 @@ def menunode_equipment_list(caller, raw_input):
 def menunode_examine_and_buy(caller, raw_input):
     """Examine and buy an item."""
     prototypes = spawn(return_prototypes=True)
-    item = None
-    if caller.ndb.item_prototype:
-        item = prototypes[caller.ndb.item_prototype]
-    text = ""
+    items, item = EQUIPMENT_CATEGORIES[caller.ndb._menutree.item_category][1:], None
+    if raw_input.isdigit() and int(raw_input) <= len(items):
+        item = prototypes[items[int(raw_input)-1]]
     if item:
-        text += "|Y{name}|n\n"
-        text += item['desc'] + '\n'
-        stats = [["|C{:>10.10s}|n: |w{:>3}|n"],[]]
+        text = _format_item_details(item)
+        text += "You currently have {}. Purchase |w{}|n?".format(
+                    as_price(caller.db.wallet),
+                    item['key']
+                )
+        help = "Choose carefully. Purchases are final."
 
-    text = fill("")
-    help = fill("")
-    options = {}
-    return (text, help), options
+        def purchase_item(caller):
+            """Process item purchase."""
+            try:
+                # this will raise exception if caller doesn't
+                # have enough funds in their `db.wallet`
+                transfer_funds(caller, None, item['value'])
+                ware = spawn(item).pop()
+                ware.move_to(caller, quiet=True)
+                ware.at_get(caller)
+                rtext = "You pay {} and purchase {}".format(
+                            as_price(ware.value),
+                            ware.key
+                         )
+            except TransferException:
+                rtext = "You do not have enough money to buy {}.".format(
+                            item['key'])
+            caller.msg(rtext)
+
+        options = ({"key": ("Yes", "ye", "y"),
+                    "desc": "Purchase {} for {}".format(
+                               item['key'],
+                               as_price(item['value'])
+                            ),
+                    "exec": purchase_item,
+                    "goto": "menunode_equipment_cats"},
+                   {"key": ("No", "n", "_default"),
+                    "desc": "Go back to category list",
+                    "goto": "menunode_equipment_list"}
+                   )
+
+        return (text, help), options
+    else:
+        assert False
 
 
 def menunode_character_desc(caller, raw_input):
     """Enter a character description."""
-
-    text = fill("")
+    text = "Enter a description for your character."
     help = fill("")
-    options = {}
+    options = [{"key": "_default",
+                "goto": "menunode_confirm"}]
     return (text, help), options
 
 
 def menunode_confirm(caller, raw_input):
     """Confirm and save allocations."""
-    text = fill("")
-    help = fill("")
-    options = {}
-    return (text, help), options
+    caller.db.desc = str(raw_input)
+
+    menucmdset = caller.cmdset.all()[-1]
+    menucmdset.add(CmdSheet())
+    menucmdset.add(CmdSkills())
+    caller.cmdset.update()
+    caller.execute_cmd('sheet/skills')
+    text = "Save your character skills and traits above\n"
+    text += "and exit character generation?"
+
+    def reset_all(char):
+        """Reset a character before starting over."""
+        char.db.archetype = char.db.race = char.db.focus = None
+        char.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}
+        char.traits.clear()
+        char.skills.clear()
+        for item in char.contents:
+            item.delete()
+        menucmdset = char.cmdset.all()[-1]
+        menucmdset.remove('inventory')
+        menucmdset.remove('sheet')
+        menucmdset.remove('skills')
+        char.cmdset.update()
+
+    options = [{"key": ("Yes", "ye", "y"),
+                "desc": "Save your character and enter |mAinneve|n",
+                "goto": "menunode_end"},
+               {"key": ("No", "n"),
+                "desc": "Start over from the beginning",
+                "exec": reset_all,
+                "goto": "menunode_welcome_archetypes"}]
+    return text, options
+
+
+def menunode_end(caller, raw_text):
+    """Farewell message."""
+    text = dedent("""
+        Congratulations!
+
+        You have completed |mAinneve|n character creation.
+        This could be some more informative message eventually...""")
+    return text, None
 
 
 # helpers
@@ -405,7 +487,7 @@ def _format_skill_3col(skill):
 
 def _format_menuitem_desc(item):
     """Returns a piece of equipment formatted as a one-line menu item."""
-    template = "{desc:27.27s}... "
+    template = "|w{name}|n Cost: ({price}) "
     if item['typeclass'] in ("typeclasses.weapons.Weapon",
                              "typeclasses.weapons.TwoHandedWeapon",
                              "typeclasses.weapons.RangedWeapon",
@@ -419,8 +501,57 @@ def _format_menuitem_desc(item):
         template += "[|yDef: {toughness}|n]"
 
     return template.format(
-        desc=item.get('desc', ''),
+        name=RE_ARTCL.sub('', item['key']).title(),
+        price=as_price(item.get('value', {})),
         handed=2 if 'TwoHanded' in item['typeclass'] else 1,
         damage=item.get('damage', ''),
         toughness=item.get('toughness', '')
     )
+
+
+def _format_item_details(item):
+    """Returns a piece of equipment's details and description."""
+    stats = [["          |CPrice|n: {}".format(as_price(item['value'])),
+              "         |CWeight|n: |w{}|n".format(item['weight'])],
+             []]
+    col1, col2 = stats
+    # this is somewhat awkward because we're using prototype dicts instead
+    # of instances of these classes.
+    if item['typeclass'] in ("typeclasses.weapons.Weapon",
+                             "typeclasses.weapons.TwoHandedWeapon",
+                             "typeclasses.weapons.RangedWeapon",
+                             "typeclasses.weapons.TwoHandedRanged",
+                             "typeclasses.armors.Shield"):
+        col2.append("     |CHandedness|n: |c{}H|n".format(
+            2 if 'TwoHanded' in item['typeclass'] else 1
+        ))
+
+    if item['typeclass'] in ("typeclasses.weapons.Weapon",
+                             "typeclasses.weapons.TwoHandedWeapon",
+                             "typeclasses.weapons.RangedWeapon",
+                             "typeclasses.weapons.TwoHandedRanged"):
+        col2.append("         |CDamage|n: |r{}|n".format(item['damage']))
+
+    if item['typeclass'] in ("typeclasses.weapons.RangedWeapon",
+                             "typeclasses.weapons.TwoHandedRanged"):
+        col2.append("          |CRange|n: |G{}|n".format(item['range']))
+
+    if item['typeclass'] in ("typeclasses.armors.Armor",
+                             "typeclasses.armors.Shield"):
+        col2.append("      |CToughness|n: |y{}|n".format(item['toughness']))
+
+    if 'quantity' in item:
+        col2.append("       |CQuantity|n: |w{}|n".format(item['quantity']))
+
+    table = EvTable(header=False, table=stats, border=None)
+
+    text = "|Y{name}|n\n"
+    text += "{desc}\n"
+    text += "{stats}\n"
+    if 'ammunition' in item:
+        text += "  This weapon requires ammunition: |w{ammo}|n\n"
+
+    return text.format(name=item['key'].title(),
+                       desc=fill(item['desc']),
+                       stats=table,
+                       ammo=item.get('ammunition', ''))

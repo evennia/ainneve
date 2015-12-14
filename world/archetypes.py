@@ -175,8 +175,8 @@ def finalize_traits(traits):
     the `mod` property.
     """
     for t in PRIMARY_TRAITS + SECONDARY_TRAITS + SAVE_ROLLS:
-        traits[t].base = traits[t].actual
-        traits[t].reset_mods()
+        traits[t].base = traits[t].actual if traits[t].actual <= 10 else 10
+        traits[t].reset_mod()
 
 
 def load_archetype(name):
@@ -253,7 +253,7 @@ class Archetype(object):
             'CHA': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Charisma'},
             'VIT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Vitality'},
             # magic
-            'MAG': {'type': 'trait', 'base': 0, 'mod': 0, 'name': 'Magic'},
+            'MAG': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Magic'},
             'BM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 10, 'name': 'Black Mana'},
             'WM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 10, 'name': 'White Mana'},
             # secondary
@@ -323,6 +323,7 @@ class Archetype(object):
         return "|C{:<16.16}|n : |w{:>3}|n".format(
                     trait['name'], trait['base'])
 
+
 class Arcanist(Archetype):
     """Represents the Arcanist archetype."""
     def __init__(self):
@@ -343,6 +344,7 @@ class Arcanist(Archetype):
         self.traits['MV']['base'] = 7
 
         self.health_roll = '1d6-1'
+
 
 class Scout(Archetype):
     """Represents the Scout archetype."""
