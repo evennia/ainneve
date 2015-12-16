@@ -9,14 +9,11 @@ from commands.equip import CmdInventory
 from commands.chartraits import CmdSheet, CmdSkills
 from world import archetypes, races, skills
 from world.rulebook import d_roll
-from world.economy import format_coin as as_price, TransferException
-from world.economy import transfer_funds
+from world.economy import format_coin as as_price
+from world.economy import transfer_funds, InsufficientFunds
 
 from math import ceil
 import re
-
-
-
 
 
 # Organize starter equipment prototypes by category
@@ -148,17 +145,22 @@ def menunode_races(caller, raw_input):
 
 def menunode_race_and_focuses(caller, raw_input):
     """Race detail and focus listing menu node."""
-    race = races.ALL_RACES[int(raw_input)-1]
-    race = races.load_race(race)
+    if raw_input.isdigit() and int(raw_input) < len(races.ALL_RACES):
+        race = races.ALL_RACES[int(raw_input)-1]
+        race = races.load_race(race)
+        caller.ndb._menutree.race = race
+
+    race = caller.ndb._menutree.race
+
     text = race.desc + "Select a focus below to continue."
     help = fill("After selecting a focus, you will be prompted "
                 "to save your race/focus combination.")
-    caller.ndb._menutree.race = race
 
     options = [{"desc": f.name,
                 "goto": "menunode_select_race_focus"}
                for f in race.foci]
-    options.append({"desc": "Return to Race selection",
+    options.append({"key": ("Back", "_default"),
+                    "desc": "Return to Race selection",
                     "goto": "menunode_races"})
 
     return (text, help), options
@@ -180,7 +182,7 @@ def menunode_select_race_focus(caller, raw_input):
                 "exec": lambda char: races.apply_race(char, race, focus),
                 "goto": "menunode_allocate_mana"},
                {"key": ("No", "n", "_default"),
-                "desc": "Return to Race selection",
+                "desc": "Return to {} details".format(race.name),
                 "goto": "menunode_races"})
 
     return text, options
@@ -242,9 +244,9 @@ def menunode_allocate_skills(caller, raw_input):
     total = 3
     counts = {1: 'one', 2: 'two', 3: 'three'}
 
-    minuses = (ceil(caller.traits.INT.actual / 3.0) -
-               sum(sk[s].minus for s in skills.ALL_SKILLS))
-    plusses = total - sum(sk[s].plus for s in skills.ALL_SKILLS)
+    plusses = (ceil(caller.traits.INT.actual / 3.0) -
+               sum(sk[s].plus for s in skills.ALL_SKILLS))
+    minuses = total - sum(sk[s].minus for s in skills.ALL_SKILLS)
 
     text = ""
     if raw_input.isdigit() and int(raw_input) <= len(skills.ALL_SKILLS):
@@ -391,10 +393,10 @@ def menunode_examine_and_buy(caller, raw_input):
                 ware.move_to(caller, quiet=True)
                 ware.at_get(caller)
                 rtext = "You pay {} and purchase {}".format(
-                            as_price(ware.value),
+                            as_price(ware.db.value),
                             ware.key
                          )
-            except TransferException:
+            except InsufficientFunds:
                 rtext = "You do not have enough money to buy {}.".format(
                             item['key'])
             caller.msg(rtext)

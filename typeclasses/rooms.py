@@ -112,3 +112,7 @@ class ChargenRoom(DefaultRoom):
     """Room typeclass for character generation process."""
     def at_object_creation(self):
         self.cmdset.add_default(ChargenCmdSet, permanent=True)
+
+    def at_object_receive(self, moved_obj, source_location):
+        if moved_obj.is_typeclass('typeclasses.characters.Character', exact=False):
+            moved_obj.execute_cmd('chargen')

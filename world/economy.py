@@ -18,10 +18,9 @@ GC = 10000
 _WALLET_KEYS = ('GC', 'SC', 'CC')
 
 
-class TransferException(Exception):
+class InsufficientFunds(ValueError):
     """Represents an error in a financial transaction."""
-    def __init__(self, msg):
-        self.msg = msg
+    pass
 
 
 def value_to_coin(value):
@@ -67,7 +66,7 @@ def transfer_funds(src, dst, value_or_coin):
     xfr_val = coin_to_value(value_or_coin)
     # check there's enough
     if src is not None and src_val < xfr_val:
-        raise TransferException("Insufficient funds.")
+        raise InsufficientFunds("Insufficient funds.")
 
     if src is not None:
         src.db.wallet = value_to_coin(src_val - xfr_val)
