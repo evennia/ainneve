@@ -55,46 +55,7 @@ class Room(Object):
             raise TypeError('Number of maximum characters has to be an integer.')
         else:
             self.db.max_chars = value
-    
-    # Overloading default return_appearance method to show automatic exits
-    # destinations and divide users and things. One user per line, one thing
-    # per line. It's temporary: as object typeclass is ended, the method should
-    # return the item short_desc or some "in_room_desc" (ex. A sword is dropped
-    # here)
-    
-    def return_appearance(self, looker):
-        """
-        This formats a description. It is the hook a 'look' command
-        should call.
 
-        Args:
-            looker (Object): Object doing the looking.
-        """
-        if not looker:
-            return
-        # get and identify all objects
-        visible = (con for con in self.contents if con != looker and
-                                                    con.access(looker, "view"))
-        exits, users, things = [], [], []
-        for con in visible:
-            if con.destination:
-                exits.append("{w[%s] {n- {c%s{n" % (con.key, con.destination))
-            elif con.has_player:
-                users.append("{w%s{n is here." % con.short_desc)
-            else:
-                things.append("%s" % con.short_desc)
-        # get description, build string
-        string = "{c%s{n\n" % self.short_desc
-        if self.long_desc:
-            string += "%s" % self.long_desc
-        if exits:
-            string += "\n\n{rExits:\n{n" + "\n".join(exits)
-        if users:
-            string += "\n" + "".join(users)
-        if things:
-            string += "\n" + "\n".join(things)
-        return string
-    
     def basetype_setup(self):
         """
         Simple room setup setting locks to make sure the room
@@ -107,12 +68,3 @@ class Room(Object):
                                  "puppet:false()"])) # would be weird to puppet a room ...
         self.location = None
 
-
-class ChargenRoom(DefaultRoom):
-    """Room typeclass for character generation process."""
-    def at_object_creation(self):
-        self.cmdset.add_default(ChargenCmdSet, permanent=True)
-
-    def at_object_receive(self, moved_obj, source_location):
-        if moved_obj.is_typeclass('typeclasses.characters.Character', exact=False):
-            moved_obj.execute_cmd('chargen')

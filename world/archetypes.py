@@ -178,6 +178,11 @@ def finalize_traits(traits):
         traits[t].base = traits[t].actual if traits[t].actual <= 10 else 10
         traits[t].reset_mod()
 
+    if traits.BM.base == 0:
+        traits.BM.max = 0
+    if traits.WM.base == 0:
+        traits.WM.max = 0
+
 
 def load_archetype(name):
     """Loads an instance of the named Archetype class.

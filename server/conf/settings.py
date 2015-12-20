@@ -22,6 +22,9 @@ from evennia.settings_default import *
 # This is the name of your game. Make it catchy!
 SERVERNAME = "Ainneve"
 
+# Allow multiple sessions per player; one character per session
+MULTISESSION_MODE = 2
+
 # Path to the game directory (use EVENNIA_DIR to refer to the
 # core evennia library)
 GAME_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))

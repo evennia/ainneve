@@ -105,63 +105,63 @@ class ApplyRaceTestCase(EvenniaTest):
 
     def test_apply_human_agility(self):
         """test character becoming human with agility focus"""
-        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 5, 2)
+        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 3, 2)
         races.apply_race(self.char1, 'human', 'agility')
         # human/agility bonuses: 1 will, 1 str, 2 dex, 2 refl
-        self.check_traits(9, 2, 2, 7, 5, 8, 0, 8, 7, 3)
+        self.check_traits(9, 2, 2, 7, 5, 8, 0, 8, 5, 3)
 
     def test_apply_human_cunning(self):
         """test character becoming human with cunning focus"""
-        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 5, 2)
+        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 3, 2)
         races.apply_race(self.char1, 'human', 'cunning')
         # human/cunning bonuses: 4 will, 1 per, 2 int
-        self.check_traits(8, 3, 4, 5, 5, 8, 0, 8, 5, 6)
+        self.check_traits(8, 3, 4, 5, 5, 8, 0, 8, 3, 6)
 
     def test_apply_human_prestige(self):
         """test character becoming human with prestige focus"""
-        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 5, 2)
+        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 3, 2)
         races.apply_race(self.char1, 'human', 'prestige')
         # human/prestige bonuses: 1 will, 1 int, 2 cha
-        self.check_traits(8, 2, 3, 5, 7, 8, 0, 8, 5, 3)
+        self.check_traits(8, 2, 3, 5, 7, 8, 0, 8, 3, 3)
 
     def test_apply_elf_agility(self):
         """test character becoming elf with agility focus"""
-        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 5, 2)
+        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 3, 2)
         races.apply_race(self.char1, 'elf', 'agility')
         # elf/agility bonuses: 1 str, 2 dex, 2 refl
-        self.check_traits(9, 2, 2, 7, 5, 8, 0, 8, 7, 2)
+        self.check_traits(9, 2, 2, 7, 5, 8, 0, 8, 5, 2)
 
     def test_apply_elf_spirit(self):
         """test character becoming elf with spirit focus"""
-        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 5, 2)
+        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 3, 2)
         races.apply_race(self.char1, 'elf', 'spirit')
         # elf/spirit bonuses: 1 vit, 2 mag, 1 fort, 1 refl, 1 will
-        self.check_traits(8, 2, 2, 5, 5, 9, 2, 9, 6, 3)
+        self.check_traits(8, 2, 2, 5, 5, 9, 2, 9, 4, 3)
 
     def test_apply_elf_alertness(self):
         """test character becoming elf with alertness focus"""
-        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 5, 2)
+        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 3, 2)
         races.apply_race(self.char1, 'elf', 'alertness')
         # elf/alertness bonuses: 2 per, 1 cha, 2 refl
-        self.check_traits(8, 4, 2, 5, 6, 8, 0, 8, 7, 2)
+        self.check_traits(8, 4, 2, 5, 6, 8, 0, 8, 5, 2)
 
     def test_apply_dwarf_brawn(self):
         """test character becoming dwarf with brawn focus"""
-        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 5, 2)
+        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 3, 2)
         races.apply_race(self.char1, 'dwarf', 'brawn')
         # dwarf/brawn bonuses: 2 str, 1 vit, 1 fort, 1 will
-        self.check_traits(10, 2, 2, 5, 5, 9, 0, 9, 5, 3)
+        self.check_traits(10, 2, 2, 5, 5, 9, 0, 9, 3, 3)
 
     def test_apply_dwarf_resilience(self):
         """test character becoming dwarf with resilience focus"""
-        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 5, 2)
+        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 3, 2)
         races.apply_race(self.char1, 'dwarf', 'resilience')
         # dwarf/resilience bonuses: 1 dex, 2 vit, 3 fort, 3 will
-        self.check_traits(8, 2, 2, 6, 5, 10, 0, 11, 5, 5)
+        self.check_traits(8, 2, 2, 6, 5, 10, 0, 11, 3, 5)
 
     def test_apply_dwarf_alertness(self):
         """test character becoming dwarf with alertness focus"""
-        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 5, 2)
+        self.check_traits(8, 2, 2, 5, 5, 8, 0, 8, 3, 2)
         races.apply_race(self.char1, 'dwarf', 'alertness')
         # dwarf/alertness bonuses: 2 per, 1 cha, 2 refl, 1 will
-        self.check_traits(8, 4, 2, 5, 6, 8, 0, 8, 7, 3)
+        self.check_traits(8, 4, 2, 5, 6, 8, 0, 8, 5, 3)

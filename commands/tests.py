@@ -166,7 +166,7 @@ class CharTraitsTestCase(CommandTest):
 "  Description                                            Magic       :   0  \n"
 "  ~~~~~~~~~~~                          \n"
 "  None                                  Save Rolls       Fortitude   :   9  \n"
-"                                        ~~~~~~~~~~       Reflex      :   5  \n"
+"                                        ~~~~~~~~~~       Reflex      :   3  \n"
 "                                                         Will        :   1  \n"
 "  Encumbrance                          \n"
 "  ~~~~~~~~~~~                           Combat Stats     Melee       :   9  \n"
@@ -195,7 +195,7 @@ class CharTraitsTestCase(CommandTest):
         # test save rolls
         output = (
 "YSave Rollsn|\n"
-" Fortitude Save   :   9  Reflex Save      :   5  Will Save        :   1")
+" Fortitude Save   :   9  Reflex Save      :   3  Will Save        :   1")
         self.call(CmdTraits(), "sav", output)
         # test combat stats
         output = (

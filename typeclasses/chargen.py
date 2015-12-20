@@ -5,7 +5,7 @@ from evennia import spawn, CmdSet
 from evennia.utils import fill, dedent
 from evennia.utils.evtable import EvTable
 
-from commands.equip import CmdInventory
+from commands.chargen import CmdCreateInventory
 from commands.chartraits import CmdSheet, CmdSkills
 from world import archetypes, races, skills
 from world.rulebook import d_roll
@@ -47,6 +47,8 @@ def menunode_welcome_archetypes(caller):
         To begin, select an |cArchetype|n. There are three base
         archetypes to choose from, plus three dual archetypes which
         combine the strengths and weaknesses of two archetypes into one.
+
+        Select an Archetype by number below to view its details, or "help" for more info.
     """)
     help = fill("In |mAinneve|n, character |cArchetypes|n represent the "
                 "characters' class or primary role. The various archetypes "
@@ -55,7 +57,7 @@ def menunode_welcome_archetypes(caller):
     options = []
     for arch in archetypes.VALID_ARCHETYPES:
         a = archetypes.load_archetype(arch)
-        options.append({"desc": "{:40.40s}...".format(a.desc),
+        options.append({"desc": "|c{}|n".format(a.name),
                         "goto": "menunode_select_archetype"})
     return (text, help), options
 
@@ -69,7 +71,7 @@ def menunode_select_archetype(caller, raw_input):
                 "desc": "Become {} {}".format("an" if arch.name[0] == 'A'
                                               else "a",
                                               arch.name),
-                "exec": lambda c: archetypes.apply_archetype(c, arch.name,
+                "exec": lambda s: archetypes.apply_archetype(s.new_char, arch.name,
                                                              reset=True),
                 "goto": "menunode_allocate_traits"},
                {"key": ("No", "n", "_default"),
@@ -80,9 +82,10 @@ def menunode_select_archetype(caller, raw_input):
 
 def menunode_allocate_traits(caller, raw_input):
     """Discretionary trait point allocation menu node."""
+    char = caller.new_char
     text = ""
     if raw_input.isdigit() and int(raw_input) <= len(archetypes.PRIMARY_TRAITS):
-        chartrait = caller.traits[archetypes.PRIMARY_TRAITS[int(raw_input)-1]]
+        chartrait = char.traits[archetypes.PRIMARY_TRAITS[int(raw_input)-1]]
         if chartrait.actual < 10:
             chartrait.mod += 1
         else:
@@ -90,11 +93,13 @@ def menunode_allocate_traits(caller, raw_input):
 
     data = []
     for i in xrange(3):
-        data.append([_format_trait_3col(caller.traits[t])
+        data.append([_format_trait_3col(char.traits[t])
                      for t in archetypes.PRIMARY_TRAITS[i::3]])
     table = EvTable(header=False, table=data)
-    remaining = archetypes.get_remaining_allocation(caller.traits)
+    remaining = archetypes.get_remaining_allocation(char.traits)
 
+    text += "Your character's traits influence combat abilities and skills. Type\n"
+    text += "'help' to see individual skill definitions.\n\n"
     text += "Allocate additional trait points as you choose.\n"
     text += "Current:\n{}".format(table)
     text += "\n  |w{}|n Points Remaining\n".format(remaining)
@@ -108,14 +113,14 @@ def menunode_allocate_traits(caller, raw_input):
     help += "  Charisma - affects skills related to interaction with others\n"
     help += "  Vitality - affects health and stamina points"
 
-    options = [{"desc": caller.traits[t].name,
+    options = [{"desc": char.traits[t].name,
                 "goto": "menunode_allocate_traits"}
                for t in archetypes.PRIMARY_TRAITS]
     options.append({"desc": "Start Over",
-                    "exec": lambda char: archetypes.apply_archetype(
-                                               char,
-                                               char.db.archetype,
-                                               reset=True),
+                    "exec": lambda s: archetypes.apply_archetype(
+                                          s.new_char,
+                                          s.new_char.db.archetype,
+                                          reset=True),
                     "goto": "menunode_allocate_traits"})
 
     if remaining > 0:
@@ -145,6 +150,7 @@ def menunode_races(caller, raw_input):
 
 def menunode_race_and_focuses(caller, raw_input):
     """Race detail and focus listing menu node."""
+    char = caller.new_char
     if raw_input.isdigit() and int(raw_input) < len(races.ALL_RACES):
         race = races.ALL_RACES[int(raw_input)-1]
         race = races.load_race(race)
@@ -168,6 +174,7 @@ def menunode_race_and_focuses(caller, raw_input):
 
 def menunode_select_race_focus(caller, raw_input):
     """Focus detail and final race/focus selection menu node."""
+    char = caller.new_char
     race = caller.ndb._menutree.race
     focus = race.foci[int(raw_input)-1]
     text = "|wRace|n: |g{}|n\n|wFocus|n: ".format(race.name)
@@ -179,7 +186,7 @@ def menunode_select_race_focus(caller, raw_input):
                     'an' if race.name[0] == 'E' else 'a',
                     race.name,
                     focus.name),
-                "exec": lambda char: races.apply_race(char, race, focus),
+                "exec": lambda s: races.apply_race(char, race, focus),
                 "goto": "menunode_allocate_mana"},
                {"key": ("No", "n", "_default"),
                 "desc": "Return to {} details".format(race.name),
@@ -190,7 +197,8 @@ def menunode_select_race_focus(caller, raw_input):
 
 def menunode_allocate_mana(caller, raw_input):
     """Mana point allocation menu node."""
-    tr = caller.traits
+    char = caller.new_char
+    tr = char.traits
     manas = ('WM', 'BM')
     if raw_input.isdigit() and int(raw_input) <= len(manas):
         tr[manas[int(raw_input)-1]].base += 1
@@ -216,9 +224,9 @@ def menunode_allocate_mana(caller, raw_input):
                     "goto": "menunode_allocate_mana"}
                    for m in manas]
 
-        def reset_mana(char):
+        def reset_mana(s):
             for m in manas:
-                char.traits[m].base = 0
+                s.new_char.traits[m].base = 0
 
         options.append({"desc": "Start Over",
                         "exec": reset_mana,
@@ -232,19 +240,20 @@ def menunode_allocate_mana(caller, raw_input):
         else:
             output = ""
 
-        archetypes.calculate_secondary_traits(caller.traits)
-        archetypes.finalize_traits(caller.traits)
-        skills.apply_skills(caller)
+        archetypes.calculate_secondary_traits(char.traits)
+        archetypes.finalize_traits(char.traits)
+        skills.apply_skills(char)
         return menunode_allocate_skills(caller, output)
 
 
 def menunode_allocate_skills(caller, raw_input):
     """Skill -1 counter allocation menu node."""
-    sk = caller.skills
+    char = caller.new_char
+    sk = char.skills
     total = 3
     counts = {1: 'one', 2: 'two', 3: 'three'}
 
-    plusses = (ceil(caller.traits.INT.actual / 3.0) -
+    plusses = (ceil(char.traits.INT.actual / 3.0) -
                sum(sk[s].plus for s in skills.ALL_SKILLS))
     minuses = total - sum(sk[s].minus for s in skills.ALL_SKILLS)
 
@@ -305,7 +314,7 @@ def menunode_allocate_skills(caller, raw_input):
                         "goto": "menunode_allocate_skills"})
         return (text, help), options
     else:
-        skills.finalize_skills(caller.skills)
+        skills.finalize_skills(char.skills)
         data = []
         for i in xrange(3):
             data.append([_format_trait_3col(sk[s], color='|M')
@@ -315,12 +324,12 @@ def menunode_allocate_skills(caller, raw_input):
         output += "{skills}\n"
         output += "You get |w{coins}|n SC (Silver Coins) to start out.\n"
 
-        caller.db.wallet['SC'] = d_roll('2d6+3')
+        char.db.wallet['SC'] = d_roll('2d6+3')
 
         return menunode_equipment_cats(
             caller,
             output.format(skills=table,
-                          coins=caller.db.wallet['SC'])
+                          coins=char.db.wallet['SC'])
         )
 
 
@@ -337,8 +346,9 @@ def menunode_equipment_cats(caller, raw_input):
                     "goto": "menunode_character_desc"})
 
     menucmdset = caller.cmdset.all()[-1]
-    menucmdset.add(CmdInventory())
+    menucmdset.add(CmdCreateInventory())
     caller.cmdset.update()
+    caller.execute_cmd('inventory')
     return (text, help), options
 
 
@@ -371,6 +381,7 @@ def menunode_equipment_list(caller, raw_input):
 
 def menunode_examine_and_buy(caller, raw_input):
     """Examine and buy an item."""
+    char = caller.new_char
     prototypes = spawn(return_prototypes=True)
     items, item = EQUIPMENT_CATEGORIES[caller.ndb._menutree.item_category][1:], None
     if raw_input.isdigit() and int(raw_input) <= len(items):
@@ -378,7 +389,7 @@ def menunode_examine_and_buy(caller, raw_input):
     if item:
         text = _format_item_details(item)
         text += "You currently have {}. Purchase |w{}|n?".format(
-                    as_price(caller.db.wallet),
+                    as_price(char.db.wallet),
                     item['key']
                 )
         help = "Choose carefully. Purchases are final."
@@ -388,10 +399,10 @@ def menunode_examine_and_buy(caller, raw_input):
             try:
                 # this will raise exception if caller doesn't
                 # have enough funds in their `db.wallet`
-                transfer_funds(caller, None, item['value'])
+                transfer_funds(char, None, item['value'])
                 ware = spawn(item).pop()
-                ware.move_to(caller, quiet=True)
-                ware.at_get(caller)
+                ware.move_to(char, quiet=True)
+                ware.at_get(char)
                 rtext = "You pay {} and purchase {}".format(
                             as_price(ware.db.value),
                             ware.key
@@ -429,17 +440,18 @@ def menunode_character_desc(caller, raw_input):
 
 def menunode_confirm(caller, raw_input):
     """Confirm and save allocations."""
-    caller.db.desc = str(raw_input)
+    char = caller.new_char
+    char.db.desc = str(raw_input)
 
-    menucmdset = caller.cmdset.all()[-1]
-    menucmdset.add(CmdSheet())
-    menucmdset.add(CmdSkills())
-    caller.cmdset.update()
-    caller.execute_cmd('sheet/skills')
-    text = "Save your character skills and traits above\n"
+    old_msg = char.msg
+    char.msg = caller.msg
+    char.execute_cmd('sheet/skills')
+    char.msg = old_msg
+
+    text = "Save your character with skills and traits above\n"
     text += "and exit character generation?"
 
-    def reset_all(char):
+    def reset_all(s):
         """Reset a character before starting over."""
         char.db.archetype = char.db.race = char.db.focus = None
         char.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}
@@ -447,11 +459,9 @@ def menunode_confirm(caller, raw_input):
         char.skills.clear()
         for item in char.contents:
             item.delete()
-        menucmdset = char.cmdset.all()[-1]
+        menucmdset = s.cmdset.all()[-1]
         menucmdset.remove('inventory')
-        menucmdset.remove('sheet')
-        menucmdset.remove('skills')
-        char.cmdset.update()
+        s.cmdset.update()
 
     options = [{"key": ("Yes", "ye", "y"),
                 "desc": "Save your character and enter |mAinneve|n",
@@ -465,6 +475,7 @@ def menunode_confirm(caller, raw_input):
 
 def menunode_end(caller, raw_text):
     """Farewell message."""
+    caller.new_char.db.chargen_complete = True
     text = dedent("""
         Congratulations!
 
