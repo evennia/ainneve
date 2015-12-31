@@ -4,9 +4,6 @@ Room
 Rooms are simple containers that has no location of their own.
 
 """
-from evennia import DefaultRoom
-from commands.chargen import ChargenCmdSet
-from typeclasses.characters import Character
 from objects import Object
 
 class Room(Object):
