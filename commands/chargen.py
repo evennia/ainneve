@@ -1,9 +1,23 @@
 """
 Chargen commands.
+
+Ainneve implements MULTISESSION_MODE = 2, in which players enter an
+OOC state immediately after creation. From that state, the @charcreate
+command is available to create a new character. This command launches
+the Ainneve character creation EvMenu.
+
+This new @charcreate command is added to the session cmdset. We also
+create a cmdset with the "Remove" mergtype to remove the original
+version from the player cmdset.
+
+To ensure that players cannot puppet a character until it has completed
+the entire character creation process, we also override the default @ic
+command on the player.
 """
 from django.conf import settings
 from evennia import CmdSet
 from evennia.commands.default.muxcommand import MuxPlayerCommand
+from evennia import default_cmds
 from evennia.utils import create, search
 from evennia.utils.evmenu import EvMenu
 from world.archetypes import validate_primary_traits
@@ -12,8 +26,8 @@ _MAX_NR_CHARACTERS = settings.MAX_NR_CHARACTERS
 _MULTISESSION_MODE = settings.MULTISESSION_MODE
 
 
-class ChargenCmdSet(CmdSet):
-    """Command set for the 'chargen' command."""
+class CharCreateCmdSet(CmdSet):
+    """Command set to add @charcreate command to Session."""
     key = "chargen_cmdset"
     priority = 0
 
@@ -22,15 +36,58 @@ class ChargenCmdSet(CmdSet):
         self.add(CmdCharCreate())
 
 
-class PlayerChargenCmdSet(CmdSet):
-    """Command set to remove the @charcreate command from Player."""
-    key = "chargen_cmdset"
+class RemoveCharCreateCmdSet(CmdSet):
+    """Command set to remove @charcreate command from Player."""
+    key = "rem_charcreate_cmdset"
     priority = 2
     mergetype = "Remove"
 
     def at_cmdset_creation(self):
         """Populate CmdSet"""
         self.add(CmdCharCreate())
+
+
+class ChargenICCmdSet(CmdSet):
+    """Command set to override the @ic command on Player"""
+    key = 'chargen_ic_cmdset'
+    priority = 2
+
+    def at_cmdset_creation(self):
+        self.add(CmdIC())
+
+
+class CmdIC(default_cmds.CmdIC):
+    """
+    control an object you have permission to puppet
+
+    Usage:
+      @ic <character>
+
+    Go in-character (IC) as a given Character.
+
+    This will attempt to "become" a different object assuming you have
+    the right to do so. Note that it's the PLAYER character that puppets
+    characters/objects and which needs to have the correct permission!
+
+    You cannot become an object that is already controlled by another
+    player. In principle <character> can be any in-game object as long
+    as you the player have access right to puppet it.
+    """
+    def func(self):
+        """Don't allow puppeting unless the chargen_complete attribute is set."""
+        if self.args:
+            new_character = search.object_search(self.args)
+            if new_character:
+                new_character = new_character[0]
+                if not new_character.db.chargen_complete:
+                    self.session.execute_cmd('@charcreate {}'.format(
+                        new_character.key
+                    ))
+                    return
+            else:
+                self.msg("That is not a valid character choice.")
+                return
+        super(CmdIC, self).func()
 
 
 class CmdCharCreate(MuxPlayerCommand):
@@ -104,16 +161,18 @@ class CmdCharCreate(MuxPlayerCommand):
                 return
             if new_character.db.archetype:
                 startnode = "menunode_allocate_traits"
-                if validate_primary_traits(new_character.traits)[0]:
+                if (new_character.db.focus or (not new_character.db.focus
+                         and validate_primary_traits(new_character.traits)[0])):
                     startnode = "menunode_races"
-                if new_character.db.race:
-                    startnode = "menunode_allocate_mana"
-                if (new_character.traits.BM.base + new_character.traits.WM.base
-                        == new_character.traits.MAG.actual):
-                    startnode = "menunode_allocate_skills"
-                if ('escape' in new_character.skills.all
-                    and not hasattr(new_character.skills.escape, 'minus')):
-                    startnode = "menunode_equipment_cats"
+                    if new_character.db.race:
+                        startnode = "menunode_allocate_mana"
+                        if (new_character.traits.BM.base + new_character.traits.WM.base
+                                == new_character.traits.MAG.actual
+                                and len(new_character.skills.all) > 0):
+                            startnode = "menunode_allocate_skills"
+                            if ('escape' in new_character.skills.all
+                                and not hasattr(new_character.skills.escape, 'minus')):
+                                startnode = "menunode_equipment_cats"
 
         session.new_char = new_character
 
@@ -128,29 +187,4 @@ class CmdCharCreate(MuxPlayerCommand):
                startnode=startnode,
                allow_quit=True,
                cmd_on_quit=finish_char_callback)
-
-
-class CmdCreateInventory(MuxPlayerCommand):
-    """
-    view inventory
-
-    Usage:
-      inventory
-      inv
-
-    Shows the inventory of the character currently being created.
-    """
-    key = "inventory"
-    aliases = ["inv", "i"]
-    locks = "cmd:all()"
-    arg_regex = r"$"
-
-    def func(self):
-        if hasattr(self.session, 'new_char'):
-            session = self.session
-            char = session.new_char
-            old_msg = char.msg
-            char.msg = session.msg
-            char.execute_cmd('inventory')
-            char.msg = old_msg
 
