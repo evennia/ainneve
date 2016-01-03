@@ -7,7 +7,7 @@ command is available to create a new character. This command launches
 the Ainneve character creation EvMenu.
 
 This new @charcreate command is added to the session cmdset. We also
-create a cmdset with the "Remove" mergtype to remove the original
+create a cmdset with the "Remove" mergetype to remove the original
 version from the player cmdset.
 
 To ensure that players cannot puppet a character until it has completed
@@ -79,7 +79,8 @@ class CmdIC(default_cmds.CmdIC):
             new_character = search.object_search(self.args)
             if new_character:
                 new_character = new_character[0]
-                if not new_character.db.chargen_complete:
+                if (new_character.is_typeclass('typeclasses.characters.Characters') and
+                        not new_character.db.chargen_complete):
                     self.session.execute_cmd('@charcreate {}'.format(
                         new_character.key
                     ))
@@ -119,7 +120,9 @@ class CmdCharCreate(MuxPlayerCommand):
         if not player.is_superuser and \
             (player.db._playable_characters and
                 len(player.db._playable_characters) >= charmax):
-            self.msg("You may only create a maximum of %i characters." % charmax)
+            self.msg(
+                "You may only create a maximum of {} characters.".format(
+                    charmax))
             return
 
         # create the character
@@ -147,8 +150,11 @@ class CmdCharCreate(MuxPlayerCommand):
                                                  home=default_home,
                                                  permissions=permissions)
             # only allow creator (and immortals) to puppet this char
-            new_character.locks.add("puppet:id(%i) or pid(%i) or perm(Immortals) or pperm(Immortals)" %
-                                    (new_character.id, player.id))
+            new_character.locks.add(
+                ("puppet:id({}) or pid({}) "
+                 "or perm(Immortals) or pperm(Immortals)").format(
+                    new_character.id, player.id
+            ))
             player.db._playable_characters.append(new_character)
 
         else:
