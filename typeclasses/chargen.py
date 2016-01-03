@@ -68,9 +68,9 @@ def menunode_welcome_archetypes(caller):
     return (text, help), options
 
 
-def menunode_select_archetype(caller, raw_input):
+def menunode_select_archetype(caller, raw_string):
     """Archetype detail and selection menu node."""
-    arch = archetypes.VALID_ARCHETYPES[int(raw_input)-1]
+    arch = archetypes.VALID_ARCHETYPES[int(raw_string) - 1]
     arch = archetypes.load_archetype(arch)
     text = arch.ldesc + "Would you like to become this archetype?"
     options = ({"key": ("Yes", "ye", "y"),
@@ -86,12 +86,12 @@ def menunode_select_archetype(caller, raw_input):
     return text, options
 
 
-def menunode_allocate_traits(caller, raw_input):
+def menunode_allocate_traits(caller, raw_string):
     """Discretionary trait point allocation menu node."""
     char = caller.new_char
     text = ""
-    if raw_input.isdigit() and int(raw_input) <= len(archetypes.PRIMARY_TRAITS):
-        chartrait = char.traits[archetypes.PRIMARY_TRAITS[int(raw_input)-1]]
+    if raw_string.isdigit() and int(raw_string) <= len(archetypes.PRIMARY_TRAITS):
+        chartrait = char.traits[archetypes.PRIMARY_TRAITS[int(raw_string) - 1]]
         if chartrait.actual < 10:
             chartrait.mod += 1
         else:
@@ -105,7 +105,7 @@ def menunode_allocate_traits(caller, raw_input):
     remaining = archetypes.get_remaining_allocation(char.traits)
 
     text += "Your character's traits influence combat abilities and skills.\n"
-    text += "Type 'help' to see individual skill definitions.\n\n"
+    text += "Type 'help' to see individual trait definitions.\n\n"
     text += "Allocate additional trait points as you choose.\n"
     text += "Current:\n{}".format(table)
     text += "\n  |w{}|n Points Remaining\n".format(remaining)
@@ -124,8 +124,8 @@ def menunode_allocate_traits(caller, raw_input):
                for t in archetypes.PRIMARY_TRAITS]
     options.append({"desc": "Start Over",
                     "exec": lambda s: archetypes.apply_archetype(
-                                          s.new_char,
-                                          s.new_char.db.archetype,
+                                          char,
+                                          char.db.archetype,
                                           reset=True),
                     "goto": "menunode_allocate_traits"})
 
@@ -135,15 +135,15 @@ def menunode_allocate_traits(caller, raw_input):
         return menunode_races(caller, "Final Skills:\n{}".format(table))
 
 
-def menunode_races(caller, raw_input):
+def menunode_races(caller, raw_string):
     """Race listing menu node."""
     text = ""
-    if raw_input and raw_input[0] == 'F':
-        text += raw_input
+    if raw_string and raw_string[0] == 'F':
+        text += raw_string
 
     text += "\n\nNext, select a race for your character."
 
-    help = fill("Your race gives your character certain bonuses and"
+    help = fill("Your race gives your character certain bonuses and "
                 "detriments, and makes certain 'focuses' available. "
                 "Select a race by number to see its details.")
     options = []
@@ -154,10 +154,10 @@ def menunode_races(caller, raw_input):
     return (text, help), options
 
 
-def menunode_race_and_focuses(caller, raw_input):
+def menunode_race_and_focuses(caller, raw_string):
     """Race detail and focus listing menu node."""
-    if raw_input.isdigit() and int(raw_input) <= len(races.ALL_RACES):
-        race = races.ALL_RACES[int(raw_input)-1]
+    if raw_string.isdigit() and int(raw_string) <= len(races.ALL_RACES):
+        race = races.ALL_RACES[int(raw_string) - 1]
         race = races.load_race(race)
         caller.ndb._menutree.race = race
 
@@ -177,11 +177,11 @@ def menunode_race_and_focuses(caller, raw_input):
     return (text, help), options
 
 
-def menunode_select_race_focus(caller, raw_input):
+def menunode_select_race_focus(caller, raw_string):
     """Focus detail and final race/focus selection menu node."""
     char = caller.new_char
     race = caller.ndb._menutree.race
-    focus = race.foci[int(raw_input)-1]
+    focus = race.foci[int(raw_string) - 1]
     text = "|wRace|n: |g{}|n\n|wFocus|n: ".format(race.name)
     text += focus.desc
     text += "Confirm this Race and Focus selection?"
@@ -200,13 +200,13 @@ def menunode_select_race_focus(caller, raw_input):
     return text, options
 
 
-def menunode_allocate_mana(caller, raw_input):
+def menunode_allocate_mana(caller, raw_string):
     """Mana point allocation menu node."""
     char = caller.new_char
     tr = char.traits
     manas = ('WM', 'BM')
-    if raw_input.isdigit() and int(raw_input) <= len(manas):
-        tr[manas[int(raw_input)-1]].base += 1
+    if raw_string.isdigit() and int(raw_string) <= len(manas):
+        tr[manas[int(raw_string) - 1]].base += 1
 
     remaining = tr.MAG.actual - sum(tr[m].base for m in manas)
     if remaining:
@@ -231,7 +231,7 @@ def menunode_allocate_mana(caller, raw_input):
 
         def reset_mana(s):
             for m in manas:
-                s.new_char.traits[m].base = 0
+                char.traits[m].base = 0
 
         options.append({"desc": "Start Over",
                         "exec": reset_mana,
@@ -252,7 +252,7 @@ def menunode_allocate_mana(caller, raw_input):
         return menunode_allocate_skills(caller, output)
 
 
-def menunode_allocate_skills(caller, raw_input):
+def menunode_allocate_skills(caller, raw_string):
     """Skill -1 counter allocation menu node."""
     char = caller.new_char
     sk = char.skills
@@ -264,8 +264,8 @@ def menunode_allocate_skills(caller, raw_input):
     minuses = total - sum(sk[s].minus for s in skills.ALL_SKILLS)
 
     text = ""
-    if raw_input.isdigit() and int(raw_input) <= len(skills.ALL_SKILLS):
-        skill = sk[skills.ALL_SKILLS[int(raw_input)-1]]
+    if raw_string.isdigit() and int(raw_string) <= len(skills.ALL_SKILLS):
+        skill = sk[skills.ALL_SKILLS[int(raw_string) - 1]]
         if minuses:
             if skill.actual - skill.minus - 1 > 0:
                 skill.minus += 1
@@ -280,7 +280,7 @@ def menunode_allocate_skills(caller, raw_input):
                 text += "|rSkills cannot be increased above ten.|n\n"
 
     if plusses or minuses:
-        text += raw_input if raw_input and raw_input[0] == 'F' else ""
+        text += raw_string if raw_string and raw_string[0] == 'F' else ""
         text += "Your ability to perform actions in Ainneve is\n"
         text += "tied to your character's skills. Your current skills:\n"
 
@@ -309,11 +309,11 @@ def menunode_allocate_skills(caller, raw_input):
                     "goto": "menunode_allocate_skills"}
                    for s in skills.ALL_SKILLS]
 
-        def clear_skills(c, i):
+        def clear_skills(s):
             """Reset plus and minus counters on all skills."""
-            for s in skills.ALL_SKILLS:
-                sk[s].plus = 0
-                sk[s].minus = 0
+            for skill in skills.ALL_SKILLS:
+                sk[skill].plus = 0
+                sk[skill].minus = 0
 
         options.append({"desc": "Start Over",
                         "exec": clear_skills,
@@ -339,13 +339,17 @@ def menunode_allocate_skills(caller, raw_input):
         )
 
 
-def menunode_equipment_cats(caller, raw_input):
+def menunode_equipment_cats(caller, raw_string):
     """Initial equipment "shopping" - choose a category"""
-    text = raw_input if raw_input and raw_input[0] == 'F' else ""
+    text = raw_string if raw_string and raw_string[0] == 'F' else ""
     text += "Select a category of equipment to view."
 
     def show_inventory(s):
-        """display the character's inventory"""
+        """display the character's inventory
+
+        We achieve this by "monkey patching" the session's `msg` method
+        onto the new char to catch the output of the 'inventory' command.
+        """
         s.msg('\n')
         old_msg = s.new_char.msg
         s.new_char.msg = s.msg
@@ -367,12 +371,12 @@ def menunode_equipment_cats(caller, raw_input):
     return (text, help), options
 
 
-def menunode_equipment_list(caller, raw_input):
+def menunode_equipment_list(caller, raw_string):
     """Initial equipment "shopping" - list items in a category"""
     text = "Select an item to view details and buy."
 
-    if raw_input.isdigit() and int(raw_input) <= len(_CATEGORY_LIST):
-        caller.ndb._menutree.item_category = _CATEGORY_LIST[int(raw_input) - 1]
+    if raw_string.isdigit() and int(raw_string) <= len(_CATEGORY_LIST):
+        caller.ndb._menutree.item_category = _CATEGORY_LIST[int(raw_string) - 1]
 
     category = (caller.ndb._menutree.item_category
                 if hasattr(caller.ndb._menutree, 'item_category')
@@ -393,13 +397,13 @@ def menunode_equipment_list(caller, raw_input):
     return text, options
 
 
-def menunode_examine_and_buy(caller, raw_input):
+def menunode_examine_and_buy(caller, raw_string):
     """Examine and buy an item."""
     char = caller.new_char
     prototypes = spawn(return_prototypes=True)
     items, item = _EQUIPMENT_CATEGORIES[caller.ndb._menutree.item_category][1:], None
-    if raw_input.isdigit() and int(raw_input) <= len(items):
-        item = prototypes[items[int(raw_input)-1]]
+    if raw_string.isdigit() and int(raw_string) <= len(items):
+        item = prototypes[items[int(raw_string) - 1]]
     if item:
         text = _format_item_details(item)
         text += "You currently have {}. Purchase |w{}|n?".format(
@@ -408,7 +412,7 @@ def menunode_examine_and_buy(caller, raw_input):
                 )
         help = "Choose carefully. Purchases are final."
 
-        def purchase_item(caller):
+        def purchase_item(s):
             """Process item purchase."""
             try:
                 # this will raise exception if caller doesn't
@@ -424,7 +428,7 @@ def menunode_examine_and_buy(caller, raw_input):
             except InsufficientFunds:
                 rtext = "You do not have enough money to buy {}.".format(
                             item['key'])
-            caller.msg(rtext)
+            s.msg(rtext)
 
         options = ({"key": ("Yes", "ye", "y"),
                     "desc": "Purchase {} for {}".format(
@@ -443,7 +447,7 @@ def menunode_examine_and_buy(caller, raw_input):
         assert False
 
 
-def menunode_character_desc(caller, raw_input):
+def menunode_character_desc(caller, raw_string):
     """Enter a character description."""
     text = "Enter a description for your character."
     help = fill("")
@@ -452,10 +456,10 @@ def menunode_character_desc(caller, raw_input):
     return (text, help), options
 
 
-def menunode_confirm(caller, raw_input):
+def menunode_confirm(caller, raw_string):
     """Confirm and save allocations."""
     char = caller.new_char
-    char.db.desc = str(raw_input)
+    char.db.desc = str(raw_string)
 
     old_msg = char.msg
     char.msg = caller.msg
@@ -488,7 +492,7 @@ def menunode_confirm(caller, raw_input):
     return text, options
 
 
-def menunode_end(caller, raw_text):
+def menunode_end(caller, raw_string):
     """Farewell message."""
     caller.new_char.db.chargen_complete = True
     text = dedent("""
