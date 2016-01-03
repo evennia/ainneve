@@ -89,7 +89,6 @@ class Room(ExtendedRoom):
         else:
             raise ValueError('`range_field` must be a tuple of two positive integers.')
 
-    # Maximum characters (mobs included) that can be in the room at the same time.
     @property
     def max_chars(self):
         """Return the maximum number of chars allowed in the room.
@@ -99,3 +98,10 @@ class Room(ExtendedRoom):
         """
         return self.range_field[0] * self.range_field[1]
 
+
+class ExtendedRoomCmdSet(CmdSet):
+    """Command set containing ExtendedRoom commands."""
+    def at_cmdset_creation(self):
+        self.add(CmdExtendedLook())
+        self.add(CmdExtendedDesc())
+        self.add(CmdGameTime())
