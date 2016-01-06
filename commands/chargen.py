@@ -79,7 +79,7 @@ class CmdIC(default_cmds.CmdIC):
             new_character = search.object_search(self.args)
             if new_character:
                 new_character = new_character[0]
-                if (new_character.is_typeclass('typeclasses.characters.Characters') and
+                if (new_character.is_typeclass('typeclasses.characters.Character') and
                         not new_character.db.chargen_complete):
                     self.session.execute_cmd('@charcreate {}'.format(
                         new_character.key
@@ -189,7 +189,7 @@ class CmdCharCreate(MuxPlayerCommand):
                 player.puppet_object(session, char)
 
         EvMenu(session,
-               "typeclasses.chargen",
+               "world.chargen",
                startnode=startnode,
                allow_quit=False,
                cmd_on_quit=finish_char_callback)

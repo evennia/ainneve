@@ -42,7 +42,7 @@ _CATEGORY_LIST = sorted(_EQUIPMENT_CATEGORIES.iterkeys(),
                         key=lambda c: _EQUIPMENT_CATEGORIES[c][0])
 
 
-_RE_ARTCL = re.compile(r'^an?\s', re.IGNORECASE)
+article_re = re.compile(r'^an?\s', re.IGNORECASE)
 
 
 def menunode_welcome_archetypes(caller):
@@ -70,7 +70,7 @@ def menunode_welcome_archetypes(caller):
 
 def menunode_select_archetype(caller, raw_string):
     """Archetype detail and selection menu node."""
-    arch = archetypes.VALID_ARCHETYPES[int(raw_string) - 1]
+    arch = archetypes.VALID_ARCHETYPES[int(raw_string.strip()) - 1]
     arch = archetypes.load_archetype(arch)
     text = arch.ldesc + "Would you like to become this archetype?"
     options = ({"key": ("Yes", "ye", "y"),
@@ -90,6 +90,7 @@ def menunode_allocate_traits(caller, raw_string):
     """Discretionary trait point allocation menu node."""
     char = caller.new_char
     text = ""
+    raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(archetypes.PRIMARY_TRAITS):
         chartrait = char.traits[archetypes.PRIMARY_TRAITS[int(raw_string) - 1]]
         if chartrait.actual < 10:
@@ -156,6 +157,7 @@ def menunode_races(caller, raw_string):
 
 def menunode_race_and_focuses(caller, raw_string):
     """Race detail and focus listing menu node."""
+    raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(races.ALL_RACES):
         race = races.ALL_RACES[int(raw_string) - 1]
         race = races.load_race(race)
@@ -181,7 +183,7 @@ def menunode_select_race_focus(caller, raw_string):
     """Focus detail and final race/focus selection menu node."""
     char = caller.new_char
     race = caller.ndb._menutree.race
-    focus = race.foci[int(raw_string) - 1]
+    focus = race.foci[int(raw_string.strip()) - 1]
     text = "|wRace|n: |g{}|n\n|wFocus|n: ".format(race.name)
     text += focus.desc
     text += "Confirm this Race and Focus selection?"
@@ -205,6 +207,7 @@ def menunode_allocate_mana(caller, raw_string):
     char = caller.new_char
     tr = char.traits
     manas = ('WM', 'BM')
+    raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(manas):
         tr[manas[int(raw_string) - 1]].base += 1
 
@@ -264,6 +267,7 @@ def menunode_allocate_skills(caller, raw_string):
     minuses = total - sum(sk[s].minus for s in skills.ALL_SKILLS)
 
     text = ""
+    raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(skills.ALL_SKILLS):
         skill = sk[skills.ALL_SKILLS[int(raw_string) - 1]]
         if minuses:
@@ -374,7 +378,7 @@ def menunode_equipment_cats(caller, raw_string):
 def menunode_equipment_list(caller, raw_string):
     """Initial equipment "shopping" - list items in a category"""
     text = "Select an item to view details and buy."
-
+    raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(_CATEGORY_LIST):
         caller.ndb._menutree.item_category = _CATEGORY_LIST[int(raw_string) - 1]
 
@@ -402,6 +406,7 @@ def menunode_examine_and_buy(caller, raw_string):
     char = caller.new_char
     prototypes = spawn(return_prototypes=True)
     items, item = _EQUIPMENT_CATEGORIES[caller.ndb._menutree.item_category][1:], None
+    raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(items):
         item = prototypes[items[int(raw_string) - 1]]
     if item:
@@ -535,7 +540,7 @@ def _format_menuitem_desc(item):
         template += "[|yDef: {toughness}|n]"
 
     return template.format(
-        name=_RE_ARTCL.sub('', item['key']).title(),
+        name=article_re.sub('', item['key']).title(),
         price=as_price(item.get('value', {})),
         handed=2 if 'TwoHanded' in item['typeclass'] else 1,
         damage=item.get('damage', ''),

@@ -2,13 +2,14 @@
 Character generation test module.
 """
 from django.conf import settings
-from server.conf.settings import PROTOTYPE_MODULES
-from mock import Mock
 from evennia.utils import ansi
 from evennia.utils.evmenu import EvMenu
 from evennia.utils.test_resources import EvenniaTest
+from mock import Mock
+
+from server.conf.settings import PROTOTYPE_MODULES
 from typeclasses.characters import Character
-from typeclasses.chargen import *
+from world.chargen import *
 
 
 class ChargenTestCase(EvenniaTest):
@@ -486,7 +487,6 @@ class ChargenTestCase(EvenniaTest):
 
     def test_node_allocate_skills_above_ten(self):
         """test invalid skill allocation above 10"""
-        from time import sleep
         archetypes.apply_archetype(self.char1, 'arcanist')
         traits = self.char1.traits
         traits.VIT.mod = 2
