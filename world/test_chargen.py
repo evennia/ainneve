@@ -175,8 +175,8 @@ class ChargenTestCase(EvenniaTest):
         for i in xrange(5):
             self.session.execute_cmd('6')
         self.session.execute_cmd('5')
-        self.session.execute_cmd('4')
-        self.session.execute_cmd('3')
+        self.session.execute_cmd('4 ')
+        self.session.execute_cmd(' 3')
         self.assertEqual(self.char1.traits.STR.actual, 4)
         self.assertEqual(self.char1.traits.PER.actual, 6)
         self.assertEqual(self.char1.traits.INT.actual, 7)
@@ -224,8 +224,8 @@ class ChargenTestCase(EvenniaTest):
         traits.INT.mod = traits.DEX.mod = traits.CHA.mod = 1
         traits.VIT.mod = 5
         self.session.execute_cmd('@charcreate Char')
-        self.session.execute_cmd('1')
-        self.session.execute_cmd('1')
+        self.session.execute_cmd(' 1')
+        self.session.execute_cmd(' 1')
         self.session.execute_cmd('yes')
         self.assertEqual(self.char1.db.race, 'Human')
         self.assertEqual(self.char1.db.focus, 'Agility')
@@ -240,8 +240,8 @@ class ChargenTestCase(EvenniaTest):
         traits.INT.mod = traits.DEX.mod = traits.CHA.mod = 1
         traits.VIT.mod = 5
         self.session.execute_cmd('@charcreate Char')
-        self.session.execute_cmd('1')
-        self.session.execute_cmd('2')
+        self.session.execute_cmd('1 ')
+        self.session.execute_cmd('2 ')
         self.session.execute_cmd('yes')
         self.assertEqual(self.char1.db.race, 'Human')
         self.assertEqual(self.char1.db.focus, 'Cunning')
@@ -394,9 +394,9 @@ class ChargenTestCase(EvenniaTest):
         races.apply_race(self.char1, 'elf', 'spirit')
         self.session.execute_cmd('@charcreate Char')
         for i in xrange(4):
-            self.session.execute_cmd('1')
+            self.session.execute_cmd(' 1')
         for i in xrange(5):
-            self.session.execute_cmd('2')
+            self.session.execute_cmd('2 ')
         self.assertEqual(traits.WM.base, 4)
         self.assertEqual(traits.BM.base, 5)
         self.assertEqual(traits.WM.max, 10)
@@ -457,8 +457,8 @@ class ChargenTestCase(EvenniaTest):
         skills.apply_skills(self.char1)
         self.session.execute_cmd('@charcreate Char')
         # -1's
-        self.session.execute_cmd('5')   # Listen
-        self.session.execute_cmd('7')   # Appraise
+        self.session.execute_cmd(' 5')  # Listen
+        self.session.execute_cmd('7 ')  # Appraise
         self.session.execute_cmd('9')   # Survival
         # +1's
         self.session.execute_cmd('1')   # Escape
@@ -570,8 +570,8 @@ class ChargenTestCase(EvenniaTest):
         skills.finalize_skills(self.char1.skills)
         self.char1.db.wallet['SC'] = 10
         self.session.execute_cmd('@charcreate Char')
-        self.session.execute_cmd('1')
-        self.session.execute_cmd('12')
+        self.session.execute_cmd(' 1 ')
+        self.session.execute_cmd(' 12 ')
         self.session.execute_cmd('y')
         self.assertDictEqual({'GC': 0, 'SC': 9, 'CC': 70},
                              dict(self.char1.db.wallet))
