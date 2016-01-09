@@ -99,6 +99,13 @@ class ChargenTestCase(EvenniaTest):
         self.assertIn("Select a category of equipment to view.",
                       msg.split('\n'))
 
+    def test_ic_character(self):
+        """test chargen overridden @ic command"""
+        self.session.execute_cmd('@ic Char')
+        # confirm the menu displayed the next node
+        last_msg = self.session.msg.mock_calls[-1][1][0]
+        self.assertIn('Select an Archetype by number', last_msg)
+
     def test_node_welcome(self):
         """test welcome node output"""
         self.session.new_char = self.char1
@@ -107,6 +114,17 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(opt_texts, ['Arcanist', 'Scout', 'Warrior',
                                      'Warrior-Scout', 'Warrior-Arcanist',
                                      'Arcanist-Scout'])
+
+    def test_node_select_archetype_padded(self):
+        """make sure that entries with leading/trailing spaces are handled"""
+        self.session.execute_cmd('@charcreate Char')
+        self.session.execute_cmd(' 1')
+        last_msg = self.session.msg.mock_calls[-1][1][0]
+        self.assertIn('Arcanist', last_msg)
+        self.session.execute_cmd('N')
+        self.session.execute_cmd('1 ')
+        last_msg = self.session.msg.mock_calls[-1][1][0]
+        self.assertIn('Arcanist', last_msg)
 
     def test_node_select_arcanist(self):
         """test Arcanist archetype selection via menu"""

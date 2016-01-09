@@ -11,7 +11,6 @@ from evennia import DefaultCharacter
 from evennia.utils import lazy_property
 from world.equip import EquipHandler
 from world.traits import TraitHandler
-from world.economy import GC, SC, CC
 
 
 class Character(DefaultCharacter):

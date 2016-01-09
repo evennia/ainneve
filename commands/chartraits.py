@@ -38,6 +38,10 @@ class CmdSheet(MuxCommand):
         """
         Handle displaying status.
         """
+        # make sure the char has traits - only possible for superuser
+        if len(self.caller.traits.all) == 0:
+            return
+
         form = EvForm('commands.templates.charsheet', align='r')
         tr = self.caller.traits
         fields = {
@@ -119,6 +123,11 @@ class CmdTraits(MuxCommand):
 
     def func(self):
         from world import archetypes
+        # make sure the char has traits - only possible for superuser
+        if len(self.caller.traits.all) == 0:
+            self.caller.msg("You don't have any traits.")
+            return
+
         table = None
         tr = self.caller.traits
         traits = []
@@ -191,6 +200,10 @@ class CmdSkills(MuxCommand):
 
     def func(self):
         from world import skills
+        # make sure the char has skills - only possible for superuser
+        if len(self.caller.skills.all) == 0:
+            self.caller.msg("You don't have any skills.")
+            return
 
         sk = self.caller.skills
         sk_list = []
