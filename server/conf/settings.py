@@ -24,6 +24,7 @@ SERVERNAME = "Ainneve"
 
 # Allow multiple sessions per player; one character per session
 MULTISESSION_MODE = 2
+MAX_NR_CHARACTERS = 5
 
 # Path to the game directory (use EVENNIA_DIR to refer to the
 # core evennia library)
