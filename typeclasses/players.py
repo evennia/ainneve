@@ -24,6 +24,7 @@ several more options for customizing the Guest account system.
 
 from evennia import DefaultPlayer, DefaultGuest
 
+
 class Player(DefaultPlayer):
     """
     This class describes the actual OOC player (i.e. the user connecting
@@ -91,7 +92,10 @@ class Player(DefaultPlayer):
      at_server_shutdown()
 
     """
-    pass
+    def at_look(self, target=None, session=None):
+        """We override this to modify the @charcreate usage message."""
+        output = super(Player, self).at_look(target, session)
+        return output.replace(' [=description]', '')
 
 
 class Guest(DefaultGuest):

@@ -55,8 +55,8 @@ class PlayerCmdSet(default_cmds.PlayerCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
-        self.add(chargen.RemoveCharCreateCmdSet)
-        self.add(chargen.ChargenICCmdSet)
+        self.add(chargen.RemoveCharCreateCmdSet())
+        self.add(chargen.ChargenICCmdSet())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
