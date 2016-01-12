@@ -117,7 +117,7 @@ class CmdTraits(MuxCommand):
     Displays a summary of your character's traits by group.
     """
     key = "traits"
-    aliases = ["trait", "tr"]
+    aliases = ["trait", "tr", "tra"]
     locks = "cmd:all()"
     arg_regex = r"\s.+|"
 

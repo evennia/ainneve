@@ -36,7 +36,20 @@ _EQUIPMENT_CATEGORIES = {
     'Shields':
         (4, 'BUCKLER_SHIELD', 'HERALDIC_SHIELD', 'TOWER_SHIELD'),
 }
-
+_CATEGORY_HELP = {
+    'Melee Weapons': 'These weapons are used in close combat. Their |rDamage|n\n'
+                     'statistic is added to your |CStrength|n trait to determine\n'
+                     'your attack score in combat.',
+    'Ranged Weapons': 'These weapons require ammunition, and are used to attack from a \n'
+                      'distance. Their |rDamage\n statistic is added to your |CPerception|n\n'
+                      'trait to determine your attack score in combat.',
+    'Ammunition': 'Ranged weapons require these items in order to attack.',
+    'Thrown Weapons': 'These ranged weapons do not require ammunition, as they are\n'
+                      'thrown at their target.',
+    'Armor': 'Suited armor provides protection from damage. Their |yToughness|n statistic\n'
+             'is added to your |CDexterity|n trait to determine your defense score in combat.',
+    'Shields': 'Shields are pieces of armor that are wielded in an off-hand equipment slot.'
+}
 
 _CATEGORY_LIST = sorted(_EQUIPMENT_CATEGORIES.iterkeys(),
                         key=lambda c: _EQUIPMENT_CATEGORIES[c][0])
@@ -73,6 +86,8 @@ def menunode_select_archetype(caller, raw_string):
     arch = archetypes.VALID_ARCHETYPES[int(raw_string.strip()) - 1]
     arch = archetypes.load_archetype(arch)
     text = arch.ldesc + "Would you like to become this archetype?"
+    help = "Examine the properties of this archetype and decide whether\n"
+    help += "to use its starting attributes for your character."
     options = ({"key": ("Yes", "ye", "y"),
                 "desc": "Become {} {}".format("an" if arch.name[0] == 'A'
                                               else "a",
@@ -83,7 +98,7 @@ def menunode_select_archetype(caller, raw_string):
                {"key": ("No", "n", "_default"),
                 "desc": "Return to Archetype selection",
                 "goto": "menunode_welcome_archetypes"})
-    return text, options
+    return (text, help), options
 
 
 def menunode_allocate_traits(caller, raw_string):
@@ -98,17 +113,11 @@ def menunode_allocate_traits(caller, raw_string):
         else:
             text += "|rCannot allocate more than 10 points to one trait!|n\n"
 
-    data = []
-    for i in xrange(3):
-        data.append([_format_trait_3col(char.traits[t])
-                     for t in archetypes.PRIMARY_TRAITS[i::3]])
-    table = EvTable(header=False, table=data)
     remaining = archetypes.get_remaining_allocation(char.traits)
 
     text += "Your character's traits influence combat abilities and skills.\n"
     text += "Type 'help' to see individual trait definitions.\n\n"
     text += "Allocate additional trait points as you choose.\n"
-    text += "Current:\n{}".format(table)
     text += "\n  |w{}|n Points Remaining\n".format(remaining)
     text += "Please select a trait to increase:"
 
@@ -120,7 +129,7 @@ def menunode_allocate_traits(caller, raw_string):
     help += "  Charisma - affects skills related to interaction with others\n"
     help += "  Vitality - affects health and stamina points"
 
-    options = [{"desc": char.traits[t].name,
+    options = [{"desc": _format_trait_opts(char.traits[t]),
                 "goto": "menunode_allocate_traits"}
                for t in archetypes.PRIMARY_TRAITS]
     options.append({"desc": "Start Over",
@@ -133,6 +142,11 @@ def menunode_allocate_traits(caller, raw_string):
     if remaining > 0:
         return (text, help), options
     else:
+        data = []
+        for i in xrange(3):
+            data.append([_format_trait_opts(char.traits[t])
+                         for t in archetypes.PRIMARY_TRAITS[i::3]])
+        table = EvTable(header=False, table=data)
         return menunode_races(caller, "Final Skills:\n{}".format(table))
 
 
@@ -187,6 +201,8 @@ def menunode_select_race_focus(caller, raw_string):
     text = "|wRace|n: |g{}|n\n|wFocus|n: ".format(race.name)
     text += focus.desc
     text += "Confirm this Race and Focus selection?"
+    help = "Examine the bonuses and detriments of this race and focus combination\n"
+    help += "and decide whether to apply them to your character."
 
     options = ({"key": ("Yes", "ye", "y"),
                 "desc": "Become {} {} with the {} focus".format(
@@ -199,7 +215,7 @@ def menunode_select_race_focus(caller, raw_string):
                 "desc": "Return to {} details".format(race.name),
                 "goto": "menunode_race_and_focuses"})
 
-    return text, options
+    return (text, help), options
 
 
 def menunode_allocate_mana(caller, raw_string):
@@ -216,9 +232,6 @@ def menunode_allocate_mana(caller, raw_string):
         text = "Your |CMagic|n trait is |w{}|n.\n\n".format(tr.MAG.actual)
         text += "This allows you to allocate that many points to your\n"
         text += "|wWhite Mana|n and |xBlack Mana|n counters.\n"
-        text += "Current Values:\n"
-        text += "  |wWhite Mana|n: |w{}|n\n".format(tr.WM.base)
-        text += "  |xBlack Mana|n: |w{}|n\n".format(tr.BM.base)
         text += "You have |w{}|n points remaining. ".format(remaining)
         text += "Select a mana counter to increase:"
         help = "Magic users spend Mana points when casting spells. Different\n"
@@ -228,7 +241,7 @@ def menunode_allocate_mana(caller, raw_string):
         help += "  Black - black magic spells are generally attack-oriented\n\n"
         help += "The number of points allocated here determines the number of\n"
         help += "each color mana that will be spawned each turn of the game."
-        options = [{"desc": tr[m].name,
+        options = [{"desc": _format_trait_opts(tr[m], '|w' if m == 'WM' else '|x'),
                     "goto": "menunode_allocate_mana"}
                    for m in manas]
 
@@ -286,15 +299,8 @@ def menunode_allocate_skills(caller, raw_string):
     if plusses or minuses:
         text += raw_string if raw_string and raw_string[0] == 'F' else ""
         text += "Your ability to perform actions in Ainneve is\n"
-        text += "tied to your character's skills. Your current skills:\n"
+        text += "tied to your character's skills.\n"
 
-        data = []
-        for i in xrange(3):
-            data.append([_format_skill_3col(sk[s])
-                         for s in skills.ALL_SKILLS[i::3]])
-        table = EvTable(header=False, table=data)
-
-        text += "{}\n".format(table)
         if minuses:
             text += "Please allocate |w{}|n |m'-1'|n counter{}.".format(
                         counts[minuses],
@@ -309,7 +315,7 @@ def menunode_allocate_skills(caller, raw_string):
         help += "then a number of '+1' counters equal to your Intelligence\n"
         help += "divided by 3."
 
-        options = [{"desc": sk[s].name,
+        options = [{"desc": _format_skill_opts(sk[s]),
                     "goto": "menunode_allocate_skills"}
                    for s in skills.ALL_SKILLS]
 
@@ -327,11 +333,11 @@ def menunode_allocate_skills(caller, raw_string):
         skills.finalize_skills(char.skills)
         data = []
         for i in xrange(3):
-            data.append([_format_trait_3col(sk[s], color='|M')
+            data.append([_format_trait_opts(sk[s], color='|M')
                          for s in skills.ALL_SKILLS[i::3]])
         table = EvTable(header=False, table=data)
         output = "Final Skills:\n"
-        output += "{skills}\n"
+        output += "{skills}\n\n"
         output += "You get |w{coins}|n SC (Silver Coins) to start out.\n"
 
         char.db.wallet['SC'] = d_roll('2d6+3')
@@ -346,7 +352,10 @@ def menunode_allocate_skills(caller, raw_string):
 def menunode_equipment_cats(caller, raw_string):
     """Initial equipment "shopping" - choose a category"""
     text = raw_string if raw_string and raw_string[0] == 'F' else ""
+    text += "Next, purchase your starting equipment.\n"
     text += "Select a category of equipment to view."
+    help = "Equipment is grouped into categories. Select one to view\n"
+    help += "the items in that category."
 
     def show_inventory(s):
         """display the character's inventory
@@ -386,6 +395,7 @@ def menunode_equipment_list(caller, raw_string):
                 if hasattr(caller.ndb._menutree, 'item_category')
                 else '')
 
+    help = _CATEGORY_HELP[category]
     prototypes = spawn(return_prototypes=True)
     options = []
     for proto in _EQUIPMENT_CATEGORIES[category][1:]:
@@ -398,7 +408,7 @@ def menunode_equipment_list(caller, raw_string):
         "desc": "to category list",
         "goto": "menunode_equipment_cats",
     })
-    return text, options
+    return (text, help), options
 
 
 def menunode_examine_and_buy(caller, raw_string):
@@ -473,6 +483,8 @@ def menunode_confirm(caller, raw_string):
 
     text = "Save your character with skills and traits above\n"
     text += "and exit character generation?"
+    help = "If you have made any mistakes along the way, now is your chance\n"
+    help += "to start from scratch and correct them."
 
     def reset_all(s):
         """Reset a character before starting over."""
@@ -511,13 +523,13 @@ def menunode_end(caller, raw_string):
 # helpers
 
 
-def _format_trait_3col(trait, color='|C'):
-    """Return a trait : value pair formatted for 3col layout"""
-    return "{}{:<18.18}|n : |w{:>4}|n".format(
+def _format_trait_opts(trait, color='|C'):
+    """Return a trait : value pair formatted as a menu option"""
+    return "{}{:<15.15}|n : |x[|n{:>4}|x]|n".format(
                 color, trait.name, trait.actual)
 
-def _format_skill_3col(skill):
-    """Return a trait : value : counters triad formatted for 3col layout"""
+def _format_skill_opts(skill):
+    """Return a trait : value : counters triad formatted as a menu option"""
     return "|M{:<15.15}|n: |w{:>4}|n (|m{:>+2}|n)".format(
                 skill.name,
                 skill.actual + skill.plus - skill.minus,

@@ -231,7 +231,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.focus, 'Agility')
         # confirm the menu is at the next node
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Your current skills:', last_msg)
+        self.assertIn('your character\'s skills.', last_msg)
 
     def test_node_select_human_cunning(self):
         """test race/focus selection - human/cunning"""
@@ -247,7 +247,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.focus, 'Cunning')
         # confirm the menu is at the next node
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Your current skills:', last_msg)
+        self.assertIn('your character\'s skills.', last_msg)
 
     def test_node_select_human_prestige(self):
         """test race/focus selection - human/prestige"""
@@ -263,7 +263,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.focus, 'Prestige')
         # confirm the menu is at the next node
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Your current skills:', last_msg)
+        self.assertIn('your character\'s skills.', last_msg)
 
     def test_node_select_elf_agility(self):
         """test race/focus selection - elf/agility"""
@@ -279,7 +279,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.focus, 'Agility')
         # confirm the menu is at the next node
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Your current skills:', last_msg)
+        self.assertIn('your character\'s skills.', last_msg)
 
     def test_node_select_elf_spirit(self):
         """test race/focus selection - elf/spirit"""
@@ -311,7 +311,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.focus, 'Alertness')
         # confirm the menu is at the next node
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Your current skills:', last_msg)
+        self.assertIn('your character\'s skills.', last_msg)
 
     def test_node_select_dwarf_brawn(self):
         """test race/focus selection - dwarf/brawn"""
@@ -327,7 +327,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.focus, 'Brawn')
         # confirm the menu is at the next node
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Your current skills:', last_msg)
+        self.assertIn('your character\'s skills.', last_msg)
 
     def test_node_select_dwarf_resilience(self):
         """test race/focus selection - dwarf/resilience"""
@@ -343,7 +343,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.focus, 'Resilience')
         # confirm the menu is at the next node
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Your current skills:', last_msg)
+        self.assertIn('your character\'s skills.', last_msg)
 
     def test_node_select_dwarf_alertness(self):
         """test race/focus selection - dwarf/alertness"""
@@ -359,7 +359,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(self.char1.db.focus, 'Alertness')
         # confirm the menu is at the next node
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Your current skills:', last_msg)
+        self.assertIn('your character\'s skills.', last_msg)
 
     def test_node_select_race_goback(self):
         """test the back/no functionality of the race/focus nodes"""
@@ -403,7 +403,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(traits.BM.max, 10)
         # confirm return to race selection screen
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Your current skills:', last_msg)
+        self.assertIn('your character\'s skills.', last_msg)
 
     def test_node_mana_one_type(self):
         """test mana allocation node - one type"""
@@ -422,7 +422,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(traits.BM.max, 10)
         # confirm return to race selection screen
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Your current skills:', last_msg)
+        self.assertIn('your character\'s skills.', last_msg)
 
     def test_node_mana_start_over(self):
         """test allocating some mana points, then starting over"""
