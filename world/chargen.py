@@ -37,18 +37,26 @@ _EQUIPMENT_CATEGORIES = {
         (4, 'BUCKLER_SHIELD', 'HERALDIC_SHIELD', 'TOWER_SHIELD'),
 }
 _CATEGORY_HELP = {
-    'Melee Weapons': 'These weapons are used in close combat. Their |rDamage|n\n'
-                     'statistic is added to your |CStrength|n trait to determine\n'
-                     'your attack score in combat.',
-    'Ranged Weapons': 'These weapons require ammunition, and are used to attack from a \n'
-                      'distance. Their |rDamage\n statistic is added to your |CPerception|n\n'
-                      'trait to determine your attack score in combat.',
-    'Ammunition': 'Ranged weapons require these items in order to attack.',
-    'Thrown Weapons': 'These ranged weapons do not require ammunition, as they are\n'
-                      'thrown at their target.',
-    'Armor': 'Suited armor provides protection from damage. Their |yToughness|n statistic\n'
-             'is added to your |CDexterity|n trait to determine your defense score in combat.',
-    'Shields': 'Shields are pieces of armor that are wielded in an off-hand equipment slot.'
+    'Melee Weapons':
+        fill('These weapons are used in close combat. Their |rDamage|n '
+             'statistic is added to your |CStrength|n trait to determine '
+             'your attack score in combat.'),
+    'Ranged Weapons':
+        fill('These weapons require ammunition, and are used to attack from a '
+             'distance. Their |rDamage\n statistic is added to your '
+             '|CPerception|n trait to determine your attack score in combat.'),
+    'Ammunition':
+        'Ranged weapons require these items in order to attack.',
+    'Thrown Weapons':
+        fill('These ranged weapons do not require ammunition, as they are'
+             'thrown at their target.'),
+    'Armor':
+        fill('Suited armor provides protection from damage. Their '
+             '|yToughness|n statistic is added to your |CDexterity|n trait '
+             'to determine your defense score in combat.'),
+    'Shields':
+        fill('Shields are pieces of armor that are wielded in an off-hand '
+             'equipment slot.')
 }
 
 _CATEGORY_LIST = sorted(_EQUIPMENT_CATEGORIES.iterkeys(),
@@ -67,7 +75,8 @@ def menunode_welcome_archetypes(caller):
         archetypes to choose from, plus three dual archetypes which
         combine the strengths and weaknesses of two archetypes into one.
 
-        Select an Archetype by number below to view its details, or "help" for more info.
+        Select an Archetype by number below to view its details, or |whelp|n
+        at any time for more info.
     """)
     help = fill("In |mAinneve|n, character |cArchetypes|n represent the "
                 "characters' class or primary role. The various archetypes "
@@ -156,7 +165,7 @@ def menunode_races(caller, raw_string):
     if raw_string and raw_string[0] == 'F':
         text += raw_string
 
-    text += "\n\nNext, select a race for your character."
+    text += "\n\nNext, select a race for your character:"
 
     help = fill("Your race gives your character certain bonuses and "
                 "detriments, and makes certain 'focuses' available. "
@@ -179,7 +188,7 @@ def menunode_race_and_focuses(caller, raw_string):
 
     race = caller.ndb._menutree.race
 
-    text = race.desc + "Select a focus below to continue."
+    text = race.desc + "Select a focus below to continue:"
     help = fill("After selecting a focus, you will be prompted "
                 "to save your race/focus combination.")
 
@@ -257,7 +266,7 @@ def menunode_allocate_mana(caller, raw_string):
         if tr.MAG.actual > 0:
             output = "Final Mana Values:\n"
             output += "  |wWhite Mana|n: |w{}|n\n".format(tr.WM.actual)
-            output += "  |xBlack Mana|n: |w{}|n\n\n".format(tr.BM.actual)
+            output += "  |xBlack Mana|n: |w{}|n\n".format(tr.BM.actual)
         else:
             output = ""
         # TODO: implement spells; add level 0 spell cmdsets here
@@ -297,7 +306,7 @@ def menunode_allocate_skills(caller, raw_string):
                 text += "|rSkills cannot be increased above ten.|n\n"
 
     if plusses or minuses:
-        text += raw_string if raw_string and raw_string[0] == 'F' else ""
+        text += "{}\n\n".format(raw_string) if raw_string and raw_string[0] == 'F' else ""
         text += "Your ability to perform actions in Ainneve is\n"
         text += "tied to your character's skills.\n"
 
@@ -337,23 +346,24 @@ def menunode_allocate_skills(caller, raw_string):
                          for s in skills.ALL_SKILLS[i::3]])
         table = EvTable(header=False, table=data)
         output = "Final Skills:\n"
-        output += "{skills}\n\n"
-        output += "You get |w{coins}|n SC (Silver Coins) to start out.\n"
+        output += "{skills}"
 
         char.db.wallet['SC'] = d_roll('2d6+3')
 
         return menunode_equipment_cats(
             caller,
-            output.format(skills=table,
-                          coins=char.db.wallet['SC'])
+            output.format(skills=table)
         )
 
 
 def menunode_equipment_cats(caller, raw_string):
     """Initial equipment "shopping" - choose a category"""
     text = raw_string if raw_string and raw_string[0] == 'F' else ""
-    text += "Next, purchase your starting equipment.\n"
-    text += "Select a category of equipment to view."
+    text += "\n\nNext, purchase your starting equipment.\n"
+    text += "You get |w{coins}|n SC (Silver Coins) to start out.\n"
+    text += "Select a category of equipment to view:"
+    text = text.format(coins=caller.new_char.db.wallet['SC'])
+
     help = "Equipment is grouped into categories. Select one to view\n"
     help += "the items in that category."
 
@@ -386,7 +396,8 @@ def menunode_equipment_cats(caller, raw_string):
 
 def menunode_equipment_list(caller, raw_string):
     """Initial equipment "shopping" - list items in a category"""
-    text = "Select an item to view details and buy."
+    text = "You currently have {}.\n".format(as_price(caller.new_char.db.wallet))
+    text += "Select an item to view details and buy:"
     raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(_CATEGORY_LIST):
         caller.ndb._menutree.item_category = _CATEGORY_LIST[int(raw_string) - 1]

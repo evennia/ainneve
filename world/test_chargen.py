@@ -51,7 +51,7 @@ class ChargenTestCase(EvenniaTest):
         self.char1.traits.INT.base += 8
         self.session.execute_cmd('@charcreate Char')
         msg = self.session.msg.mock_calls[0][1][0]
-        self.assertIn("Next, select a race for your character.",
+        self.assertIn("Next, select a race for your character:",
                       msg.split('\n'))
 
     def test_launch_existing_race_magic(self):
@@ -96,7 +96,7 @@ class ChargenTestCase(EvenniaTest):
         # this menu node returns the chars inventory then menu text
         # so we use mock_calls[1] instead of 0
         msg = self.session.msg.mock_calls[0][1][0]
-        self.assertIn("Select a category of equipment to view.",
+        self.assertIn("Select a category of equipment to view:",
                       msg.split('\n'))
 
     def test_ic_character(self):
@@ -185,7 +185,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(self.char1.traits.VIT.actual, 6)
         # confirm the menu displayed the next node
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Next, select a race for your character.', last_msg)
+        self.assertIn('Next, select a race for your character:', last_msg)
 
     def test_node_allocate_traits_toomany(self):
         """test trait allocation node"""
@@ -372,17 +372,17 @@ class ChargenTestCase(EvenniaTest):
         self.session.execute_cmd('Back')
         # confirm return to race selection screen
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Next, select a race for your character.', last_msg)
+        self.assertIn('Next, select a race for your character:', last_msg)
         # next go to focus confirmation and back up
         self.session.execute_cmd('1')
         self.session.execute_cmd('1')
         self.session.execute_cmd('No')
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Select a focus below to continue.', last_msg)
+        self.assertIn('Select a focus below to continue:', last_msg)
         self.session.execute_cmd('Back')
         # confirm return to race selection screen
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Next, select a race for your character.', last_msg)
+        self.assertIn('Next, select a race for your character:', last_msg)
 
     def test_node_mana_two_types(self):
         """test mana allocation node - two types"""
@@ -482,7 +482,7 @@ class ChargenTestCase(EvenniaTest):
         self.assertEqual(sk.leadership.actual, 2)
         # confirm we're on the equipment node
         last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Select a category of equipment to view.', last_msg)
+        self.assertIn('Select a category of equipment to view:', last_msg)
 
     def test_node_allocate_skills_below_one(self):
         """test invalid skill allocation below 1"""
