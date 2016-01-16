@@ -15,7 +15,8 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
-from commands import equip, chartraits, chargen, room_exit
+from commands import equip, chartraits, room_exit, chargen
+
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """

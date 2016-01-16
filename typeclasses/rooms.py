@@ -98,10 +98,3 @@ class Room(ExtendedRoom):
         """
         return self.range_field[0] * self.range_field[1]
 
-
-class ExtendedRoomCmdSet(CmdSet):
-    """Command set containing ExtendedRoom commands."""
-    def at_cmdset_creation(self):
-        self.add(CmdExtendedLook())
-        self.add(CmdExtendedDesc())
-        self.add(CmdGameTime())
