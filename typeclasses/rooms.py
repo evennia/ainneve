@@ -5,8 +5,7 @@ Rooms are simple containers that has no location of their own.
 
 """
 
-from evennia.contrib.extended_room import *
-from evennia import CmdSet
+from evennia.contrib.extended_room import ExtendedRoom
 
 
 class Room(ExtendedRoom):
@@ -14,25 +13,27 @@ class Room(ExtendedRoom):
 
     Properties:
         terrain (str): The terrain type for this room
-        mv_cost (int): The movement cost to enter the room; based on
+        mv_cost (int): (read-only) The movement cost to enter the room; based on
             `terrain` type
+        mv_delay (int): (read-only) The movement delay when entering the room;
+            based on `terrain` type
         range_field (tuple[int]): length and width of the room's combat
             range field
         max_chars (int): The maximum number of characters and mobs
             allowed to occupy the room. one char per square unit
     """
     # Define terrain constants
-    _TERRAIN_COSTS = {
-        'EASY': 1,
-        'MODERATE': 2,
-        'DIFFICULT': 3,
-        'MUD': 3,
-        'ICE': 3,
-        'QUICKSAND': 5,
-        'SNOW': 4,
-        'VEGETATION': 2,
-        'THICKET': 2,
-        'DEEPWATER': 3,
+    _TERRAINS = {
+        'EASY': {'cost': 1, 'delay': 0},
+        'MODERATE': {'cost': 2, 'delay': 1},
+        'DIFFICULT': {'cost': 3, 'delay': 2},
+        'MUD': {'cost':3, 'delay': 2, 'msg': "You begin slogging {exit} through the mud. It is slow going."},
+        'ICE': {'cost': 3, 'delay': 2, 'msg': "You carefully make your way {exit} over the icy path."},
+        'QUICKSAND': {'cost': 5, 'delay': 4, 'msg': "Drawing on all your stregnth, you wade {exit} into the quicksand."},
+        'SNOW': {'cost': 4, 'delay': 3, 'msg': "Your feet sinking with each step, you trudge {exit} into the snow."},
+        'VEGETATION': {'cost': 2, 'delay': 1, 'msg': "You begin cutting your way {exit} through the thick vegetation."},
+        'THICKET': {'cost': 2, 'delay': 1, 'msg': "You are greeted with the sting of bramble scratches as you make your way {exit} into the thicket."},
+        'DEEPWATER': {'cost': 3, 'delay': 3, 'msg': "You begin swimming {exit}."}
     }
 
     def at_object_creation(self):
@@ -59,15 +60,21 @@ class Room(ExtendedRoom):
     
     @terrain.setter
     def terrain(self,value):
-        if value in self._TERRAIN_COSTS:
+        if value in self._TERRAINS:
             self.db.terrain = value
+            self.db.msg_start_move = self._TERRAINS[self.terrain].get('msg', None)
         else:
             raise ValueError('Invalid terrain type.')
 
     @property
     def mv_cost(self):
         """Returns the movement cost to enter this room."""
-        return self._TERRAIN_COSTS[self.terrain]
+        return self._TERRAINS[self.terrain]['cost']
+
+    @property
+    def mv_delay(self):
+        """Returns the movement delay for this room."""
+        return self._TERRAINS[self.terrain]['delay']
 
     @property
     def range_field(self):
@@ -93,10 +100,3 @@ class Room(ExtendedRoom):
         """
         return self.range_field[0] * self.range_field[1]
 
-
-class ExtendedRoomCmdSet(CmdSet):
-    """Command set containing ExtendedRoom commands."""
-    def at_cmdset_creation(self):
-        self.add(CmdExtendedLook())
-        self.add(CmdExtendedDesc())
-        self.add(CmdGameTime())
