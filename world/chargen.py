@@ -347,7 +347,7 @@ def menunode_allocate_skills(caller, raw_string):
                          for s in skills.ALL_SKILLS[i::3]])
         table = EvTable(header=False, table=data)
         output = "Final Skills:\n"
-        output += "{skills}"
+        output += "{skills}\n"
 
         char.db.wallet['SC'] = d_roll('2d6+3')
 
@@ -361,7 +361,7 @@ def menunode_equipment_cats(caller, raw_string):
     """Initial equipment "shopping" - choose a category"""
     text = raw_string if raw_string and raw_string[0] == 'F' else ""
     text += "\n\nNext, purchase your starting equipment.\n"
-    text += "You get |w{coins}|n SC (Silver Coins) to start out.\n"
+    text += "You have |w{coins}|n SC (Silver Coins).\n"
     text += "Select a category of equipment to view:"
     text = text.format(coins=caller.new_char.db.wallet['SC'])
 
