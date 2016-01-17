@@ -4,7 +4,6 @@ Room
 Rooms are simple containers that has no location of their own.
 
 """
-
 from evennia.contrib.extended_room import ExtendedRoom
 
 

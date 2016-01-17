@@ -170,6 +170,7 @@ def apply_skills(char):
     Args:
         char (Character): the character being initialized
     """
+    char.skills.clear()
     for skill, data in _SKILL_DATA.iteritems():
         char.skills.add(
             key=skill,

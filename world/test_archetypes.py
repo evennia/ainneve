@@ -205,7 +205,7 @@ class PublicFunctionsTestCase(EvenniaTest):
         self.assertEqual(self.char1.traits.BM.max, 0)
         self.assertEqual(self.char1.traits.WM.max, 0)
         self.assertEqual(self.char1.traits.FORT.actual, 9)
-        self.assertEqual(self.char1.traits.REFL.actual, 6)
+        self.assertEqual(self.char1.traits.REFL.actual, 4)
         self.assertEqual(self.char1.traits.WILL.actual, 1)
         self.assertEqual(self.char1.traits.ATKM.actual, 9)
         self.assertEqual(self.char1.traits.ATKR.actual, 1)

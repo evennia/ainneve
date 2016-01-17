@@ -166,7 +166,7 @@ class CharTraitsTestCase(CommandTest):
 "  Description                                            Magic       :   0  \n"
 "  ~~~~~~~~~~~                          \n"
 "  None                                  Save Rolls       Fortitude   :   9  \n"
-"                                        ~~~~~~~~~~       Reflex      :   5  \n"
+"                                        ~~~~~~~~~~       Reflex      :   3  \n"
 "                                                         Will        :   1  \n"
 "  Encumbrance                          \n"
 "  ~~~~~~~~~~~                           Combat Stats     Melee       :   9  \n"
@@ -182,24 +182,24 @@ class CharTraitsTestCase(CommandTest):
         # test primary traits
         output = (
 "YPrimary Traitsn|\n"
-" Strength         :   9  Perception       :   2  Intelligence     :   1 \n"
-" Dexterity        :   5  Charisma         :   4  Vitality         :   9 \n"
-" Magic            :   0")
+" Strength         :    9  Perception       :    2  Intelligence     :    1 \n"
+" Dexterity        :    5  Charisma         :    4  Vitality         :    9 \n"
+" Magic            :    0")
         self.call(CmdTraits(), "pri", output)
         # test secondary traits
         output = (
 "YSecondary Traitsn|\n"
-" Health                        :   9  Black Mana                   :   0 \n"
-" Stamina                       :   9  White Mana                   :   0")
+" Health                        :    9  Black Mana                   :    0 \n"
+" Stamina                       :    9  White Mana                   :    0")
         self.call(CmdTraits(), "secondary", output)
         # test save rolls
         output = (
 "YSave Rollsn|\n"
-" Fortitude Save   :   9  Reflex Save      :   5  Will Save        :   1")
+" Fortitude Save   :    9  Reflex Save      :    3  Will Save        :    1")
         self.call(CmdTraits(), "sav", output)
         # test combat stats
         output = (
 "YCombat Statsn|\n"
-" Melee Attack     :   9  Ranged Attack    :   2  Unarmed Attack   :   5 \n"
-" Defense          :   5  Power Points     :   2")
+" Melee Attack     :    9  Ranged Attack    :    2  Unarmed Attack   :    5 \n"
+" Defense          :    5  Power Points     :    2")
         self.call(CmdTraits(), "com", output)
