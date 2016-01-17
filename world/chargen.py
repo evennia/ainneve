@@ -5,7 +5,7 @@ The menu node functions defined in this module make up
 the Ainneve character creation process, which is based
 on a subset of Open Adventure rules.
 """
-from evennia import spawn
+from evennia import spawn, TICKER_HANDLER as tickerhandler
 from evennia.utils import fill, dedent
 from evennia.utils.evtable import EvTable
 
@@ -273,6 +273,7 @@ def menunode_allocate_mana(caller, raw_string):
 
         archetypes.calculate_secondary_traits(char.traits)
         archetypes.finalize_traits(char.traits)
+        tickerhandler.add(char, 6, hook_key='at_turn_start')
         skills.apply_skills(char)
         return menunode_allocate_skills(caller, output)
 

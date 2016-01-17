@@ -45,3 +45,11 @@ class Character(DefaultCharacter):
         """Handler for equipped items."""
         return EquipHandler(self)
 
+    def at_turn_start(self):
+        """Hook called at the start of each combat turn or by a 6s ticker."""
+        # refill traits that are allocated every turn
+        self.traits.MV.fill_gauge()
+        self.traits.BM.fill_gauge()
+        self.traits.WM.fill_gauge()
+        # Power Points are lost each turn
+        self.traits.PP.reset_counter()
