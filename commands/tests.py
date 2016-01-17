@@ -9,6 +9,7 @@ from typeclasses.characters import Character
 from typeclasses.weapons import Weapon
 from world.races import apply_race
 from world.archetypes import apply_archetype, calculate_secondary_traits
+from utils.utils import sample_char
 
 
 class ItemEncumbranceTestCase(EvenniaTest):
@@ -18,12 +19,7 @@ class ItemEncumbranceTestCase(EvenniaTest):
 
     def setUp(self):
         super(ItemEncumbranceTestCase, self).setUp()
-        apply_archetype(self.char1, 'warrior')
-        apply_race(self.char1, 'human', 'cunning')
-        self.char1.traits.STR.base += 3
-        self.char1.traits.VIT.base += 3
-        self.char1.traits.DEX.base += 2
-        calculate_secondary_traits(self.char1.traits)
+        sample_char(self.char1, 'warrior', 'human', 'cunning')
         self.obj1.db.desc = 'Test Obj'
         self.obj1.db.damage = 1
         self.obj1.db.weight = 1.0
@@ -63,8 +59,7 @@ class EquipTestCase(CommandTest):
 
     def setUp(self):
         super(EquipTestCase, self).setUp()
-        apply_archetype(self.char1, 'warrior')
-        apply_race(self.char1, 'human', 'cunning')
+        sample_char(self.char1, 'warrior', 'human', 'cunning')
         self.obj1.db.desc = 'Test Obj'
         self.obj1.db.damage = 1
         self.obj1.db.weight = 1.0
@@ -75,25 +70,78 @@ class EquipTestCase(CommandTest):
         self.obj2.db.toughness = 1
         self.obj2.db.weight = 2.0
 
-    def test_wield(self):
-        """test wield command"""
+    def test_wield_1h_weapon(self):
+        """test wield command for 1H weapons"""
         # can't wield from the ground
         self.call(CmdWield(), 'Obj', "You don't have Obj in your inventory.")
-        # pick it up to wield a weapon
+        # pick it up to wield the weapon
         self.char1.execute_cmd('get Obj')
         self.call(CmdWield(), 'Obj', "You wield Obj.")
+        # test the at_equip hooks
+        self.assertEqual(self.char1.traits.ATKM.actual, 8)
+        self.assertEqual(self.char1.equip.get('wield1'), self.obj1)
+        self.assertIs(self.char1.equip.get('wield2'), None)
         # can't wield armor
         self.char1.execute_cmd('get Obj2')
         self.call(CmdWield(), 'Obj2', "You can't wield Obj2.")
+
+    def test_wield_2h_weapon(self):
+        """test wield command for 2H weapons"""
+        self.obj1.swap_typeclass('typeclasses.weapons.TwoHandedWeapon',
+                                 clean_attributes=True,
+                                 run_start_hooks=True)
+        self.obj1.db.damage = 1
+        self.obj1.db.weight = 1.0
+        # pick it up to wield the weapon
+        self.char1.execute_cmd('get Obj')
+        self.char1.execute_cmd('wield Obj')
+        # test the at_equip hooks
+        self.assertEqual(self.char1.traits.ATKM.actual, 8)
+        self.assertEqual(self.char1.equip.get('wield1'), self.obj1)
+        self.assertEqual(self.char1.equip.get('wield2'), self.obj1)
+
+    def test_wield_1h_ranged(self):
+        """test wield command for 1H ranged weapons"""
+        self.obj1.swap_typeclass('typeclasses.weapons.RangedWeapon',
+                                 clean_attributes=True,
+                                 run_start_hooks=True)
+        self.obj1.db.damage = 1
+        self.obj1.db.weight = 1.0
+        self.obj1.db.range = 5
+        # pick it up to wield the weapon
+        self.char1.execute_cmd('get Obj')
+        self.char1.execute_cmd('wield Obj')
+        # test the at_equip hooks
+        self.assertEqual(self.char1.traits.ATKR.actual, 4)
+        self.assertEqual(self.char1.equip.get('wield1'), self.obj1)
+        self.assertIs(self.char1.equip.get('wield2'), None)
+
+    def test_wield_2h_ranged(self):
+        """test wield command for 2H ranged weapons"""
+        self.obj1.swap_typeclass('typeclasses.weapons.TwoHandedRanged',
+                                 clean_attributes=True,
+                                 run_start_hooks=True)
+        self.obj1.db.damage = 1
+        self.obj1.db.weight = 1.0
+        self.obj1.db.range = 5
+        # pick it up to wield the weapon
+        self.char1.execute_cmd('get Obj')
+        self.char1.execute_cmd('wield Obj')
+        # test the at_equip hooks
+        self.assertEqual(self.char1.traits.ATKR.actual, 4)
+        self.assertEqual(self.char1.equip.get('wield1'), self.obj1)
+        self.assertIs(self.char1.equip.get('wield2'), self.obj1)
 
     def test_wear(self):
         """test wear command"""
         # can't wear from the ground
         self.call(CmdWear(), 'Obj2', "You don't have Obj2 in your inventory.")
-        # pick it up to wield a weapon
+        # pick it up to wear armor
         self.char1.execute_cmd('get Obj2')
         self.call(CmdWear(), 'Obj2', "You wear Obj2.")
-        # wear does wield a weapon
+        # check at_equip hooks ran
+        self.assertEqual(self.char1.equip.get('armor'), self.obj2)
+        # cannot wear a weapon
         self.char1.execute_cmd('get Obj')
         self.call(CmdWear(), 'Obj', "You can't wear Obj.")
 
@@ -106,8 +154,8 @@ class EquipTestCase(CommandTest):
         self.char1.execute_cmd('wear Obj2')
         output = (
 "YYour equipment:n\n"
-"   Wield1: Obj                  (Damage:  1)     \n"
-"    Armor: Obj2                 (Toughness:  1)")
+"   Wield1: Obj                   (Damage:  1)    \n"
+"    Armor: Obj2                  (Toughness:  1)")
         self.call(CmdEquip(), "", output)
         self.char1.execute_cmd('drop Obj')
         self.call(CmdEquip(), "", "YYour equipment:n\n    Armor: Obj2")
