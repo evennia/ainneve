@@ -350,10 +350,11 @@ def menunode_allocate_skills(caller, raw_string):
         output += "{skills}\n"
 
         char.db.wallet['SC'] = d_roll('2d6+3')
+        output += "You begin with |w{sc} SC|n (Silver Coins)."
 
         return menunode_equipment_cats(
             caller,
-            output.format(skills=table)
+            output.format(skills=table, sc=char.db.wallet['SC'])
         )
 
 
@@ -361,9 +362,9 @@ def menunode_equipment_cats(caller, raw_string):
     """Initial equipment "shopping" - choose a category"""
     text = raw_string if raw_string and raw_string[0] == 'F' else ""
     text += "\n\nNext, purchase your starting equipment.\n"
-    text += "You have |w{coins}|n SC (Silver Coins).\n"
+    text += "You have |w{coins}|n.\n"
     text += "Select a category of equipment to view:"
-    text = text.format(coins=caller.new_char.db.wallet['SC'])
+    text = text.format(coins=as_price(caller.new_char.db.wallet))
 
     help = "Equipment is grouped into categories. Select one to view\n"
     help += "the items in that category."
