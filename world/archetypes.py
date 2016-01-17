@@ -33,8 +33,13 @@ Module Functions:
 
     - `calculate_secondary_traits(traits)`
 
-        Called at the end of the character generation process to set initial
-        values for secondary traits and save rolls.
+        Called to set initial base values for secondary traits and save
+        rolls.
+
+    - `finalize_traits(traits)`
+
+        Called at the end of chargen to apply modifiers to base values and
+        reset `mod` values for normal game play.
 
     - `load_archetype(name)`
 
@@ -42,14 +47,17 @@ Module Functions:
 """
 
 from world.rulebook import roll_max
+from evennia.utils import fill
+from evennia.utils.evtable import EvTable
 
 
 class ArchetypeException(Exception):
     def __init__(self, msg):
         self.msg = msg
 
-
-VALID_ARCHETYPES = ('Arcanist', 'Scout', 'Warrior')
+BASE_ARCHETYPES = ('Arcanist', 'Scout', 'Warrior')
+DUAL_ARCHETYPES = ('Warrior-Scout', 'Warrior-Arcanist', 'Arcanist-Scout')
+VALID_ARCHETYPES = BASE_ARCHETYPES + DUAL_ARCHETYPES
 
 PRIMARY_TRAITS = ('STR', 'PER', 'INT', 'DEX', 'CHA', 'VIT', 'MAG')
 SECONDARY_TRAITS = ('HP', 'SP', 'BM', 'WM')
@@ -76,7 +84,7 @@ def apply_archetype(char, name, reset=False):
         reset (bool): if True, remove any current archetype and apply the
             named archetype as new.
     """
-    name = name.capitalize()
+    name = name.title()
     if name not in VALID_ARCHETYPES:
         raise ArchetypeException('Invalid archetype.')
 
@@ -105,7 +113,7 @@ def get_remaining_allocation(traits):
     Returns:
         (int): number of trait points left for the player to allocate
     """
-    allocated = sum(traits[t].base for t in PRIMARY_TRAITS)
+    allocated = sum(traits[t].actual for t in PRIMARY_TRAITS)
     return TOTAL_PRIMARY_POINTS - allocated
 
 
@@ -149,13 +157,31 @@ def calculate_secondary_traits(traits):
     traits.ATKU.base = traits.DEX.actual
     traits.DEF.base = traits.DEX.actual
     # mana
-    traits.BM.max = 10 if traits.MAG.base > 0 else 0
-    traits.WM.max = 10 if traits.MAG.base > 0 else 0
+    traits.BM.max = 10 if traits.MAG.actual > 0 else 0
+    traits.WM.max = 10 if traits.MAG.actual > 0 else 0
     # misc
     traits.STR.carry_factor = 10
     traits.STR.lift_factor = 20
     traits.STR.push_factor = 40
     traits.ENC.max = traits.STR.lift_factor * traits.STR.actual
+
+
+def finalize_traits(traits):
+    """Applies all pending modifications to starting traits.
+
+    During the chargen process, race-based bonuses and player
+    allocations are applied to trait modifiers. This function
+    applies any `mod` values to the traits' `base`, then resets
+    the `mod` property.
+    """
+    for t in PRIMARY_TRAITS + SECONDARY_TRAITS + SAVE_ROLLS:
+        traits[t].base = traits[t].actual if traits[t].actual <= 10 else 10
+        traits[t].reset_mod()
+
+    if traits.BM.base == 0:
+        traits.BM.max = 0
+    if traits.WM.base == 0:
+        traits.WM.max = 0
 
 
 def load_archetype(name):
@@ -206,6 +232,9 @@ def _make_dual(a, b):
                         b.traits.get(key, trait)['mod']) // 2
     dual.health_roll = min(a.health_roll, b.health_roll, key=roll_max)
     dual.name = names[frozenset([a.name, b.name])]
+    desc = "|c{}s|n have a blend of the qualities of both component archetypes.\n\n"
+    desc += a._desc + '\n\n' + b._desc
+    dual.desc = desc.format(dual.name)
     dual.__class__.__name__ = dual.name.replace('-', '')
     return dual
 
@@ -217,6 +246,7 @@ class Archetype(object):
     """Base archetype class containing default values for all traits."""
     def __init__(self):
         self.name = None
+        self._desc = None
 
         # base traits data
         self.traits = {
@@ -229,8 +259,8 @@ class Archetype(object):
             'VIT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Vitality'},
             # magic
             'MAG': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Magic'},
-            'BM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 0, 'name': 'Black Mana'},
-            'WM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 0, 'name': 'White Mana'},
+            'BM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 10, 'name': 'Black Mana'},
+            'WM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 10, 'name': 'White Mana'},
             # secondary
             'HP': {'type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Health'},
             'SP': {'type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Stamina'},
@@ -247,12 +277,56 @@ class Archetype(object):
             'PP': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Power Points'},
             # misc
             'ENC': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Carry Weight'},
-            'MV': {'type': 'static', 'base': 6, 'mod': 0, 'name': 'Movement Points'},
+            'MV': {'type': 'gauge', 'base': 6, 'mod': 0, 'min': 0, 'name': 'Movement Points'},
             'LV': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Level'},
             'XP': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Experience',
                    'extra': {'level_boundaries': (500, 2000, 4500, 'unlimited')}},
         }
         self.health_roll = None
+
+    @property
+    def ldesc(self):
+        """Returns a formatted description of the Archetype."""
+        desc = "Archetype: |c{archetype}|n\n"
+        desc += '~' * (11 + len(self.name)) + '\n'
+        desc += self.desc
+        desc += '\n\n'
+        desc += "|c{archetype}s|n start with the following base primary traits:"
+        desc += "\n{traits}\n"
+        desc += "  Base |CMovement Points|n:    |w{mv:>2d}|n\n"
+        desc += "  |CStamina|n Modifier:        |w{sp_mod:+>2d}|n\n"
+        desc += "  |CPower Points|n Modifier:   |w{pp_mod:+>2d}|n\n"
+        desc += "  |CReflex Save|n Modifier:    |w{refl_mod:+>2d}|n\n"
+        desc += ("  When leveling up, |c{archetype}s|n gain "
+                 "|w{health_roll}|C HP|n.\n")
+
+        data = []
+        for i in xrange(3):
+            data.append([self._format_trait_3col(self.traits[t])
+                         for t in PRIMARY_TRAITS[i::3]])
+        traits = EvTable(header=False, table=data)
+
+        return desc.format(archetype=self.name,
+                           traits=traits,
+                           health_roll=self.health_roll,
+                           mv=self.traits['MV']['base'],
+                           sp_mod=self.traits['SP']['mod'],
+                           pp_mod=self.traits['PP']['base'],
+                           refl_mod=self.traits['REFL']['mod'])
+
+    @property
+    def desc(self):
+        """The narrative description of the Archetype."""
+        return self._desc
+
+    @desc.setter
+    def desc(self, desc):
+        self._desc = desc
+
+    def _format_trait_3col(self, trait):
+        """Return a trait : value pair formatted for 3col layout"""
+        return "|C{:<16.16}|n : |w{:>3}|n".format(
+                    trait['name'], trait['base'])
 
 
 class Arcanist(Archetype):
@@ -260,6 +334,11 @@ class Arcanist(Archetype):
     def __init__(self):
         super(Arcanist, self).__init__()
         self.name = 'Arcanist'
+        self.desc = fill(
+            "|cArcanists|n harness mysterious, arcane powers they pull from "
+            "the ether. These magic and paranormal wielders employ occult "
+            "powers that only they truly understand."
+        )
 
         # set starting trait values
         self.traits['PER']['base'] = 4
@@ -277,6 +356,13 @@ class Scout(Archetype):
     def __init__(self):
         super(Scout, self).__init__()
         self.name = 'Scout'
+        self.desc = fill(
+            "|cScouts|n are highly intelligent and well-trained individuals "
+            "who prefer to work their secret craft in the shadows where "
+            "they remain unseen. Scouts go by many names such as thieves, "
+            "rogues and rangers but little is known by general society of "
+            "their closely guarded secrets. "
+        )
 
         # set starting trait values
         self.traits['STR']['base'] = 4
@@ -292,12 +378,19 @@ class Warrior(Archetype):
     def __init__(self):
         super(Warrior, self).__init__()
         self.name = 'Warrior'
+        self.desc = fill(
+            "|cWarriors|n are individual soldiers, mercenaries, bounty "
+            "hunters or various types of combatants. They believe no "
+            "problem can't be solved with their melee weapon and choose "
+            "strength as their highest primary trait."
+        )
 
         # set starting trait values
         self.traits['STR']['base'] = 6
         self.traits['DEX']['base'] = 4
         self.traits['CHA']['base'] = 4
         self.traits['VIT']['base'] = 6
+        self.traits['REFL']['mod'] = -2
         self.traits['PP']['base'] = 2
         self.traits['MV']['base'] = 5
 

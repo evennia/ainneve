@@ -210,12 +210,12 @@ class Race(object):
             The setter for this property only modifies the content
             of the first paragraph of what is returned.
         """
-        desc = "{{g{}{{n\n".format(self.name)
+        desc = "|g{}|n\n".format(self.name)
         desc += fill(self._desc)
         desc += '\n\n'
         desc += fill("{} have a ".format(self.plural) +
-                     "{{y{}{{n body type and can ".format(self.size) +
-                     "select a {{wfocus{{n from among {}".format(
+                     "|y{}|n body type and can ".format(self.size) +
+                     "select a |wfocus|n from among {}".format(
                          self._format_focus_list(self.foci)
                      ))
         if len(self.bonuses) > 0:
@@ -235,10 +235,10 @@ class Race(object):
     def _format_focus_list(self, items):
         """Returns a comma separated list of items with "or" before the last."""
         if len(items) > 2:
-            output = ", ".join(["{{b{}{{n".format(i.name) for i in items[:-1]])
+            output = ", ".join(["|b{}|n".format(i.name) for i in items[:-1]])
             output += ", or {{b{}{{n".format(items[-1].name)
         else:
-            output = " or ".join(["{{b{}{{n".format(i.name) for i in items])
+            output = " or ".join(["|b{}|n".format(i.name) for i in items])
         return output
 
 
@@ -264,10 +264,10 @@ class Focus(object):
             The setter for this property only modifies the content
             of the first paragraph of what is returned.
         """
-        desc = "{{b{}{{n\n".format(self.name)
+        desc = "|b{}|n\n".format(self.name)
         desc += fill(self._desc)
         desc += "\n\n"
-        desc += fill("Adventurers with the {{b{}{{n focus gain {}.".format(
+        desc += fill("Adventurers with the |b{}|n focus gain {}.".format(
                     self.name,
                     _format_bonuses(self.bonuses)
                 ))
@@ -286,8 +286,8 @@ class Human(Race):
         self.name = "Human"
         self.plural = "Humans"
         self.size = "medium"
-        self.desc = ("Humans are the most widespread of all the races. The "
-                     "human traits of curiosity, resourcefulness and "
+        self.desc = ("|gHumans|n are the most widespread of all the races. "
+                     "The human traits of curiosity, resourcefulness and "
                      "unyielding courage have helped them to adapt, survive "
                      "and prosper in every world they have explored.")
         self.foci = [load_focus(f) for f
@@ -302,7 +302,7 @@ class Elf(Race):
         self.name = "Elf"
         self.plural = "Elves"
         self.size = "medium"
-        self.desc = ("Elves are graceful, slender demi-humans with delicate "
+        self.desc = ("|gElves|n are graceful, slender demi-humans with delicate "
                      "features and pointy ears. Elves are known to use magic "
                      "spells, but prefer to spend their time feasting and "
                      "frolicking in wooded glades. They rarely visit cities of "
@@ -322,7 +322,7 @@ class Dwarf(Race):
         self.name = "Dwarf"
         self.plural = "Dwarves"
         self.size = "small"
-        self.desc = ("Dwarves are short, stocky demi-humans with long, "
+        self.desc = ("|gDwarves|n are short, stocky demi-humans with long, "
                      "respectable beards and heavy stout bodies. Their skin "
                      "is earthen toned and their hair black, gray or dark "
                      "brown. Stubborn but practical; dwarves love grand "

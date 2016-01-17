@@ -3,7 +3,7 @@ Item and equipment-related command module.
 """
 from evennia import CmdSet
 from commands.command import Command, MuxCommand
-from evennia.utils.evtable import EvTable
+from evennia.utils.evtable import EvTable, fill
 from typeclasses.weapons import Weapon
 from typeclasses.armors import Armor, Shield
 
@@ -49,7 +49,7 @@ class CmdInventory(MuxCommand):
             data = [[],[],[]]
             for item in items:
                 data[0].append("|C{}|n".format(item.name))
-                data[1].append(item.db.desc or "")
+                data[1].append(fill(item.db.desc or "", 50))
                 stat = ""
                 if item.db.damage:
                     stat += "(|rDamage: {:>2d}|n) ".format(item.db.damage)
@@ -58,7 +58,7 @@ class CmdInventory(MuxCommand):
                 if item.db.toughness:
                     stat += "(|yToughness: {:>2d}|n) ".format(item.db.toughness)
                 data[2].append(stat)
-            table = EvTable(header=False, table=data, border=None)
+            table = EvTable(header=False, table=data, border=None, valign='t')
             string = "|YYou are carrying:|n\n{}".format(table)
         self.caller.msg(string)
 
