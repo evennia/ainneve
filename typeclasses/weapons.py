@@ -60,7 +60,7 @@ class TwoHanded(object):
     handedness = 2
 
 
-class TwoHandedWeapon(Weapon, TwoHanded):
+class TwoHandedWeapon(TwoHanded, Weapon):
     """Typeclass for two-handed melee weapons."""
     pass
 
