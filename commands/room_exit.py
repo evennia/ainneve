@@ -36,6 +36,7 @@ class CmdTerrain(MuxCommand):
       MUD, ICE, QUICKSAND, SNOW, VEGETATION, THICKET, or DEEPWATER.
     """
     key = "@terrain"
+    locks = "cmd:perm(Builders)"
     help_category = 'Building'
 
     def func(self):
@@ -84,6 +85,7 @@ class CmdRangeField(MuxCommand):
       If <room> is omitted, defaults to your current location.
     """
     key = "@rangefield"
+    locks = "cmd:perm(Builders)"
     help_category = 'Building'
 
     def func(self):
