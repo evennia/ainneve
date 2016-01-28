@@ -4,31 +4,54 @@ Room
 Rooms are simple containers that has no location of their own.
 
 """
-from objects import Object
+from evennia.contrib.extended_room import ExtendedRoom
 
-class Room(Object):
-    """
-    Rooms are like any Object, except their location is None
-    (which is default). They also use basetype_setup() to
-    add locks so they cannot be puppeted or picked up.
-    (to change that, use at_object_creation instead)
 
-    See examples/object.py for a list of
-    properties and methods available on all Objects.
+class Room(ExtendedRoom):
+    """Base Ainneve Room typeclass.
+
+    Properties:
+        terrain (str): The terrain type for this room
+        mv_cost (int): (read-only) The movement cost to enter the room; based on
+            `terrain` type
+        mv_delay (int): (read-only) The movement delay when entering the room;
+            based on `terrain` type
+        range_field (tuple[int]): length and width of the room's combat
+            range field
+        max_chars (int): The maximum number of characters and mobs
+            allowed to occupy the room. one char per square unit
     """
     # Define terrain constants
-    TERRAIN_TYPES = {
-                    'INDOOR':0,
-                    'URBAN':1,
-                    'FIELD':2,
-                    'FOREST':3,
-                    'DESERT':4,
-                    'MOUNTAIN':5,
-                    'WATER':6,
-                    'UNDERWATER':7,
-                    'FLYING':8
-                    }
-    
+    _TERRAINS = {
+        'EASY': {'cost': 1, 'delay': 0},
+        'MODERATE': {'cost': 2, 'delay': 1},
+        'DIFFICULT': {'cost': 3, 'delay': 2},
+        'MUD': {'cost':3, 'delay': 2, 'msg': "You begin slogging {exit} through the mud. It is slow going."},
+        'ICE': {'cost': 3, 'delay': 2, 'msg': "You carefully make your way {exit} over the icy path."},
+        'QUICKSAND': {'cost': 5, 'delay': 4, 'msg': "Drawing on all your stregnth, you wade {exit} into the quicksand."},
+        'SNOW': {'cost': 4, 'delay': 3, 'msg': "Your feet sinking with each step, you trudge {exit} into the snow."},
+        'VEGETATION': {'cost': 2, 'delay': 1, 'msg': "You begin cutting your way {exit} through the thick vegetation."},
+        'THICKET': {'cost': 2, 'delay': 1, 'msg': "You are greeted with the sting of bramble scratches as you make your way {exit} into the thicket."},
+        'DEEPWATER': {'cost': 3, 'delay': 3, 'msg': "You begin swimming {exit}."}
+    }
+
+    def at_object_creation(self):
+        super(Room, self).at_object_creation()
+        self.db.terrain = 'EASY'
+        self.db.range_field = (3, 3)
+        self.db.errmsg_capacity = "There isn't enough room there for you."
+
+    def at_object_receive(self,  moved_obj, source_location):
+        if moved_obj.is_typeclass('typeclasses.characters.Character'):
+            char_count = sum(
+                1 for c in self.contents
+                if c.is_typeclass('typeclasses.characters.Character'))
+
+            if char_count + 1 > self.max_chars:
+                # we're over capacity. send them back where they came
+                moved_obj.msg(self.db.errmsg_capacity)
+                moved_obj.move_to(source_location, quiet=True)
+
     # Terrain property, sets self.db.terrain_type, taken from the constats dict
     @property
     def terrain(self):
@@ -36,32 +59,42 @@ class Room(Object):
     
     @terrain.setter
     def terrain(self,value):
-        if value in self.TERRAIN_TYPES:
-            self.db.terrain = self.TERRAIN_TYPES[value]
+        if value in self._TERRAINS:
+            self.db.terrain = value
+            self.db.msg_start_move = self._TERRAINS[self.terrain].get('msg', None)
         else:
-            raise ValueError('This terrain type does not exist.')
-    
-    # Maximum characters (mobs included) that can be in the room at the same time.
+            raise ValueError('Invalid terrain type.')
+
+    @property
+    def mv_cost(self):
+        """Returns the movement cost to enter this room."""
+        return self._TERRAINS[self.terrain]['cost']
+
+    @property
+    def mv_delay(self):
+        """Returns the movement delay for this room."""
+        return self._TERRAINS[self.terrain]['delay']
+
+    @property
+    def range_field(self):
+        """Returns a tuple representing the range field."""
+        return self.db.range_field
+
+    @range_field.setter
+    def range_field(self, value):
+        if (len(value) == 2
+                and all(isinstance(v, int) and v > 0
+                        for v in value)):
+            self.db.range_field = tuple(value)
+        else:
+            raise ValueError('`range_field` must be a tuple of two positive integers.')
+
     @property
     def max_chars(self):
-        return self.db.max_chars
-    
-    @max_chars.setter
-    def max_chars(self, value):
-        if type(value) is not int:
-            raise TypeError('Number of maximum characters has to be an integer.')
-        else:
-            self.db.max_chars = value
+        """Return the maximum number of chars allowed in the room.
 
-    def basetype_setup(self):
+        Note:
+            This value includes PCs, NPCs, and mobs.
         """
-        Simple room setup setting locks to make sure the room
-        cannot be picked up.
-
-        """
-
-        super(Room, self).basetype_setup()
-        self.locks.add(";".join(["get:false()",
-                                 "puppet:false()"])) # would be weird to puppet a room ...
-        self.location = None
+        return self.range_field[0] * self.range_field[1]
 
