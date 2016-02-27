@@ -493,7 +493,7 @@ def menunode_character_desc(caller, raw_string):
     """Enter a character description."""
     # add the previously entered description to the sdesc handler
     char = caller.new_char
-    char.sdesc.add((raw_string))
+    char.sdesc.add(raw_string)
     # prompt for desc property
     text = "Enter a more detailed description of your character's appearance. This will be\n" \
            "displayed when others look at your character explicitly."
@@ -526,6 +526,7 @@ def menunode_confirm(caller, raw_string):
          char.db.focus,
          char.db.desc) = [None for _ in xrange(4)]
 
+        char.sdesc.add('')
         char.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}
         char.traits.clear()
         char.skills.clear()
