@@ -366,8 +366,12 @@ def menunode_equipment_cats(caller, raw_string):
     text += "Select a category of equipment to view:"
     text = text.format(coins=as_price(caller.new_char.db.wallet))
 
-    help = "Equipment is grouped into categories. Select one to view\n"
-    help += "the items in that category."
+    help = fill("Equipment is grouped into categories. Select one to view"
+                "the items in that category.")
+    help += "\n\n"
+    help += fill("Money in Ainneve is represented as Copper Coins (CC),"
+                 "Silver Coins (SC), and Gold Coins (GC), with a conversion"
+                 "rate of 100 CC = 1 SC and 100 SC = 1 GC")
 
     def show_inventory(s):
         """display the character's inventory
