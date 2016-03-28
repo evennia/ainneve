@@ -366,8 +366,12 @@ def menunode_equipment_cats(caller, raw_string):
     text += "Select a category of equipment to view:"
     text = text.format(coins=as_price(caller.new_char.db.wallet))
 
-    help = "Equipment is grouped into categories. Select one to view\n"
-    help += "the items in that category."
+    help = fill("Equipment is grouped into categories. Select one to view"
+                "the items in that category.")
+    help += "\n\n"
+    help += fill("Money in Ainneve is represented as Copper Coins (CC),"
+                 "Silver Coins (SC), and Gold Coins (GC), with a conversion"
+                 "rate of 100 CC = 1 SC and 100 SC = 1 GC")
 
     def show_inventory(s):
         """display the character's inventory
@@ -391,7 +395,7 @@ def menunode_equipment_cats(caller, raw_string):
 
     options.append({"key": "Done",
                     "desc": "Continue to character description",
-                    "goto": "menunode_character_desc"})
+                    "goto": "menunode_character_sdesc"})
 
     return (text, help), options
 
@@ -475,10 +479,30 @@ def menunode_examine_and_buy(caller, raw_string):
         assert False
 
 
+def menunode_character_sdesc(caller, raw_string):
+    """Enter a character description."""
+    text = "First, enter a short description for your character. It will be\n" \
+           "shown in place of your name to those who don't know you, so it should\n" \
+           "be general, like, 'a tall man', 'a hardened warrior', or 'a crazy old coot'."
+    help = fill("After character creation, the short description can be modified using "
+                "the '@desc' command. Also, see 'help recog' for information on using the "
+                "recog command to set recognition descriptions in place of other characters' "
+                "short descriptions.")
+    options = [{"key": "_default",
+                "goto": "menunode_character_desc"}]
+    return (text, help), options
+
+
 def menunode_character_desc(caller, raw_string):
     """Enter a character description."""
-    text = "Enter a description for your character."
-    help = fill("")
+    # add the previously entered description to the sdesc handler
+    char = caller.new_char
+    char.sdesc.add(raw_string)
+    # prompt for desc property
+    text = "Enter a more detailed description of your character's appearance. This will be\n" \
+           "displayed when others look at your character explicitly."
+    help = fill("After character creation, your character's long description can be modified"
+                "using the '@desc' command.")
     options = [{"key": "_default",
                 "goto": "menunode_confirm"}]
     return (text, help), options
@@ -506,6 +530,7 @@ def menunode_confirm(caller, raw_string):
          char.db.focus,
          char.db.desc) = [None for _ in xrange(4)]
 
+        char.sdesc.add('')
         char.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}
         char.traits.clear()
         char.skills.clear()

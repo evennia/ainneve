@@ -7,13 +7,13 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-from evennia import DefaultCharacter
+from evennia.contrib.rpsystem import ContribRPCharacter
 from evennia.utils import lazy_property
 from world.equip import EquipHandler
 from world.traits import TraitHandler
 
 
-class Character(DefaultCharacter):
+class Character(ContribRPCharacter):
     """Base character typeclass for Ainneve.
 
     This base Character typeclass should only contain things that would be
@@ -21,6 +21,7 @@ class Character(DefaultCharacter):
     like "Aggro" would go further downstream.
     """
     def at_object_creation(self):
+        super(Character, self).at_object_creation()
         self.db.race = None
         self.db.focus = None
         self.db.archetype = None

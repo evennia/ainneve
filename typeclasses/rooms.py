@@ -5,9 +5,10 @@ Rooms are simple containers that has no location of their own.
 
 """
 from evennia.contrib.extended_room import ExtendedRoom
+from evennia.contrib.rpsystem import ContribRPRoom
 
 
-class Room(ExtendedRoom):
+class Room(ExtendedRoom, ContribRPRoom):
     """Base Ainneve Room typeclass.
 
     Properties:
