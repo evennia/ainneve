@@ -27,6 +27,6 @@ def sample_char(char, archetype, race, focus=None):
     races.apply_race(char, race, focus)
     archetypes.calculate_secondary_traits(char.traits)
     archetypes.finalize_traits(char.traits)
-    tickerhandler.add(char, 6, hook_key='at_turn_start')
+    tickerhandler.add(interval=6, callback=char.at_turn_start)
     skills.apply_skills(char)
     skills.finalize_skills(char.skills)
