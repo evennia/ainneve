@@ -191,6 +191,6 @@ class CmdCharCreate(MuxPlayerCommand):
         EvMenu(session,
                "world.chargen",
                startnode=startnode,
-               allow_quit=False,
-               cmd_on_quit=finish_char_callback)
+               auto_quit=False,
+               cmd_on_exit=finish_char_callback)
 
