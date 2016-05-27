@@ -1,0 +1,4 @@
+# This is the master build file for the Riverport area. We'll include sub-areas
+# via INSERT instructions in this file. See the wiki page at
+# https://github.com/evennia/evennia/wiki/Batch%20Command%20Processor for
+# more information.
