@@ -15,8 +15,8 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
-from commands import equip
-from commands import chartraits
+from commands import equip, chartraits, room_exit, chargen
+
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -36,6 +36,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         #
         self.add(equip.EquipCmdSet())
         self.add(chartraits.CharTraitCmdSet())
+        self.add(room_exit.AinneveRoomExitsCmdSet())
 
 class PlayerCmdSet(default_cmds.PlayerCmdSet):
     """
@@ -54,6 +55,8 @@ class PlayerCmdSet(default_cmds.PlayerCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+        self.add(chargen.RemoveCharCreateCmdSet())
+        self.add(chargen.ChargenICCmdSet())
 
 
 class UnloggedinCmdSet(default_cmds.UnloggedinCmdSet):
@@ -92,3 +95,4 @@ class SessionCmdSet(default_cmds.SessionCmdSet):
         #
         # any commands you add below will overload the default ones.
         #
+        self.add(chargen.CharCreateCmdSet())

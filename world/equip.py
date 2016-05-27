@@ -58,7 +58,7 @@ Example usage:
     > for slot, item in character.equip:
     >     print "%s: %s" % (slot, item)
     'head: a hat'
-    > character.equip.head
+    > character.equip.get('head')
     'a hat'
     > character.equip.remove(obj)
     True

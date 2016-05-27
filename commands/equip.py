@@ -2,8 +2,8 @@
 Item and equipment-related command module.
 """
 from evennia import CmdSet
-from commands.command import Command, MuxCommand
-from evennia.utils.evtable import EvTable
+from commands.command import MuxCommand
+from evennia.utils.evtable import EvTable, fill
 from typeclasses.weapons import Weapon
 from typeclasses.armors import Armor, Shield
 
@@ -49,16 +49,16 @@ class CmdInventory(MuxCommand):
             data = [[],[],[]]
             for item in items:
                 data[0].append("|C{}|n".format(item.name))
-                data[1].append(item.db.desc or "")
-                stat = ""
-                if item.db.damage:
+                data[1].append(fill(item.db.desc or "", 50))
+                stat = " "
+                if item.attributes.has('damage'):
                     stat += "(|rDamage: {:>2d}|n) ".format(item.db.damage)
-                if item.db.range:
+                if item.attributes.has('range'):
                     stat += "(|GRange: {:>2d}|n) ".format(item.db.range)
-                if item.db.toughness:
-                    stat += "(|yToughness: {:>2d}|n) ".format(item.db.toughness)
+                if item.attributes.has('toughness'):
+                    stat += "(|yToughness: {:>2d}|n)".format(item.db.toughness)
                 data[2].append(stat)
-            table = EvTable(header=False, table=data, border=None)
+            table = EvTable(header=False, table=data, border=None, valign='t')
             string = "|YYou are carrying:|n\n{}".format(table)
         self.caller.msg(string)
 
@@ -165,13 +165,13 @@ class CmdEquip(MuxCommand):
             for slot, item in caller.equip:
                 if not item or not item.access(caller, 'view'):
                     continue
-                stat = ""
-                if item.db.damage:
+                stat = " "
+                if item.attributes.has('damage'):
                     stat += "(|rDamage: {:>2d}|n) ".format(item.db.damage)
-                if item.db.range:
+                if item.attributes.has('range'):
                     stat += "(|GRange: {:>2d}|n) ".format(item.db.range)
-                if item.db.toughness:
-                    stat += "(|yToughness: {:>2d}|n) ".format(item.db.toughness)
+                if item.attributes.has('toughness'):
+                    stat += "(|yToughness: {:>2d}|n)".format(item.db.toughness)
 
                 data.append(
                     "  |b{slot:>{swidth}.{swidth}}|n: {item:<20.20} {stat}".format(

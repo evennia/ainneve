@@ -76,7 +76,7 @@ PIKE_POLEARM = {
 MAPLE_STAFF = {
     "key": "a quarterstaff",
     "aliases": ["quarterstaff", "staff"],
-    "typeclass": "typeclasses.items.TwoHandedWeapon",
+    "typeclass": "typeclasses.weapons.TwoHandedWeapon",
     "desc": "Enemies at a distance should be wary of this stout wooden "
             "staff, though it doesn't pack much of a punch. If only it "
             "could be enchanted...",
@@ -133,7 +133,7 @@ SHORT_SWORD = {
 }
 
 RAPIER = {
-    "key": "an rapier",
+    "key": "a rapier",
     "aliases": ["rapier"],
     "typeclass": "typeclasses.weapons.Weapon",
     "desc": "Mottled by age and oxidation, this rapier's blade has seen "
@@ -218,6 +218,28 @@ QUARREL = {
     "value": 3*CC
 }
 
+ARROW_BUNDLE = {
+    "key": "a bundle of arrows",
+    "aliases": ["bundle of arrows", "bundle arrows", "arrows"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A bundle of arrows held together with a thin leather strap.",
+    "weight": 10,
+    "value": 25*CC,
+    "quantity": 10,
+    "contents_proto": "ARROW",
+}
+
+QUARREL_BUNDLE = {
+    "key": "a bundle of quarrels",
+    "aliases": ["bundle of quarrels", "bundle quarrels", "quarrels"],
+    "typeclass": "typeclasses.items.Item",
+    "desc": "A bundle of crossbow quarrels held together with a thin leather strap.",
+    "weight": 5,
+    "value": 30*CC,
+    "quantity": 10,
+    "contents_proto": "QUARREL",
+}
+
 # Thrown Ranged
 
 THROWING_AXE = {
@@ -267,10 +289,3 @@ TRIDENT = {
     "damage": 2,
     "range": 2,
 }
-
-
-# format all `desc` properties consistently
-for proto in globals().values():
-    if isinstance(proto, dict) and 'desc' in proto:
-        proto['desc'] = fill(proto['desc'])
-

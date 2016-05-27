@@ -1,6 +1,7 @@
 """
 Utility objects.
 """
+from evennia import TICKER_HANDLER as tickerhandler
 from world import archetypes, races, skills
 
 
@@ -22,7 +23,10 @@ def sample_char(char, archetype, race, focus=None):
     char.traits.CHA.base += 1
     char.traits.VIT.base += 2
     char.traits.MAG.base += 2
-    archetypes.calculate_secondary_traits(char.traits)
     focus = focus or races.load_race(race).foci[0]
     races.apply_race(char, race, focus)
+    archetypes.calculate_secondary_traits(char.traits)
+    archetypes.finalize_traits(char.traits)
+    tickerhandler.add(interval=6, callback=char.at_turn_start)
     skills.apply_skills(char)
+    skills.finalize_skills(char.skills)

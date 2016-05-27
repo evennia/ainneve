@@ -82,7 +82,6 @@ def d_roll(xdyz, total=True):
         rolls = sorted(rolls, reverse=True)
         [rolls.pop() for _ in range(drop)]
     if total:
-        print sum(rolls), bonus
         return sum(rolls) + bonus
     else:
         return rolls
