@@ -1,0 +1,102 @@
+#
+# Central area of Riverport
+#
+# start in "Limbo"
+#
+@tel Limbo
+#
+# create the first room
+#
+@dig Kai River Bridge;riverport#01 = riverport
+#
+# describe the entrance into the game from limbo
+#
+@desc riverport =
+ This is the entrance to the |mAinneve|n game world.
+#
+# move to the room
+#
+riverport
+#
+# set zone tag
+#
+@tag riverport#01 = riverport : zone
+#
+# set terrain
+#
+@terrain = EASY
+#
+# set range field
+#
+@rangefield = (4, 3)
+#
+# next, set its description
+#
+@desc
+
+ You stand in the middle of an ancient |wbridge|n spanning the |gKai River|n.
+
+ The |wriver|n runs from the north to the south, and a well-traveled |wroad|n
+ runs east and west.
+
+#
+# add a description for the bridge
+#
+@detail bridge =
+
+ The heavy timbers of the bridge appear sturdy enough to allow a merchant's
+ cart to cross. The wood is carved ornately and is covered in undulating
+ patterns of texture.
+
+#
+# add river detail
+#
+@detail river =
+
+ Looking north, you see the river as it winds its way through the town
+ of Riverport. A small island dotted with trees appears to your left
+ not far away, and beyond it, a second bridge in the northern section of
+ the city.
+
+ Looking south, the |gKai|n heads toward its destination, the placid
+ |gAiiro Lake|n.
+
+#
+# add road detail
+#
+@detail road =
+
+ To the |weast|n, the town's main road stretches out before you, leading
+ past the river's edge and through a clearing in the trees that stand
+ restfully along the banks of the Kai.
+
+ To the |wwest|n in the distance, you can see |rZodiac Square|n, the
+ commercial center of Riverport.
+
+#
+# eastern road segment #1
+#
+@tunnel/tel e = Along the Road;riverport#02
+#
+# set zone tag
+#
+@tag riverport#02 = riverport : zone
+#
+# set terrain
+#
+@terrain = EASY
+#
+# set range field
+#
+@rangefield = (5, 3)
+#
+# set description
+#
+@desc
+
+The road stretches on to the east and west. Surrounded by green meadows
+on either side, the paving stones of this stretch of road are worn, but
+well-maintained. In the distance, you hear the sound of burbling water
+coming from the |rRiver Kai|n.
+
+#
