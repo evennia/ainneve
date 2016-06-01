@@ -4,7 +4,8 @@
 # start in "Limbo"
 #
 @tel Limbo
-#
+
+######
 # create the first room
 #
 @dig Kai River Bridge;riverport#01 = riverport
@@ -73,30 +74,280 @@ riverport
  To the |wwest|n in the distance, you can see |rZodiac Square|n, the
  commercial center of Riverport.
 
-#
+######
 # eastern road segment #1
 #
 @tunnel/tel e = Along the Road;riverport#02
 #
-# set zone tag
-#
 @tag riverport#02 = riverport : zone
-#
-# set terrain
 #
 @terrain = EASY
 #
-# set range field
-#
 @rangefield = (5, 3)
-#
-# set description
 #
 @desc
 
-The road stretches on to the east and west. Surrounded by green meadows
-on either side, the paving stones of this stretch of road are worn, but
-well-maintained. In the distance, you hear the sound of burbling water
-coming from the |rRiver Kai|n.
+ The road stretches on to the east and west. Surrounded by green meadows
+ on either side, the paving stones of this stretch of road are worn, but
+ well-maintained. In the distance, you hear the sound of burbling water
+ coming from the |rRiver Kai|n.
+
+ To the north, a grassy meadow extends along the banks of the |rKai|n.
+
+######
+# eastern road segment #2
+#
+@tunnel/tel e = Along the Road;riverport#03
+#
+@tag riverport#03 = riverport : zone
+#
+@terrain = EASY
+#
+@rangefield = (5, 3)
+#
+@desc
+
+ The road stretches on to the east and west. Surrounded by green meadows
+ on either side, the paving stones of this stretch of road are worn, but
+ well-maintained.
+
+######
+# eastern road segment #3
+#
+@tunnel/tel e = Along the Road;riverport#04
+#
+@tag riverport#04 = riverport : zone
+#
+@terrain = EASY
+#
+@rangefield = (5, 3)
+#
+@desc
+
+ The road stretches on to the east and west. Surrounded by green meadows
+ on either side, the paving stones of this stretch of road are worn, but
+ well-maintained.
+
+######
+# meadow room #1
+#
+@tunnel/tel n = Grassy Meadow;riverport#05
+#
+@tag riverport#05 = riverport : zone
+#
+@terrain = EASY
+#
+@rangefield = (6, 6)
+#
+@desc
+
+ A carpet of grass spreads out before you, bordered on the south edge by
+ the main road of Riverport.
+
+######
+# meadow room #2
+#
+@tunnel/tel w = Grassy Meadow;riverport#06
+#
+@tag riverport#06 = riverport : zone
+#
+@terrain = EASY
+#
+@rangefield = (6, 6)
+#
+@desc
+
+ A carpet of grass spreads out before you, bordered on the south edge by
+ the main road of Riverport. To the north, you see a large tree in the
+ distance.
+
+#
+# open additional connecting exits
+#
+@open south;s, north;n = riverport#03
+
+######
+# meadow room #3
+#
+@tunnel/tel w = Grassy Meadow;riverport#07
+#
+@tag riverport#07 = riverport : zone
+#
+@terrain = EASY
+#
+@rangefield = (6, 6)
+#
+@desc
+
+ Bordered to the west by the murmuring waters of the |rRiver Kai|n, this sun
+ drenched meadow is carpeted with short grass. Along the river bank, tall
+ reeds no doubt hide the homes of river-going critters.
+
+ To the south, you see the main road that passes through the center of
+ Riverport.
+
+#
+# open additional exits
+#
+@open south;s, north;n = riverport#02
+
+######
+# meadow room #4
+#
+@tunnel/tel n = Grassy Meadow;riverport#08
+#
+@tag riverport#08 = riverport : zone
+#
+@terrain = EASY
+#
+@rangefield = (6, 6)
+#
+@desc
+
+ Bordered to the west by the murmuring waters of the |rRiver Kai|n, this sun
+ drenched meadow is carpeted with short grass. Along the river bank, tall
+ reeds no doubt hide the homes of river-going critters.
+
+ To the north stands a dense grove of trees.
+
+# open additional exits
+#
+@open south;s, north;n = riverport#05
+#
+@open southeast;se, northwest;nw = riverport#06
+
+######
+# meadow room #5
+#
+@tunnel/tel e = Grassy Meadow;riverport#09
+#
+@tag riverport#09 = riverport : zone
+#
+@terrain = EASY
+#
+@rangefield = (6, 6)
+#
+@desc
+
+ A massive broad-leafed tree stands in the middle of a carpet of green grass.
+ A light breeze wafts through its branches, and you hear the gentle rustling
+ of leaves from above.
+
+ The steady presence of this tree fills you with a sense of serenity despite
+ a dark and shady-looking grove of trees to the northwest.
+
+#
+# add tree detail
+#
+@detail tree =
+
+ The tree's huge trunk is far too big for a normal-sized human to reach their
+ arms around. It is by far the tallest structure central Riverport.
+
+#
+# open additional exits
+#
+@open southwest;sw, northeast;ne = riverport#07
+#
+@open south;s, north;n = riverport#06
+#
+@open southeast;se, northwest;nw = riverport#05
+
+######
+# meadow room #6
+#
+@tunnel/tel e = Grassy Meadow;riverport#10
+#
+@tag riverport#10 = riverport : zone
+#
+@terrain = EASY
+#
+@rangefield = (6, 6)
+#
+@desc
+
+ A carpet of grass spreads out before you, bordered on the east edge by
+ the ring road of Riverport. To the west, you see a large tree in the
+ distance.
+
+#
+# open additional exits
+#
+@open southwest;sw, northeast;ne = riverport#06
+#
+@open south;s, north;n = riverport#05
+
+######
+# meadow room #7
+#
+@tunnel/tel nw = Grassy Meadow;riverport#11
+#
+@tag riverport#11 = riverport : zone
+#
+@terrain = EASY
+#
+@rangefield = (6, 6)
+#
+@desc
+
+ A carpet of grass spreads out before you. To the east you see buildings
+ in the distance, and to the south, a large tree rises from the grassy
+ meadow. To the west looms a dark, dense grove of trees that looks like
+ it would be difficult to travel through.
+
+#
+# open additional exits
+#
+@open south;s, north;n = riverport#09
+#
+@open southwest;sw, northeast;ne = riverport#08
+#
+
+######
+# meadow/forest room #8
+#
+@tunnel/tel w = Shadowy Grove;riverport#12
+#
+@tag riverport#12 = riverport : zone
+#
+@terrain = VEGETATION
+#
+@rangefield = (4, 4)
+#
+@desc
+
+ As you squeeze between the densely-packed vegetation, you notice that most of
+ the sunlight is blocked by the thick canopy of trees in this grove. You hear
+ the sound of something moving in the underbrush and prepare for the worst...
+
+#
+# open additional exits
+#
+@open south;s, north;n = riverport#08
+#
+@open southeast;se, northwest;nw = riverport#09
+
+######
+# meadow room #9
+#
+@tunnel/tel w = Grassy Meadow;riverport#13
+#
+@tag riverport#13 = riverport : zone
+#
+@terrain = EASY
+#
+@rangefield = (6, 6)
+#
+@desc
+
+ Bordered to the west by the murmuring waters of the |rRiver Kai|n, this sun
+ drenched meadow is carpeted with short grass. Along the river bank, tall
+ reeds rise higher, and beyond them, you see a small island, dotted with trees,
+ standing in the middle of the rushing waters.
+
+#
+# open additional exits
+#
+@open southeast;se, northwest;nw = riverport#08
 
 #
