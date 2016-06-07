@@ -63,6 +63,23 @@ class CmdInventory(MuxCommand):
         self.caller.msg(string)
 
 
+def _search_inventory(caller, searchdata):
+    """
+    search for a target in the caller's contents
+    """
+    not_in_contents_msg = "You don't have '{}' in your inventory.".format(searchdata)
+    if caller.contents:
+        obj = caller.search(
+            searchdata,
+            candidates=caller.contents,
+            nofound_string=not_in_contents_msg)
+    else:
+        caller.msg(not_in_contents_msg)
+        obj = None
+
+    return obj
+
+
 class CmdEquip(MuxCommand):
     """
     view equipment
@@ -84,80 +101,76 @@ class CmdEquip(MuxCommand):
         caller = self.caller
         args = self.args.strip()
         swap = any(s.startswith('s') for s in self.switches)
-        
-        if hasattr(self, "item"):
-            obj = self.item
-            del self.item
-        else:
-            obj = caller.search(args) if args else None
 
-        if obj:
-            if hasattr(self, "action"):
-                action = self.action
-                del self.action
+        if args:
+            if hasattr(self, "item"):
+                obj = self.item
+                del self.item
             else:
-                if any(isinstance(obj, i) for i in (Weapon, Shield)):
-                    action = 'wield'
-                elif isinstance(obj, Armor):
-                    action = 'wear'
+                obj = _search_inventory(caller, args)
+
+            if obj:
+                if hasattr(self, "action"):
+                    action = self.action
+                    del self.action
                 else:
-                    caller.msg("You can't equip {}.".format(obj.name))
-
-            if obj not in caller.contents:
-                caller.msg(
-                    "You don't have {} in your inventory.".format(obj.name))
-                return
-
-            if not obj.access(caller, 'equip'):
-                caller.msg("You can't {} {}.".format(action,
-                                                     obj.name))
-                return
-
-            if obj in caller.equip:
-                caller.msg("You're already {}ing {}.".format(action,
-                                                             obj.name))
-                return
-
-            # check whether slots are occupied
-            occupied_slots = [caller.equip.get(s) for s in obj.db.slots
-                              if caller.equip.get(s)]
-            if obj.db.multi_slot:
-                if len(occupied_slots) > 0:
-                    if swap:
-                        for item in occupied_slots:
-                            caller.equip.remove(item)
+                    if any(isinstance(obj, i) for i in (Weapon, Shield)):
+                        action = 'wield'
+                    elif isinstance(obj, Armor):
+                        action = 'wear'
                     else:
-                        caller.msg("You can't {} {}. ".format(action,
-                                                              obj.name) +
-                                   "You already have something there.")
-                        return
-            else:
-                if len(occupied_slots) == len(obj.db.slots):
-                    if swap:
-                        caller.equip.remove(occupied_slots[0])
-                    else:
-                        caller.msg("You can't {} {}. ".format(action,
-                                                              obj.name) +
-                                   "You have no open {} slot{}.".format(
-                                       ", or ".join(obj.db.slots),
-                                       "s" if len(obj.db.slots) != 1 else ""
-                                   ))
-                        return
+                        caller.msg("You can't equip {}.".format(obj.name))
 
-            if not caller.equip.add(obj):
-                caller.msg("You can't {} {}.".format(action, obj.name))
-                return
+                if not obj.access(caller, 'equip'):
+                    caller.msg("You can't {} {}.".format(action,
+                                                         obj.name))
+                    return
 
-            # call hook
-            if hasattr(obj, "at_equip"):
-                obj.at_equip(caller)
+                if obj in caller.equip:
+                    caller.msg("You're already {}ing {}.".format(action,
+                                                                 obj.name))
+                    return
 
-            caller.msg("You {} {}.".format(action, obj))
-            caller.location.msg_contents(
-                "{} {}s {}.".format(caller.name.capitalize(),
-                                    action,
-                                    obj.name),
-                exclude=caller)
+                # check whether slots are occupied
+                occupied_slots = [caller.equip.get(s) for s in obj.db.slots
+                                  if caller.equip.get(s)]
+                if obj.db.multi_slot:
+                    if len(occupied_slots) > 0:
+                        if swap:
+                            for item in occupied_slots:
+                                caller.equip.remove(item)
+                        else:
+                            caller.msg("You can't {} {}. ".format(action,
+                                                                  obj.name) +
+                                       "You already have something there.")
+                            return
+                else:
+                    if len(occupied_slots) == len(obj.db.slots):
+                        if swap:
+                            caller.equip.remove(occupied_slots[0])
+                        else:
+                            caller.msg("You can't {} {}. ".format(action,
+                                                                  obj.name) +
+                                       "You have no open {} slot{}.".format(
+                                           ", or ".join(obj.db.slots),
+                                           "s" if len(obj.db.slots) != 1 else ""
+                                       ))
+                            return
+
+                if not caller.equip.add(obj):
+                    caller.msg("You can't {} {}.".format(action, obj.name))
+                    return
+
+                # call hook
+                if hasattr(obj, "at_equip"):
+                    obj.at_equip(caller)
+
+                caller.msg("You {} {}.".format(action, obj))
+                caller.location.msg_contents(
+                    "{} {}s {}.".format(caller.name.capitalize(),
+                                        action,
+                                        obj.name),
+                    exclude=caller)
         else:
             # no arguments; display current equip
             data = []
@@ -215,8 +228,7 @@ class CmdWear(MuxCommand):
             caller.msg("Wear what?")
             return
 
-        # this will search for a target
-        obj = caller.search(args)
+        obj = _search_inventory(caller, args)
 
         if not obj:
             return
@@ -258,7 +270,8 @@ class CmdWield(MuxCommand):
             caller.msg("Wield what?")
             return
 
-        obj = caller.search(args)
+        obj = _search_inventory(caller, args)
+
         if not obj:
             return
         elif any(obj.is_typeclass(i, exact=False) for i in (Weapon, Shield)):
@@ -295,7 +308,8 @@ class CmdRemove(MuxCommand):
             return
 
         # this will search for a target
-        obj = caller.search(args)
+        obj = caller.search(args,
+                            candidates=caller.contents)
 
         if not obj:
             return
