@@ -67,14 +67,14 @@ def _search_inventory(caller, searchdata):
     """
     search for a target in the caller's contents
     """
-    not_in_contents_msg = "You don't have '{}' in your inventory.".format(searchdata)
+    errmsg = "You don't have '{}' in your inventory.".format(searchdata)
     if caller.contents:
         obj = caller.search(
             searchdata,
             candidates=caller.contents,
-            nofound_string=not_in_contents_msg)
+            nofound_string=errmsg)
     else:
-        caller.msg(not_in_contents_msg)
+        caller.msg(errmsg)
         obj = None
 
     return obj
@@ -307,15 +307,14 @@ class CmdRemove(MuxCommand):
             caller.msg("Remove what?")
             return
 
-        # this will search for a target
-        obj = caller.search(args,
-                            candidates=caller.contents)
+        # search for target in our equip
+        equipped_items = [i[1] for i in caller.equip]
+        obj = caller.search(
+            args,
+            candidates=equipped_items,
+            nofound_string="You do not have '{}' equipped.".format(args))
 
         if not obj:
-            return
-
-        if obj not in caller.equip:
-            caller.msg("You do not have {} equipped.".format(obj.name))
             return
 
         if not caller.equip.remove(obj):

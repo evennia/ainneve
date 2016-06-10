@@ -169,7 +169,7 @@ class EquipTestCase(CommandTest):
 
     def test_remove(self):
         """test the remove command"""
-        self.call(CmdRemove(), "Obj", "You do not have Obj equipped.")
+        self.call(CmdRemove(), "Obj", "You do not have 'Obj' equipped.")
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('wield Obj')
         self.call(CmdRemove(), "Obj", "You remove Obj.")
