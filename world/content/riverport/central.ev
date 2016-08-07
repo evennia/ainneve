@@ -71,7 +71,7 @@ riverport
  past the river's edge and through a clearing in the trees that stand
  restfully along the banks of the Kai.
 
- To the |wwest|n in the distance, you can see |rZodiac Square|n, the
+ To the |wwest|n in the distance, you can see |gZodiac Square|n, the
  commercial center of Riverport.
 
 ######
@@ -90,7 +90,7 @@ riverport
  The road stretches on to the east and west. Surrounded by green meadows
  on either side, the paving stones of this stretch of road are worn, but
  well-maintained. In the distance, you hear the sound of burbling water
- coming from the |rRiver Kai|n.
+ coming from the |gRiver Kai|n.
 
  To the north, a grassy meadow extends along the banks of the |rKai|n.
 
@@ -242,7 +242,7 @@ riverport
 @detail tree =
 
  The tree's huge trunk is far too big for a normal-sized human to reach their
- arms around. It is by far the tallest structure central Riverport.
+ arms around. It is by far the tallest structure in central Riverport.
 
 #
 # open additional exits
@@ -340,7 +340,7 @@ riverport
 #
 @desc
 
- Bordered to the west by the murmuring waters of the |rRiver Kai|n, this sun
+ Bordered to the west by the murmuring waters of the |gRiver Kai|n, this sun
  drenched meadow is carpeted with short grass. Along the river bank, tall
  reeds rise higher, and beyond them, you see a small island, dotted with trees,
  standing in the middle of the rushing waters.
