@@ -54,3 +54,19 @@ class Character(ContribRPCharacter):
         self.traits.WM.fill_gauge()
         # Power Points are lost each turn
         self.traits.PP.reset_counter()
+
+    def search_inventory(self, searchdata):
+        """
+        search for a target in the character's contents and return it
+        """
+        errmsg = "You don't have '{}' in your inventory.".format(searchdata)
+        obj = None
+        if self.contents:
+            obj = self.search(
+                searchdata,
+                candidates=self.contents,
+                nofound_string=errmsg)
+        else:
+            self.msg(errmsg)
+
+        return obj

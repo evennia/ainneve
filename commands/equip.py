@@ -63,23 +63,6 @@ class CmdInventory(MuxCommand):
         self.caller.msg(string)
 
 
-def _search_inventory(caller, searchdata):
-    """
-    search for a target in the caller's contents
-    """
-    errmsg = "You don't have '{}' in your inventory.".format(searchdata)
-    if caller.contents:
-        obj = caller.search(
-            searchdata,
-            candidates=caller.contents,
-            nofound_string=errmsg)
-    else:
-        caller.msg(errmsg)
-        obj = None
-
-    return obj
-
-
 class CmdEquip(MuxCommand):
     """
     view equipment
@@ -107,7 +90,7 @@ class CmdEquip(MuxCommand):
                 obj = self.item
                 del self.item
             else:
-                obj = _search_inventory(caller, args)
+                obj = caller.search_inventory(args)
 
             if obj:
                 if hasattr(self, "action"):
@@ -228,7 +211,7 @@ class CmdWear(MuxCommand):
             caller.msg("Wear what?")
             return
 
-        obj = _search_inventory(caller, args)
+        obj = caller.search_inventory(args)
 
         if not obj:
             return
@@ -270,7 +253,7 @@ class CmdWield(MuxCommand):
             caller.msg("Wield what?")
             return
 
-        obj = _search_inventory(caller, args)
+        obj = caller.search_inventory(args)
 
         if not obj:
             return
