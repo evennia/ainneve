@@ -2,3 +2,6 @@
 # via INSERT instructions in this file. See the wiki page at
 # https://github.com/evennia/evennia/wiki/Batch%20Command%20Processor for
 # more information.
+
+#INSERT riverport.central
+
