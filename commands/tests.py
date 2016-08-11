@@ -156,12 +156,12 @@ class EquipTestCase(CommandTest):
         self.char1.execute_cmd('get Obj2')
         self.char1.execute_cmd('wear Obj2')
         output = (
-"YYour equipment:n\n"
+"Your equipment:\n"
 "   Wield1: Obj                   (Damage:  1)    \n"
 "    Armor: Obj2                  (Toughness:  1)")
         self.call(CmdEquip(), "", output)
         self.char1.execute_cmd('drop Obj')
-        self.call(CmdEquip(), "", "YYour equipment:n\n    Armor: Obj2")
+        self.call(CmdEquip(), "", "Your equipment:\n    Armor: Obj2                  (Toughness:  1)")
 
     def test_equip_item(self):
         """test equipping items with equip"""
@@ -183,7 +183,7 @@ class EquipTestCase(CommandTest):
         self.call(CmdInventory(), "", "You are not carrying anything.")
         # can see an object when picked up
         self.char1.execute_cmd('get Obj')
-        self.call(CmdInventory(), "", "YYou are carrying:n\n Obj  Test Obj")
+        self.call(CmdInventory(), "", "You are carrying:\n Obj  Test Obj   (Damage:  1)")
         # but not when equipped
         self.char1.execute_cmd('wield Obj')
         self.call(CmdInventory(), "", "You are not carrying anything.")
@@ -208,22 +208,22 @@ class CharTraitsTestCase(CommandTest):
 "  Name:                         Char     XP:     0 /       500   Level:   0  \n"
 "  Archetype:                 Warrior                                         \n"
 + (39 * " ") + "\n"
-"     HP      SP      BM      WM      Primary Traits   Strength    :   9  \n"
-"  ~~~~~~~~+~~~~~~~~+~~~~~~~~+~~~~~~~~   ~~~~~~~~~~~~~~   Perception  :   2  \n"
-"    9 / 9   9 / 9   0 / 0   0 / 0                     Intelligence:   1  \n"
-"                                                         Dexterity   :   5  \n"
-"  Race:                         None                     Charisma    :   4  \n"
-"  Focus:                        None                     Vitality    :   9  \n"
-"  Description                                            Magic       :   0  \n"
-"  ~~~~~~~~~~~                          \n"
-"  None                                  Save Rolls       Fortitude   :   9  \n"
-"                                        ~~~~~~~~~~       Reflex      :   3  \n"
-"                                                         Will        :   1  \n"
-"  Encumbrance                          \n"
-"  ~~~~~~~~~~~                           Combat Stats     Melee       :   9  \n"
-"  Carry Weight:             0 /  180    ~~~~~~~~~~~~     Ranged      :   2  \n"
-"  Encumbrance Penalty:             0    Power Point      Unarmed     :   5  \n"
-"  Movement Points:                 5    Bonus:    +2     Defense     :   5")
+"     HP   |   SP   |   BM   |   WM     Primary Traits   Strength    :   9  \n"
+"  ~~~~~~~~+~~~~~~~~+~~~~~~~~+~~~~~~~~  ~~~~~~~~~~~~~~   Perception  :   2  \n"
+"    9 / 9 |  9 / 9 |  0 / 0 |  0 / 0                    Intelligence:   1  \n"
+"                                                        Dexterity   :   5  \n"
+"  Race:                         None                    Charisma    :   4  \n"
+"  Focus:                        None                    Vitality    :   9  \n"
+"  Description                                           Magic       :   0  \n"
+"  ~~~~~~~~~~~                          |\n"
+"  None                                 Save Rolls       Fortitude   :   9  \n"
+"                                       ~~~~~~~~~~       Reflex      :   3  \n"
+"                                                        Will        :   1  \n"
+"  Encumbrance                          |\n"
+"  ~~~~~~~~~~~                          Combat Stats     Melee       :   9  \n"
+"  Carry Weight:             0 /  180   ~~~~~~~~~~~~     Ranged      :   2  \n"
+"  Encumbrance Penalty:             0   Power Point      Unarmed     :   5  \n"
+"  Movement Points:                 5   Bonus:    +2     Defense     :   5")
         self.call(CmdSheet(), "", sheet_output)
 
     def test_traits(self):
@@ -232,27 +232,23 @@ class CharTraitsTestCase(CommandTest):
         self.call(CmdTraits(), "", "Usage: traits <traitgroup>")
         # test primary traits
         output = (
-"YPrimary Traitsn|\n"
-" Strength         :    9  Perception       :    2  Intelligence     :    1 \n"
-" Dexterity        :    5  Charisma         :    4  Vitality         :    9 \n"
-" Magic            :    0")
+"Primary Traits|\n"
+"| Strength         :    9 | Perception       :    2 | Intelligence     :    1 | Dexterity        :    5 | Charisma         :    4 | Vitality         :    9 | Magic            :    0 |                         |")
         self.call(CmdTraits(), "pri", output)
         # test secondary traits
         output = (
-"YSecondary Traitsn|\n"
-" Health                        :    9  Black Mana                   :    0 \n"
-" Stamina                       :    9  White Mana                   :    0")
+"Secondary Traits|\n"
+"| Health                        :    9 | Black Mana                   :    0 | Stamina                       :    9 | White Mana                   :    0")
         self.call(CmdTraits(), "secondary", output)
         # test save rolls
         output = (
-"YSave Rollsn|\n"
-" Fortitude Save   :    9  Reflex Save      :    3  Will Save        :    1")
+"Save Rolls|\n"
+"| Fortitude Save   :    9 | Reflex Save      :    3 | Will Save        :    ")
         self.call(CmdTraits(), "sav", output)
         # test combat stats
         output = (
-"YCombat Statsn|\n"
-" Melee Attack     :    9  Ranged Attack    :    2  Unarmed Attack   :    5 \n"
-" Defense          :    5  Power Points     :    2")
+"Combat Stats|\n"
+"| Melee Attack     :    9 | Ranged Attack    :    2 | Unarmed Attack   :    5 | Defense          :    5 | Power Points     :    2 |")
         self.call(CmdTraits(), "com", output)
 
 
