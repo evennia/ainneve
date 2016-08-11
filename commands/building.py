@@ -2,8 +2,11 @@
 
 from .command import MuxCommand
 from evennia import utils, CmdSet
+from evennia.utils.evtable import EvTable
 from evennia.utils.spawner import spawn
 from evennia.commands.default.building import _convert_from_string
+from world.skills import ALL_SKILLS
+from world.archetypes import ALL_TRAITS
 
 
 class AinneveBuildingCmdSet(CmdSet):
@@ -16,6 +19,8 @@ class AinneveBuildingCmdSet(CmdSet):
     def at_cmdset_creation(self):
         "Populates the cmdset"
         self.add(CmdSpawn())
+        self.add(CmdSetTraits())
+        self.add(CmdSetSkills())
 
 #
 # To use the prototypes with the @spawn function set
@@ -70,7 +75,7 @@ class CmdSpawn(MuxCommand):
         def _show_prototypes(prototypes):
             "Helper to show a list of available prototypes"
             string = "\nAvailable prototypes:\n %s"
-            string = string % utils.fill(", ".join(sorted(prototypes.keys())))
+            string %= utils.fill(", ".join(sorted(prototypes.keys())))
             return string
 
         prototypes = spawn(return_prototypes=True)
@@ -112,12 +117,209 @@ class CmdSpawn(MuxCommand):
 
         for obj in spawn(prototype):
             obj.sdesc.add(obj.key)
-            if hasattr(obj, 'traits') and traits:
+            if traits and hasattr(obj, 'traits'):
                 for trait, value in traits.iteritems():
-                    obj.traits[trait].base = value
-            if hasattr(obj, 'skills') and skills:
+                    if trait.upper() in obj.traits.all:
+                        obj.traits[trait.upper()].base = value
+            if skills and hasattr(obj, 'skills'):
                 for skill, value in skills.iteritems():
-                    obj.skills[skill].base = value
+                    if skill.lower() in obj.skills.all:
+                        obj.skills[skill.lower()].base = value
 
             self.caller.msg("Spawned %s." % obj.get_display_name(self.caller))
 
+
+class CmdSetTraits(MuxCommand):
+    """
+    examine or set traits on an NPC
+
+    Usage
+      @traits <npc> [trait_name[,trait_name..][ = value[,value..]]]
+
+    Displays current trait values if no equal sign or assignment values
+    are used. Displays all traits if no trait_name is specified
+
+    Assigning values to traits with the equal sign requires that the
+    same number of trait_name and value items are present on each side of the
+    equal sign. The first trait named is assigned the first value, the second
+    trait assigned the second value, and so on. Trait values must be between
+    0 and 10.
+
+    Valid traits are
+
+    STR - Strength          DEX - Dexterity
+    PER - Perception        CHA - Charisma
+    INT - Intelligence      VIT - Vitality
+
+    MAG - Magic  (BM + WM = MAG)
+      BM  - Black Magic
+      WM  - White Magic
+
+    HP - Health Points      MV - Movement Points
+    SP - Stamina Points
+
+    ATKM - Melee Attack     DEF - Defense
+    ATKR - Ranged Attack    PP  - Power Points
+    ATKU - Unarmed Attack
+    """
+
+    key = "@traits"
+    aliases = ["@trait", "@tr"]
+    locks = "cmd:perm(edit_npc) or perm(Builders)"
+    help_category = "Building"
+
+    def _usage(self):
+        self.caller.msg('Usage: @traits/<npc> trait[,trait..][ = value[,value..]]')
+        self.caller.msg('Valid Traits: STR PER INT DEX CHA VIT MAG BM WM')
+        self.caller.msg('              HP SP MV ATKM ATKR ATKU DEF PP')
+
+    def _format_trait_3col(self, trait):
+        """Return a trait : value pair formatted for 3col layout"""
+        return "|C{:<17.17}|n : |w{:>4}|n".format(
+                    trait.name, trait.actual)
+
+    def func(self):
+        caller = self.caller
+
+        if not self.args:
+            self._usage()
+            return
+
+        targs = tuple(self.lhslist[0].rsplit(' ', 1))
+        target, self.lhslist[0] = targs if len(targs) > 1 else targs + ('',)
+
+        char = caller.search(target,
+                             location=caller.location,
+                             typeclass='typeclasses.characters.NPC')
+
+        if not char:
+            return
+
+        if self.rhs:
+            if len(self.lhslist) != len(self.rhslist):
+                caller.msg('Incorrect number of assignment values.')
+                return
+            for i in xrange(len(self.lhslist)):
+                if self.lhslist[i].upper() in char.traits.all:
+                    char.traits[self.lhslist[i].upper()].base = \
+                        min(max(int(self.rhslist[i]), 0), 10)
+                    caller.msg('Trait "{}" set to {} for {}'.format(
+                        self.lhslist[i].upper(),
+                        min(max(int(self.rhslist[i]), 0), 10),
+                        char.sdesc.get()))
+                else:
+                    caller.msg('Invalid trait: "{}"'.format(self.lhslist[i]))
+
+        # display traits
+        data = []
+        if any(self.lhslist):
+            traits = [t.upper() for t in self.lhslist
+                      if t.upper() in char.traits.all]
+        else:
+            traits = char.traits.all
+
+        if len(traits) == 0:
+            return
+        elif 0 < len(traits) < 3:
+            [data.append([self._format_trait_3col(char.traits[t])])
+             for t in traits]
+        else:
+            [data.append([self._format_trait_3col(char.traits[t])
+                          for t in traits[i::3]])
+             for i in xrange(3)]
+        table = EvTable(header=False, table=data)
+        caller.msg(unicode(table))
+
+
+class CmdSetSkills(MuxCommand):
+    """
+    examine or set traits on an NPC
+
+    Usage
+      @skills <npc> skill_name[,skill_name..][ = value[,value..]]
+
+    Displays current skill values if no equal sign or assignment values
+    are used.
+
+    Displays all current skill values if no skill_name is specified.
+
+    Assigning values to skills with the equal sign requires that the
+    same number of skill_name and value items are present on each side of the
+    equal sign. The first skill named is assigned the first value, the second
+    skill assigned the second value, and so on. Skill values must be between
+    0 and 10.
+
+    Valid skills are
+
+    escape      climb       jump
+    lockpick    listen      sense
+    appraise    medicine    survival
+    balance     sneak       throwing
+    animal      barter      leadership
+    """
+
+    key = "@skills"
+    aliases = ["@skill", "@sk"]
+    locks = "cmd:perm(edit_npc) or perm(Builders)"
+    help_category = "Building"
+
+    def _usage(self):
+        self.caller.msg('Usage: @skills <npc> skill[,skill..][ = value[,value..]]')
+        self.caller.msg('Valid Skills: escape climb jump lockpick listen sense')
+        self.caller.msg('              appraise medicine survival balance sneak')
+        self.caller.msg('              throwing animal barter leadership')
+
+    def _format_skill_3col(self, skill):
+        """Return a skill : value pair formatted for 3col layout"""
+        return "|C{:<17.17}|n : |w{:>4}|n".format(
+                    skill.name, skill.actual)
+
+    def func(self):
+        caller = self.caller
+
+        if not self.args:
+            self._usage()
+            return
+
+        targs = tuple(self.lhslist[0].rsplit(' ', 1))
+        target, self.lhslist[0] = targs if len(targs) > 1 else targs + ('',)
+
+        char = caller.search(target,
+                             location=caller.location,
+                             typeclass='typeclasses.characters.NPC')
+
+        if not char:
+            return
+
+        if self.rhs:
+            if len(self.lhslist) != len(self.rhslist):
+                caller.msg('Incorrect number of assignment values.')
+                return
+            for i in xrange(len(self.lhslist)):
+                if self.lhslist[i].lower() in char.skills.all:
+                    char.skills[self.lhslist[i].lower()].base = \
+                        min(max(int(self.rhslist[i]), 0), 10)
+                    caller.msg('Skill "{}" set to {} for {}'.format(
+                        self.lhslist[i].lower(),
+                        min(max(int(self.rhslist[i]), 0), 10),
+                        char.sdesc.get()))
+                else:
+                    caller.msg('Invalid skill: "{}"'.format(self.lhslist[i]))
+
+        # display traits
+        data = []
+        if any(self.lhslist):
+            skills = [s.lower() for s in self.lhslist
+                      if s.lower() in char.skills.all]
+        else:
+            skills = char.skills.all
+
+        if len(skills) < 3:
+            [data.append([self._format_skill_3col(char.skills[s])])
+             for s in skills]
+        else:
+            [data.append([self._format_skill_3col(char.skills[s])
+                          for s in skills[i::3]])
+             for i in xrange(3)]
+        table = EvTable(header=False, table=data)
+        caller.msg(unicode(table))

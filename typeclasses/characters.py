@@ -11,6 +11,7 @@ from evennia.contrib.rpsystem import ContribRPCharacter
 from evennia.utils import lazy_property
 from world.equip import EquipHandler
 from world.traits import TraitHandler
+from world.skills import apply_skills
 from world.archetypes import Archetype
 
 
@@ -68,5 +69,5 @@ class NPC(Character):
         for key, kwargs in npc.traits.iteritems():
             self.traits.add(key, **kwargs)
 
-
+        apply_skills(self)
 
