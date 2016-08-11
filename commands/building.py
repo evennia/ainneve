@@ -59,6 +59,8 @@ class CmdSpawn(MuxCommand):
       |wpermissions|n - string or list of permission strings
       |wlocks      |n - a lock-string
       |waliases    |n - string or list of strings
+      |wtraits     |n - dict of trait:value pairs to set on NPCs
+      |wskills     |n - dict of skill:value pairs to set on NPCs
       |wndb_|n<name>  - value of a nattribute (ndb_ is stripped)
       any other keywords are interpreted as Attributes and their values.
 
