@@ -1,12 +1,15 @@
-
+"""
+Building commands
+"""
 
 from .command import MuxCommand
 from evennia import utils, CmdSet
 from evennia.utils.evtable import EvTable
 from evennia.utils.spawner import spawn
+from evennia.utils.utils import inherits_from
 from evennia.commands.default.building import _convert_from_string
-from world.skills import ALL_SKILLS
 from world.archetypes import ALL_TRAITS
+from world.skills import ALL_SKILLS
 
 
 class AinneveBuildingCmdSet(CmdSet):
@@ -136,16 +139,18 @@ class CmdSetTraits(MuxCommand):
     Usage
       @traits <npc> [trait_name[,trait_name..][ = value[,value..]]]
 
-    Displays current trait values if no equal sign or assignment values
-    are used. Displays all traits if no trait_name is specified
+    Displays all traits if no trait_name is specified.
+
+    Displays current values of named trait(s) if no equal sign or assignment
+    values are used.
 
     Assigning values to traits with the equal sign requires that the
-    same number of trait_name and value items are present on each side of the
+    same number of trait_name and value items be present on each side of the
     equal sign. The first trait named is assigned the first value, the second
     trait assigned the second value, and so on. Trait values must be between
     0 and 10.
 
-    Valid traits are
+    Valid trait_name s are
 
     STR - Strength          DEX - Dexterity
     PER - Perception        CHA - Charisma
@@ -169,7 +174,7 @@ class CmdSetTraits(MuxCommand):
     help_category = "Building"
 
     def _usage(self):
-        self.caller.msg('Usage: @traits/<npc> trait[,trait..][ = value[,value..]]')
+        self.caller.msg('Usage: @traits <npc> [trait[,trait..][ = value[,value..]]]')
         self.caller.msg('Valid Traits: STR PER INT DEX CHA VIT MAG BM WM')
         self.caller.msg('              HP SP MV ATKM ATKR ATKU DEF PP')
 
@@ -185,9 +190,15 @@ class CmdSetTraits(MuxCommand):
             self._usage()
             return
 
+        # split off the target from the first item of lhslist
         targs = tuple(self.lhslist[0].rsplit(' ', 1))
-        target, self.lhslist[0] = targs if len(targs) > 1 else targs + ('',)
+        if len(targs) == 1 or \
+                (len(targs) > 1 and targs[1].upper() not in ALL_TRAITS):
+            target, self.lhslist[0] = self.lhslist[0], ''
+        else:
+            target, self.lhslist[0] = targs
 
+        # search for the target NPC
         char = caller.search(target,
                              location=caller.location,
                              typeclass='typeclasses.characters.NPC')
@@ -195,7 +206,16 @@ class CmdSetTraits(MuxCommand):
         if not char:
             return
 
+        # the inherits_from check below is necessary due to an issue
+        # with search() on the ContripRPObject class
+        if not inherits_from(char, 'typeclasses.characters.NPC'):
+            caller.msg("Could not find NPC: '{}'".format(target))
+            return
+
         if self.rhs:
+            if not all((x.isdigit() for x in self.rhslist)):
+                caller.msg('Assignment values must be numeric.')
+                return
             if len(self.lhslist) != len(self.rhslist):
                 caller.msg('Incorrect number of assignment values.')
                 return
@@ -236,20 +256,20 @@ class CmdSetSkills(MuxCommand):
     examine or set traits on an NPC
 
     Usage
-      @skills <npc> skill_name[,skill_name..][ = value[,value..]]
-
-    Displays current skill values if no equal sign or assignment values
-    are used.
+      @skills <npc> [skill_name[,skill_name..][ = value[,value..]]]
 
     Displays all current skill values if no skill_name is specified.
 
+    Displays current values of named skill(s) if no equal sign or assignment
+    values are used.
+
     Assigning values to skills with the equal sign requires that the
-    same number of skill_name and value items are present on each side of the
+    same number of skill_name and value items be present on each side of the
     equal sign. The first skill named is assigned the first value, the second
     skill assigned the second value, and so on. Skill values must be between
     0 and 10.
 
-    Valid skills are
+    Valid skill_name s are
 
     escape      climb       jump
     lockpick    listen      sense
@@ -264,14 +284,14 @@ class CmdSetSkills(MuxCommand):
     help_category = "Building"
 
     def _usage(self):
-        self.caller.msg('Usage: @skills <npc> skill[,skill..][ = value[,value..]]')
+        self.caller.msg('Usage: @skills <npc> [skill[,skill..][ = value[,value..]]]')
         self.caller.msg('Valid Skills: escape climb jump lockpick listen sense')
         self.caller.msg('              appraise medicine survival balance sneak')
         self.caller.msg('              throwing animal barter leadership')
 
     def _format_skill_3col(self, skill):
         """Return a skill : value pair formatted for 3col layout"""
-        return "|C{:<17.17}|n : |w{:>4}|n".format(
+        return "|M{:<17.17}|n : |w{:>4}|n".format(
                     skill.name, skill.actual)
 
     def func(self):
@@ -281,8 +301,13 @@ class CmdSetSkills(MuxCommand):
             self._usage()
             return
 
+        # split the target off from the first list argument
         targs = tuple(self.lhslist[0].rsplit(' ', 1))
-        target, self.lhslist[0] = targs if len(targs) > 1 else targs + ('',)
+        if len(targs) == 1 or \
+                (len(targs) > 1 and targs[1].lower() not in ALL_SKILLS):
+            target, self.lhslist[0] = self.lhslist[0], ''
+        else:
+            target, self.lhslist[0] = targs
 
         char = caller.search(target,
                              location=caller.location,
@@ -291,14 +316,23 @@ class CmdSetSkills(MuxCommand):
         if not char:
             return
 
-        if self.rhs:
+        # the inherits_from check below is necessary due to an issue
+        # with search() on the ContripRPObject class
+        if not inherits_from(char, 'typeclasses.characters.NPC'):
+            caller.msg("Could not find NPC: '{}'".format(target))
+            return
+
+        if self.rhs:  # handle assignments
+            if not all((x.isdigit() for x in self.rhslist)):
+                caller.msg('Assignment values must be numeric.')
+                return
             if len(self.lhslist) != len(self.rhslist):
                 caller.msg('Incorrect number of assignment values.')
                 return
             for i in xrange(len(self.lhslist)):
                 if self.lhslist[i].lower() in char.skills.all:
                     char.skills[self.lhslist[i].lower()].base = \
-                        min(max(int(self.rhslist[i]), 0), 10)
+                        min(max(int(self.rhslist[i]), 0), 10)  # enforce {0, 10} bounds
                     caller.msg('Skill "{}" set to {} for {}'.format(
                         self.lhslist[i].lower(),
                         min(max(int(self.rhslist[i]), 0), 10),
