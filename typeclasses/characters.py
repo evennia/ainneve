@@ -11,6 +11,8 @@ from evennia.contrib.rpsystem import ContribRPCharacter
 from evennia.utils import lazy_property
 from world.equip import EquipHandler
 from world.traits import TraitHandler
+from world.skills import apply_skills
+from world.archetypes import Archetype
 
 
 class Character(ContribRPCharacter):
@@ -54,3 +56,18 @@ class Character(ContribRPCharacter):
         self.traits.WM.fill_gauge()
         # Power Points are lost each turn
         self.traits.PP.reset_counter()
+
+
+class NPC(Character):
+    """Base character typeclass for NPCs and enemies.
+    """
+    def at_object_creation(self):
+        super(NPC, self).at_object_creation()
+
+        # initialize traits
+        npc = Archetype()
+        for key, kwargs in npc.traits.iteritems():
+            self.traits.add(key, **kwargs)
+
+        apply_skills(self)
+
