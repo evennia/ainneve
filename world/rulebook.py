@@ -112,3 +112,22 @@ def skill_check(skill, target=5):
         (bool): indicates whether the check passed or failed
     """
     return skill + std_roll() >= target
+
+
+def resolve_combat(combat_handler, actiondict):
+    """
+    This is called by the combat handler
+    actiondict is a dictionary with a list of two actions
+    for each character:
+    {char.id:[(action1, char, target), (action2, char, target)], ...}
+    """
+    flee = {} # track number of flee commands per character
+    for isub in range(2):
+         # loop over sub-turns
+         messages = []
+         pairs = []
+         for subturn in (sub[isub] for sub in actiondict.values()):
+             # for each character, resolve the sub-turn
+             action, char, target = subturn
+             if target:
+                 taction, tchar, ttarget = actiondict[target.id][isub]
