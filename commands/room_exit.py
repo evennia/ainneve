@@ -48,7 +48,7 @@ class CmdTerrain(MuxCommand):
         terrain = self.rhs.strip().upper()
         lhs = self.lhs.strip()
         if lhs != '':
-            target = self.caller.search(lhs)
+            target = self.caller.search(lhs, global_search=True)
         else:
             target = self.caller.location
 
@@ -95,11 +95,12 @@ class CmdRangeField(MuxCommand):
             return
 
         # range_field has to be set as a tuple; parse the string input
-        rf_re = re.compile(r'\(?\s*(\d+)\s*,\s*(\d+)\s*\)?', re.UNICODE)
+        rf_re = re.compile(r'(?:\(\s*(\d+)\s*,\s*(\d+)\s*\)|^\s*(\d+)\s*,\s*(\d+)\s*$)', re.UNICODE)
         rf_match = rf_re.search(self.rhs)
 
         if rf_match:
-            range_field = tuple(sorted((int(x) for x in rf_match.groups()),
+            range_field = tuple(sorted((int(x) for x in rf_match.groups()
+                                        if x is not None),
                                        reverse=True))
         else:
             self.caller.msg("Invalid range field specified.")
@@ -107,7 +108,7 @@ class CmdRangeField(MuxCommand):
 
         lhs = self.lhs.strip()
         if lhs != '':
-            target = self.caller.search(self.lhs.strip())
+            target = self.caller.search(lhs, global_search=True)
         else:
             target = self.caller.location
 
