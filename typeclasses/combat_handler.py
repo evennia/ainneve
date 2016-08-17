@@ -87,8 +87,8 @@ class CombatHandler(Script):
         dbref = character.id
         self.db.characters[dbref] = character
         self.db.action_count[dbref] = 0
-        self.db.turn_actions[dbref] = [("defend", character, None),
-                                       ("defend", character, None)]
+        self.db.turn_actions[dbref] = []
+        self.db.pending_actions[dbref] = []
         # set up back-reference
         self._init_character(character)
 
@@ -100,12 +100,13 @@ class CombatHandler(Script):
             # if we have no more characters in battle, kill this handler
             self.stop()
  
-    def msg_all(self, message):
+    def msg_all(self, message, exclude=()):
         "Send message to all combatants"
         for character in self.db.characters.values():
-            character.msg(message)
+            if character not in exclude:
+                character.msg(message)
 
-    def add_action(self, action, character, target):
+    def add_action(self, action, character, target, duration):
         """
         Called by combat commands to register an action with the handler.
 
@@ -119,12 +120,12 @@ class CombatHandler(Script):
         """
         dbref = character.id
         count = self.db.action_count[dbref]
-        if 0 <= count <= 1:  # only allow 2 actions
-            self.db.turn_actions[dbref][count] = (action, character, target)
+        if 0 <= count <= 1:  # only allow 2 duration worth of actions
+            self.db.turn_actions[dbref].append((action, character, target, duration))
         else:
             # report if we already used too many actions
             return False
-        self.db.action_count[dbref] += 1
+        self.db.action_count[dbref] = sum([x[3] for x in self.db.turn_actions[dbref]])
         return True
 
     def check_end_turn(self):
@@ -141,7 +142,9 @@ class CombatHandler(Script):
         """
         This resolves all actions by calling the rules module.
         It then resets everything and starts the next turn. It
-        is called by at_repeat().
+        is called by at_repeat(). The 'resolve_combat' function
+        populates pending_actions with any actions that were
+        not completed in this turn.
         """
         resolve_combat(self, self.db.turn_actions)
 
@@ -153,8 +156,8 @@ class CombatHandler(Script):
             # reset counters before next turn
             for character in self.db.characters.values():
                 self.db.characters[character.id] = character
-                self.db.action_count[character.id] = 0
-                self.db.turn_actions[character.id] = [("defend", character, None),
-                                                  ("defend", character, None)]
+                self.db.turn_actions[character.id] = self.db.pending_actions[character.id] or []
+                self.db.action_count[character.id] = sum([x[3] for x in self.db.turn_actions[character.id]])
+                self.db.pending_actions[character.id] = []
                 character.at_turn_start()
             self.msg_all("Next turn begins ...")

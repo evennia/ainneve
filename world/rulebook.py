@@ -119,15 +119,50 @@ def resolve_combat(combat_handler, actiondict):
     This is called by the combat handler
     actiondict is a dictionary with a list of two actions
     for each character:
-    {char.id:[(action1, char, target), (action2, char, target)], ...}
+    {char.id:[(action1, char, target, duration),
+              (action2, char, target, duration)], ...}
     """
-    flee = {} # track number of flee commands per character
-    for isub in range(2):
-         # loop over sub-turns
-         messages = []
-         pairs = []
-         for subturn in (sub[isub] for sub in actiondict.values()):
-             # for each character, resolve the sub-turn
-             action, char, target = subturn
-             if target:
-                 taction, tchar, ttarget = actiondict[target.id][isub]
+
+    combatants = combat_handler.db.characters
+
+    # tiebreaker resolution helper function. super non-deterministic
+    def _initiative_cmp(x, y):
+        # first tiebreaker: result of the std_roll
+        if x[2] == y[2]:
+            # second tiebreaker: PCs before NPCs
+            x_plyr, y_plyr = combatants[x[0]].has_player(), \
+                             combatants[y[0]].has_player()
+            if x_plyr and not y_plyr:
+                return 1
+            elif y_plyr and not x_plyr:
+                return -1
+            else:
+                # third tiebreaker: reroll
+                roll_x = std_roll() + combatants[x[0]].traits.PER.actual
+                roll_y = std_roll() + combatants[y[0]].traits.PER.actual
+                return roll_x - roll_y
+        else:
+            return y[2] - x[2]
+
+    # Do the Initiative roll to determine turn order
+    turn_order = []
+    intv_rolls = {}
+    for combatant in combatants.itervalues():
+        roll = std_roll()
+        initiative = roll + combatant.traits.PER.actual
+        if initiative in intv_rolls:
+            intv_rolls[initiative].append((combatant.id, initiative, roll))
+        else:
+            intv_rolls[initiative] = [(combatant.id, initiative, roll)]
+
+    # resolve ties and build the turn order
+    for intv in sorted(intv_rolls, reverse=True):
+        if len(intv_rolls[intv]) == 1:
+            turn_order += intv_rolls[intv][0]
+        else:  # more than one rolled same Initiative
+            turn_order += sorted(intv_rolls[intv], cmp=_initiative_cmp)
+
+    # process actions for characters in order
+    for dbref, _, _ in turn_order:
+        pass
+
