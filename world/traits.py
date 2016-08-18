@@ -378,28 +378,20 @@ class Trait(object):
     def __str__(self):
         """User-friendly string representation of this `Trait`"""
         if self._type == 'gauge':
-            status = "{actual:4} / {base:4}".format(self.actual, self.base)
+            status = "{actual:4} / {base:4}".format(
+                actual=self.actual,
+                base=self.base)
         else:
-            status = "{actual:11}".format(self.actual)
+            status = "{actual:11}".format(actual=self.actual)
 
-        return "{{name}::12} {status} ({mod:+3})".format(
-            ame=self.name,
-            status = status,
-            base=self._mod_base(),
+        return "{name:12} {status} ({mod:+3})".format(
+            name=self.name,
+            status=status,
             mod=self.mod)
 
     def __unicode__(self):
         """User-friendly unicode representation of this `Trait`"""
-        if self._type == 'gauge':
-            status = "{actual:4} / {base:4}".format(self.actual, self.base)
-        else:
-            status = "{{actual:4}: <11}".format(self.actual)
-
-        return u"{{name}::12} {status} ({mod:+3})".format(
-            ame=self.name,
-            status = status,
-            base=self._mod_base(),
-            mod=self.mod)
+        return unicode(str(self))
 
     # Extra Properties magic
 
