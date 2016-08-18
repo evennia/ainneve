@@ -122,14 +122,18 @@ class CmdSpawn(MuxCommand):
 
         for obj in spawn(prototype):
             obj.sdesc.add(obj.key)
+            
             if traits and hasattr(obj, 'traits'):
                 for trait, value in traits.iteritems():
-                    if trait.upper() in obj.traits.all:
-                        obj.traits[trait.upper()].base = value
+                    trait = trait.upper()
+                    if trait in obj.traits.all:
+                        obj.traits[trait].base = value() if callable(value) else value
+
             if skills and hasattr(obj, 'skills'):
                 for skill, value in skills.iteritems():
-                    if skill.lower() in obj.skills.all:
-                        obj.skills[skill.lower()].base = value
+                    skill = skill.lower()
+                    if skill in obj.skills.all:
+                        obj.skills[skill].base = value() if callable(value) else value
 
             self.caller.msg("Spawned %s." % obj.get_display_name(self.caller))
 
