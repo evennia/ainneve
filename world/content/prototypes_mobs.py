@@ -86,6 +86,6 @@ GOBLIN = {
     "tag": ["NPC"],
     "typeclass": "typeclasses.characters.NPC",
     "desc": "It's a little green goblin. It wants your love and affection",
-    "traits": lambda: {'STR': d_roll('1d10'), 'DEX': 8},
+    "traits": {'STR': lambda: d_roll('1d8'), 'DEX': lambda: d_roll('1d8')},
     "skills": {'escape': 10, 'barter': 3},
 }
