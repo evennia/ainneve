@@ -31,7 +31,7 @@ RABBIT = {
     "tag": ["NPC"],
     "typeclass": "typeclasses.characters.NPC",
     "desc": "This is a small, fluffy white rabbit. It is likely harmless",
-    "traits": lambda {'STR': randint(1,2), 'DEX': randint(1,2), 'PER': randint(1,2), 'CHA': randint(1,2), 'INT': randint(1,2), 'VIT': randint(1,2),
+    "traits": lambda: {'STR': randint(1,2), 'DEX': randint(1,2), 'PER': randint(1,2), 'CHA': randint(1,2), 'INT': randint(1,2), 'VIT': randint(1,2),
                'BM': randint(1,2), 'WM': randint(1,2), 'MAG': 10,
                'REFL': randint(1,2), 'FORT': randint(1,2), 'WILL': randint(1,2), 'ENC': randint(1,50),
                'HP': randint(1,2), 'MV': randint(1,2), 'SP': randint(1,2), 'LV': 0, 'ACT': randint(1,5),
