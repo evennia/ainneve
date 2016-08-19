@@ -5,7 +5,6 @@ Prototype module containing mobs.
 from evennia.utils import fill
 from world.rulebook import d_roll
 import random
-import variables
 from variables import *
 
 
@@ -31,6 +30,7 @@ SAMPLE_NPC = {
 }
 
 RAT = {
+    "key": "a happy rat",
     "sdesc": lambda: "a {} happy rat".format(random.choice(rat_adj_1)),
     "aliases": ["sample", "npc"],
     "tag": ["NPC"],
