@@ -32,6 +32,8 @@ class Character(ContribRPCharacter):
 
         # Non-persistent attributes
         self.ndb.group = None
+	self.ndb.appr_lose = {}
+	self.ndb.appr_win = {}
 
     @lazy_property
     def traits(self):
