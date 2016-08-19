@@ -119,9 +119,11 @@ class CmdSpawn(MuxCommand):
         # overridden for Ainneve
         traits = prototype.pop('traits') if 'traits' in prototype else None
         skills = prototype.pop('skills') if 'skills' in prototype else None
+        sdesc = prototype.pop('sdesc') if 'sdesc' in prototype else None
 
         for obj in spawn(prototype):
-            obj.sdesc.add(obj.key)
+            if sdesc and hasattr(obj, 'sdesc'):
+                obj.sdesc.add(sdesc() if callable(sdesc) else sdesc)
             
             if traits and hasattr(obj, 'traits'):
                 for trait, value in traits.iteritems():
