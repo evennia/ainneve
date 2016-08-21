@@ -350,10 +350,9 @@ class BuildingTestCase(CommandTest):
         # no args
         self.call(CmdSpawn(), "", "Usage: @spawn {key:value, key, value, ... }\nAvailable prototypes:")
         # spawn prototype with traits and skills
-        proto = "{'key': 'a bunny', 'typeclass': 'typeclasses.characters.NPC', 'traits':{'STR': 2, 'PER': 3, 'INT': 2, 'DEX': 4, 'CHA': 4, 'VIT': 2}, 'skills':{'escape': 5, 'jump': 6, 'medicine': 1, 'sneak': 2}}"
+        proto = "{'sdesc': 'a bunny', 'typeclass': 'typeclasses.characters.NPC', 'traits':{'STR': 2, 'PER': 3, 'INT': 2, 'DEX': 4, 'CHA': 4, 'VIT': 2}, 'skills':{'escape': 5, 'jump': 6, 'medicine': 1, 'sneak': 2}}"
         self.call(CmdSpawn(), proto, "Spawned a bunny(#8).")
         bunny = self.room1.contents[-1]
-        self.assertEqual(bunny.key, "a bunny")
         self.assertEqual(bunny.sdesc.get(), "a bunny")
         self.assertTrue(bunny.is_typeclass('typeclasses.characters.NPC'))
         self.assertEqual(bunny.traits.STR, 2)
