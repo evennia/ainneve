@@ -30,8 +30,7 @@ SAMPLE_NPC = {
 }
 
 RAT = {
-    "key": "a happy rat",
-    "sdesc": lambda: "a {} happy rat".format(random.choice(rat_adj_1)),
+    "sdesc": lambda: "a {} {} rat".format(random.choice(rat_adj_1),random.choice(rat_adj_2)),
     "aliases": ["sample", "npc"],
     "tag": ["NPC"],
     "typeclass": "typeclasses.characters.NPC",
