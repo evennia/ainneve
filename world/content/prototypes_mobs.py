@@ -8,14 +8,10 @@ import random
 from sdesc_vars import *
 
 ### Notes
-# "traits": lambda: {'STR':2,'HP':randint(3,5)}
-#'traits': {'STR': lambda: d_roll('1d8')}
+#variable traits: 'traits': {'STR': lambda: d_roll('1d8')}
 #Icarus_: I just pushed an update to the spawner mechanism; you should be able to use callable for all fields now (keys, locations, whatever). There is also the 'exec' field where you can put executable python code. in that code you can use 'obj' to access the object just created. That way you can do e.g. exec:"obj.sdesc('sdesc_string')" to call the sdesc handler on creation.
 #    "exec": "obj.execute_cmd('say My tags include {}'.format(obj.db.tag))",
 
-
-#TODO: Sdescs will not evaluate between a and an based on potential {}, e.g. a yellow rat, an orange rat
-#Griatch suggests somewhere around region https://github.com/evennia/evennia/blob/master/evennia/contrib/rpsystem.py#L443
 
 SAMPLE_NPC = {
     "key": "a sample npc",
