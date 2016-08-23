@@ -1,9 +1,9 @@
-from commands.command import MuxCommand
-from world.economy import value_to_coin
+from evennia import default_cmds
+from world.economy import format_coin
 from world.rulebook import skill_check
 from time import time
 
-class CmdAppraise(MuxCommand):
+class CmdAppraise(default_cmds.MuxCommand):
     """
     appraise an item
 
@@ -30,11 +30,11 @@ class CmdAppraise(MuxCommand):
         obj = caller.search(args)
         
         if not obj:
-            caller.msg("You do not have %s." % args)
+            caller.msg("You do not have {0}.".format(args))
             return
         
-        if not hasattr(obj, "value"):
-            caller.msg("%s cannot be appraised." % obj.name.capitalize())
+        if not obj.attributes.has("value"):
+            caller.msg("{0} cannot be appraised.".format(obj.name.capitalize()))
 
         ct = time() # current time; we need this to check if the last appraise
                     # on the item is recent
@@ -52,26 +52,18 @@ class CmdAppraise(MuxCommand):
         # check if the object has failed to be appraised recently. If so,
         # prohibit further appraisal.
 
-        #caller.msg("initial lose list: " + str(caller.ndb.appr_lose))
-        #caller.msg("initial win list: " + str(caller.ndb.appr_win))
-
         lose = caller.ndb.appr_lose
         reroll_time = 3600 # how much time one has to wait before rerolling
                            # the appraise skill on the same type of item
 
         if lose.has_key(obj.name):
             if ct - lose[obj.name] <= reroll_time:
-                #caller.msg("Using lose record from %f" % lose[obj.name])
-
-                caller.msg("You have already attempted to appraise %s " %
+                caller.msg("You have already attempted to appraise " + 
                     obj.name +
-                    "recently and must wait a while before trying again.")
+                    " recently and must wait a while before trying again.")
                 return
             else:
                 # clear the record of the item
-                #caller.msg("Clearing appraise check loss record from %f" %
-                #    lose[obj.name])
-
                 lose.pop(obj.name)        
 
         # check if the object has already been successfully appraised recently.
@@ -81,58 +73,44 @@ class CmdAppraise(MuxCommand):
 
         if win.has_key(obj.name):
             if ct - win[obj.name] <= reroll_time:
-                #caller.msg("Using win record from %f" % win[obj.name])
-
                 self.display(obj)
                 return
             else:
                     # clear the record of the item
-                #caller.msg("Clearing appraise check win record from %f" %
-                #    win[obj.name])
-
                 caller.ndb.appr_win.pop(obj.name)
 
             # run the skill check again
         if skill_check(caller.skills.appraise.actual):
-            #caller.msg("Appraise skill check successful")
             self.display(obj)
 
                #add a record of the item to the win list
             win[obj.name] = ct
         else:
-            #caller.msg("Appraise skill check unsuccessful")
-
-            caller.msg("You cannot tell the value of %s." % obj.name)
+            caller.msg(
+		"You cannot tell the qualities of {0}.".format(obj.name))
 
                #add a record of the item to the lose list
             lose[obj.name] = ct
-
-
-        #caller.msg("final lose list: " + str(lose))
-        #caller.msg("final win list: " + str(win))
-
         return
 
-    def display(self, obj):
+    def display(self, item):
         # display the value of the item
-        coin = value_to_coin(obj.db.value)
+        data = ""
+        if item.attributes.has('value'):            
+            data += "Value: {0}\n".format(format_coin(item.db.value))
+        if item.attributes.has('weight'):
+            data += "Weight: {0}\n".format(item.db.weight)
+        if item.attributes.has('damage'):
+            data += "|rDamage: {:>2d}|n \n".format(item.db.damage)
+        if item.attributes.has('range'):
+            data += "|GRange: {:>2d}|n \n".format(item.db.range)
+        if item.attributes.has('toughness'):
+            data += "|yToughness: {:>2d}|n".format(item.db.toughness)
+        self.caller.msg(data)
 
-        if coin:
-            cc = "%d CC" % coin['CC']
-            if coin['GC'] == 0:
-                gc = ""
-                sc = " and "
-            else:
-                gc = " and %d GC" % coin['GC']
-                sc = ", "
-            if coin['SC'] == 0:
-                sc = ""
-            else:
-                sc += "%d SC" % coin['SC']
-            self.caller.msg("The value of %s is %s%s%s" % 
-                (obj.name, cc, sc, gc))
-        else:
-            self.caller.msg("%s has no value." % obj.name.capitalize())
+    
+
+
 
 
 # test case: generate item, give supramaximal appraise skill to the character, 
