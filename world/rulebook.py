@@ -14,8 +14,7 @@ Roll / Check Functions
 
 """
 
-from random import randint
-import re
+import re, random
 
 
 class DiceRollError(Exception):
@@ -76,7 +75,7 @@ def d_roll(xdyz, total=True):
     if bonus > 0 and not total:
         raise DiceRollError('Invalid arguments. `+-Z` not allowed when total is False.')
 
-    rolls = [randint(1, die) for _ in range(num)]
+    rolls = [random.randint(1, die) for _ in range(num)]
 
     if drop:
         rolls = sorted(rolls, reverse=True)
@@ -140,7 +139,10 @@ def resolve_combat(combat_handler, actiondict):
                 # third tiebreaker: reroll
                 roll_x = std_roll() + combatants[x[0]].traits.PER.actual
                 roll_y = std_roll() + combatants[y[0]].traits.PER.actual
-                return roll_x - roll_y
+                if roll_x != roll_y:
+                    return roll_x - roll_y
+                else:
+                    return random.choice((-1, 1))
         else:
             return y[2] - x[2]
 

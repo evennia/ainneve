@@ -23,9 +23,11 @@ class Weapon(Equippable):
         super(Weapon, self).at_object_creation()
         self.db.damage = self.damage
         self.db.handedness = self.handedness
+        self.cmdset.add('commands.combat.MeleeWeaponCmdSet', permanent=True)
 
     def at_equip(self, character):
         character.traits.ATKM.mod += self.db.damage
+
 
     def at_remove(self, character):
         character.traits.ATKM.mod -= self.db.damage
@@ -45,6 +47,8 @@ class RangedWeapon(Weapon):
         super(RangedWeapon, self).at_object_creation()
         self.db.range = self.range
         self.db.ammunition = self.ammunition
+        self.cmdset.remove(cmdset='melee_cmdset')
+        self.cmdset.add('commands.combat.RangedWeaponCmdSet', permanent=True)
 
     def at_equip(self, character):
         character.traits.ATKR.mod += self.db.damage
