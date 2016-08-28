@@ -9,7 +9,7 @@ class CmdAppraise(default_cmds.MuxCommand):
 
     Usage:
       appraise <item>
-      appr <item>
+      app <item>
 
     Determines the properties of an item in your inventory.
     The higher the Appraise skill, the greater the chance that the use of
