@@ -11,11 +11,12 @@ class CmdAppraise(default_cmds.MuxCommand):
       appraise <item>
       appr <item>
 
-    Indicates the approximate value of an item in your inventory.
-    The higher the Appraise skill, the better the approximation will be.
+    Determines the properties of an item in your inventory.
+    The higher the Appraise skill, the greater the chance that the use of
+    the appraise action will be successful.
     """
     key = "appraise"
-    aliases = ["appr"]
+    aliases = ["app"]
     locks = "cmd:all()"
 
     def func(self):
@@ -56,41 +57,41 @@ class CmdAppraise(default_cmds.MuxCommand):
         reroll_time = 3600 # how much time one has to wait before rerolling
                            # the appraise skill on the same type of item
 
-        if lose.has_key(obj.name):
-            if ct - lose[obj.name] <= reroll_time:
+        if lose.has_key(obj.dbref):
+            if ct - lose[obj.dbref] <= reroll_time:
                 caller.msg("You have already attempted to appraise " + 
                     obj.name +
                     " recently and must wait a while before trying again.")
                 return
             else:
                 # clear the record of the item
-                lose.pop(obj.name)        
+                lose.pop(obj.dbref)        
 
         # check if the object has already been successfully appraised recently.
         # if not, run the appraise skill check.
 
         win = caller.ndb.appr_win
 
-        if win.has_key(obj.name):
-            if ct - win[obj.name] <= reroll_time:
+        if win.has_key(obj.dbref):
+            if ct - win[obj.dbref] <= reroll_time:
                 self.display(obj)
                 return
             else:
                     # clear the record of the item
-                caller.ndb.appr_win.pop(obj.name)
+                caller.ndb.appr_win.pop(obj.dbref)
 
             # run the skill check again
         if skill_check(caller.skills.appraise.actual):
             self.display(obj)
 
                #add a record of the item to the win list
-            win[obj.name] = ct
+            win[obj.dbref] = ct
         else:
             caller.msg(
-		"You cannot tell the qualities of {0}.".format(obj.name))
+        "You cannot tell the qualities of {0}.".format(obj.name))
 
                #add a record of the item to the lose list
-            lose[obj.name] = ct
+            lose[obj.dbref] = ct
         return
 
     def display(self, item):
