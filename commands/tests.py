@@ -259,6 +259,7 @@ class BuildingTestCase(CommandTest):
         self.object_typeclass = NPC
         self.room_typeclass = Room
         super(BuildingTestCase, self).setUp()
+        self.obj1.sdesc.add(self.obj1.key)
 
     def test_terrain_cmd(self):
         """test @terrain command"""
@@ -312,14 +313,14 @@ class BuildingTestCase(CommandTest):
         # ignore invalid traits for display
         self.call(CmdSetTraits(), "Obj STR,INVALID", "| Strength          :    1")
         # assign a trait
-        self.call(CmdSetTraits(), "Obj STR = 8", 'Trait "STR" set to 8 for A normal person|\n| Strength          :    8')
+        self.call(CmdSetTraits(), "Obj STR = 8", 'Trait "STR" set to 8 for Obj|\n| Strength          :    8')
         self.assertEqual(self.obj1.traits.STR.actual, 8)
         # ignore invalid traits in assignment
-        self.call(CmdSetTraits(), "Obj STR,INVALID,PER = 7,5,6", 'Trait "STR" set to 7 for A normal person|Invalid trait: "INVALID"|Trait "PER" set to 6 for A normal person|\n| Strength          :    7 | Perception        :    6')
+        self.call(CmdSetTraits(), "Obj STR,INVALID,PER = 7,5,6", 'Trait "STR" set to 7 for Obj|Invalid trait: "INVALID"|Trait "PER" set to 6 for Obj|\n| Strength          :    7 | Perception        :    6')
         self.assertEqual(self.obj1.traits.STR.actual, 7)
         self.assertEqual(self.obj1.traits.PER.actual, 6)
         # handle invalid arg combinations
-        self.call(CmdSetTraits(), "Obj INVALID", "Could not find 'Obj INVALID'.")
+        self.call(CmdSetTraits(), "Obj INVALID", "| Dexterity         :    1 | Black Mana        :    0 | Health            :    0 | Perception        :    6 | Action Points     :    0 | Defense           :    0 | Power Points      :    0 | Level             :    0 | White Mana        :    0 | Charisma          :    1 | Carry Weight      :    0 | Magic             :    0 | Reflex Save       :    0 | Strength          :    7 | Experience        :    0 | Fortitude Save    :    0 | Melee Attack      :    0 | Intelligence      :    1 | Stamina           :    0 | Will Save         :    0 | Movement Points   :    6 | Vitality          :    1 | Unarmed Attack    :    0 | Ranged Attack     :    0")
         self.call(CmdSetTraits(), "Obj STR, INT = 5, 6, 7", "Incorrect number of assignment values.")
         self.call(CmdSetTraits(), "Obj STR = X", "Assignment values must be numeric.")
 
@@ -334,14 +335,14 @@ class BuildingTestCase(CommandTest):
         # ignore invalid skills for display
         self.call(CmdSetSkills(), "Obj sense, notaskill", "| Sense Danger      :    1")
         # assign a skill
-        self.call(CmdSetSkills(), "Obj jump = 4", 'Skill "jump" set to 4 for A normal person|\n| Jump              :    4')
+        self.call(CmdSetSkills(), "Obj jump = 4", 'Skill "jump" set to 4 for Obj|\n| Jump              :    4')
         self.assertEqual(self.obj1.skills.jump.actual, 4)
         # ignore invalid skills in assignment
-        self.call(CmdSetSkills(), "Obj barter,sneak,noskill = 3, 4, 10", 'Skill "barter" set to 3 for A normal person|Skill "sneak" set to 4 for A normal person|Invalid skill: "noskill"|\n| Barter            :    3 | Sneak             :    4')
+        self.call(CmdSetSkills(), "Obj barter,sneak,noskill = 3, 4, 10", 'Skill "barter" set to 3 for Obj|Skill "sneak" set to 4 for Obj|Invalid skill: "noskill"|\n| Barter            :    3 | Sneak             :    4')
         self.assertEqual(self.obj1.skills.barter.actual, 3)
         self.assertEqual(self.obj1.skills.sneak.actual, 4)
         # handle invalid arg combinations
-        self.call(CmdSetSkills(), "Obj INVALID", "Could not find 'Obj INVALID'.")
+        self.call(CmdSetSkills(), "Obj INVALID", "| Appraise          :    1 | Animal Handle     :    1 | Barter            :    3 | Throwing          :    1 | Survival          :    1 | Escape            :    1 | Sneak             :    4 | Jump              :    4 | Leadership        :    1 | Lock Pick         :    1 | Sense Danger      :    1 | Medicine          :    1 | Climb             :    1 | Balance           :    1 | Listen            :    1")
         self.call(CmdSetSkills(), "Obj leadership, animal = 2, 3, 2", "Incorrect number of assignment values.")
         self.call(CmdSetSkills(), "Obj escape = X", "Assignment values must be numeric.")
 
