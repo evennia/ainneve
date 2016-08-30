@@ -90,3 +90,4 @@ def format_coin(value_or_coin):
     if output == "":
         output = "0 CC"
     return output.strip()
+
