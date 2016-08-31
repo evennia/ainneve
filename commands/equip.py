@@ -12,6 +12,9 @@ __all__ = ('CmdInventory', 'CmdEquip',
            'CmdWear', 'CmdWield', 'CmdRemove')
 
 
+_INVENTORY_ERRMSG = "You don't have '{}' in your inventory."
+_EQUIP_ERRMSG = "You do not have '{}' equipped."
+
 class EquipCmdSet(CmdSet):
     """CmdSet for item / equip commands."""
     key = "equip_cmdset"
@@ -90,7 +93,10 @@ class CmdEquip(MuxCommand):
                 obj = self.item
                 del self.item
             else:
-                obj = caller.search_inventory(args)
+                obj = caller.search(
+                    args,
+                    candidates=caller.contents,
+                    nofound_string=_INVENTORY_ERRMSG.format(args))
 
             if obj:
                 if hasattr(self, "action"):
@@ -211,7 +217,10 @@ class CmdWear(MuxCommand):
             caller.msg("Wear what?")
             return
 
-        obj = caller.search_inventory(args)
+        obj = caller.search(
+            args,
+            candidates=caller.contents,
+            nofound_string=_INVENTORY_ERRMSG.format(args))
 
         if not obj:
             return
@@ -253,7 +262,10 @@ class CmdWield(MuxCommand):
             caller.msg("Wield what?")
             return
 
-        obj = caller.search_inventory(args)
+        obj = caller.search(
+            args,
+            candidates=caller.contents,
+            nofound_string=_INVENTORY_ERRMSG.format(args))
 
         if not obj:
             return
@@ -291,11 +303,11 @@ class CmdRemove(MuxCommand):
             return
 
         # search for target in our equip
-        equipped_items = [i[1] for i in caller.equip]
+        equipped_items = [i[1] for i in caller.equip if i[1]]
         obj = caller.search(
             args,
             candidates=equipped_items,
-            nofound_string="You do not have '{}' equipped.".format(args))
+            nofound_string=_EQUIP_ERRMSG.format(args))
 
         if not obj:
             return
