@@ -4,25 +4,62 @@ Combat commands
 
 """
 
-from evennia import default_cmds, CmdSet
+from evennia import default_cmds, CmdSet, create_script
 from evennia.contrib.rpsystem import CmdEmote, CmdPose
-from .equip import CmdEquip as EQUIP_CMD
 
 # cmdsets
+
+
+class InitCombatCmdSet(CmdSet):
+    """Command set containing combat starting commands"""
+    key = 'combat_init_cmdset'
+    priority = 1
+    mergetype = 'Union'
+
+    def at_cmdset_creation(self):
+        self.add(CmdInitiateAttack())
+
+
+class CombatBaseCmdSet(CmdSet):
+    """Command set containing always-available commands"""
+    key = 'combat_base_cmdset'
+    priority = 10
+    mergetype = 'Replace'
+    no_exits = True
+
+    def at_cmdset_creation(self):
+        look = default_cmds.CmdLook()
+        look.help_category = 'free instant actions'
+        self.add(look)
+
+        say = default_cmds.CmdSay()
+        say.help_category = 'free instant actions'
+        self.add(say)
+        self.add(CmdEmote())
+        self.add(CmdPose())
 
 
 class CombatCmdSet(CmdSet):
     """Command set containing combat commands"""
     key = "combat_cmdset"
-    priority = 10
-    mergetype = "Replace"
-    no_exits = True
+    priority = 15
+    mergetype = "Union"
 
     def at_cmdset_creation(self):
         """Populate CmdSet"""
-        self.add(default_cmds.CmdSay())
-        self.add(CmdEmote())
-        self.add(CmdPose())
+        self.add(CmdDropItem())
+        self.add(CmdLieProne())
+        self.add(CmdKick())
+        self.add(CmdStrike())
+        self.add(CmdDodge())
+        self.add(CmdAdvance())
+        self.add(CmdRetreat())
+        self.add(CmdStand())
+        self.add(CmdGet())
+        self.add(CmdEquip())
+        self.add(CmdWrestle())
+        self.add(CmdTackle())
+        self.add(CmdFlee())
 
 
 class MeleeWeaponCmdSet(CmdSet):
@@ -58,10 +95,35 @@ class CmdInitiateAttack(default_cmds.MuxCommand):
     """
     key = 'attack'
     aliases = ['battle']
+    locks = 'cmd:not in_combat()'
     help_category = 'combat'
 
     def func(self):
-        pass
+        """Handle command"""
+        if not self.args:
+            self.caller.msg("Usage: attack <target>")
+            return
+
+        target = self.caller.search(self.args)
+        if not target:
+            return
+
+        # set up combat
+        if target.ndb.combat_handler:
+            # target is already in combat - join it
+            target.ndb.combat_handler.add_character(self.caller)
+            target.ndb.combat_handler.msg_all("{} joins combat!".format(
+                self.caller.get_display_name()))
+        else:
+            # create a new combat handler
+            chandler = create_script("typeclasses.combat_handler.CombatHandler")
+            chandler.add_character(self.caller)
+            chandler.add_character(target)
+            self.caller.msg("You attack {}! You are in combat.".format(
+                target.get_display_name(self.caller)))
+            target.msg("{} attacks you! You are in combat.".format(
+                self.caller.get_display_name(target)))
+            chandler.msg_all("Next turn begins. Declare your actions!")
 
 
 class CmdDropItem(default_cmds.MuxCommand):
@@ -77,7 +139,8 @@ class CmdDropItem(default_cmds.MuxCommand):
     """
     key = 'drop'
     aliases = []
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'free actions'
 
     def func(self):
         if not self.args:
@@ -115,12 +178,10 @@ class CmdLieProne(default_cmds.MuxCommand):
     """
     key = 'lie'
     aliases = ['lie prone', 'lie down', 'prone']
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'free actions'
 
     def func(self):
-        if not self.args:
-            self.caller.msg("Usage: lie [prone]")
-            return
 
         self.caller.ndb.combat_handler.add_action(
             action="lie",
@@ -138,8 +199,8 @@ class CmdAttack(default_cmds.MuxCommand):
     """implementation melee and ranged attack shared functionality"""
     key = 'attack'
     aliases = []
-    locks = 'cmd:holds()'
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'half turn actions'
 
     def func(self):
         attack_type = self.attack_type if hasattr(self, 'attack_type') \
@@ -155,9 +216,11 @@ class CmdAttack(default_cmds.MuxCommand):
         else:
             switch = ''
 
+        combat_chars = self.caller.ndb.combat_handler.db.characters.values()
+
         target = self.caller.search(
                     self.args,
-                    candidates=self.caller.ndb.combat_handler.characters.values())
+                    candidates=combat_chars)
 
         if not target:
             return
@@ -175,7 +238,7 @@ class CmdAttack(default_cmds.MuxCommand):
                     switch=switch,
                     target=target.get_display_name(self.caller)))
         else:
-            self.caller.mssg("You have already entered all actions for your turn.")
+            self.caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
         self.caller.ndb.combat_handler.check_end_turn()
@@ -198,6 +261,7 @@ class CmdAttackMelee(CmdAttack):
     """
 
     aliases = ['stab', 'slice', 'chop', 'slash', 'bash']
+    locks = 'cmd:in_combat()'
 
     def func(self):
         super(CmdAttackMelee, self).func()
@@ -220,9 +284,10 @@ class CmdAttackRanged(CmdAttack):
     """
 
     aliases = ['fire at', 'shoot']
+    locks = 'cmd:in_combat()'
 
     def func(self):
-        super(CmdAttackMelee, self).func()
+        super(CmdAttackRanged, self).func()
 
 
 class CmdKick(CmdAttack):
@@ -243,7 +308,8 @@ class CmdKick(CmdAttack):
     """
     key = 'kick'
     aliases = ['boot', 'stomp']
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'full turn actions'
 
     def func(self):
         self.attack_type = 'kick'
@@ -272,7 +338,8 @@ class CmdStrike(CmdAttack):
     """
     key = 'strike'
     aliases = ['punch', 'hit']
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'half turn actions'
 
     def func(self):
         self.attack_type = 'strike'
@@ -293,17 +360,20 @@ class CmdDodge(default_cmds.MuxCommand):
     """
     key = 'dodge'
     aliases = ['duck']
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'half turn actions'
 
     def func(self):
 
-        self.caller.ndb.combat_handler.add_action(
-            action="dodge",
-            character=self.caller,
-            target=self.caller,
-            duration=1)
-
-        self.caller.msg("You add 'dodge' to the combat queue")
+        ok = self.caller.ndb.combat_handler.add_action(
+                action="dodge",
+                character=self.caller,
+                target=self.caller,
+                duration=1)
+        if ok:
+            self.caller.msg("You add 'dodge' to the combat queue")
+        else:
+            self.caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
         self.caller.ndb.combat_handler.check_end_turn()
@@ -323,10 +393,11 @@ class CmdAdvance(default_cmds.MuxCommand):
     """
     key = 'advance'
     aliases = ['approach', 'adv', 'appr']
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'half turn actions'
 
     def func(self):
-        combat_chars = self.caller.ndb.combat_handler.characters
+        combat_chars = self.caller.ndb.combat_handler.db.characters.values()
         target = None
         if not self.args:
             if len(combat_chars) == 2:
@@ -342,13 +413,15 @@ class CmdAdvance(default_cmds.MuxCommand):
         if not target:
             return
 
-        self.caller.ndb.combat_handler.add_action(
-            action="advance",
-            character=self.caller,
-            target=target,
-            duration=1)
-
-        self.caller.msg("You add 'advance' to the combat queue")
+        ok = self.caller.ndb.combat_handler.add_action(
+                action="advance",
+                character=self.caller,
+                target=target,
+                duration=1)
+        if ok:
+            self.caller.msg("You add 'advance' to the combat queue")
+        else:
+            self.caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
         self.caller.ndb.combat_handler.check_end_turn()
@@ -371,18 +444,21 @@ class CmdRetreat(default_cmds.MuxCommand):
     This is a half-turn combat action.
     """
     key = 'retreat'
-    aliases = []
-    help_category = 'combat'
+    aliases = ['ret']
+    locks = 'cmd:in_combat()'
+    help_category = 'half turn actions'
 
     def func(self):
 
-        self.caller.ndb.combat_handler.add_action(
-            action="retreat",
-            character=self.caller,
-            target=self.caller,
-            duration=1)
-
-        self.caller.msg("You add 'retreat' to the combat queue")
+        ok = self.caller.ndb.combat_handler.add_action(
+                action="retreat",
+                character=self.caller,
+                target=self.caller,
+                duration=1)
+        if ok:
+            self.caller.msg("You add 'retreat' to the combat queue")
+        else:
+            self.caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
         self.caller.ndb.combat_handler.check_end_turn()
@@ -402,17 +478,20 @@ class CmdStand(default_cmds.MuxCommand):
     """
     key = 'stand'
     aliases = ['get up', 'arise']
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'half turn actions'
 
     def func(self):
 
-        self.caller.ndb.combat_handler.add_action(
-            action="stand",
-            character=self.caller,
-            target=self.caller,
-            duration=1)
-
-        self.caller.msg("You add 'stand' to the combat queue")
+        ok = self.caller.ndb.combat_handler.add_action(
+                action="stand",
+                character=self.caller,
+                target=self.caller,
+                duration=1)
+        if ok:
+            self.caller.msg("You add 'stand' to the combat queue")
+        else:
+            self.caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
         self.caller.ndb.combat_handler.check_end_turn()
@@ -435,7 +514,8 @@ class CmdGet(default_cmds.CmdGet):
     """
     key = 'get'
     aliases = ['grab', 'pick up']
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'half turn actions'
 
     def func(self):
 
@@ -448,20 +528,22 @@ class CmdGet(default_cmds.CmdGet):
         if not target:
             return
 
-        self.caller.ndb.combat_handler.add_action(
-            action="get",
-            character=self.caller,
-            target=target.get_display_name(self.caller),
-            duration=1)
-
-        self.caller.msg("You add 'get {}' to the combat queue".format(
-            target.get_display_name(self.caller)))
+        ok = self.caller.ndb.combat_handler.add_action(
+                action="get",
+                character=self.caller,
+                target=target,
+                duration=1)
+        if ok:
+            self.caller.msg("You add 'get {}' to the combat queue".format(
+                target.get_display_name(self.caller)))
+        else:
+            self.caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
         self.caller.ndb.combat_handler.check_end_turn()
 
 
-class CmdEquip(EQUIP_CMD):
+class CmdEquip(default_cmds.MuxCommand):
     """
     equip a weapon or piece of armor
 
@@ -474,7 +556,8 @@ class CmdEquip(EQUIP_CMD):
     """
     key = 'equip'
     aliases = ['wear', 'wield']
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'half turn actions'
 
     def func(self):
 
@@ -487,14 +570,17 @@ class CmdEquip(EQUIP_CMD):
         if not target:
             return
 
-        self.caller.ndb.combat_handler.add_action(
-            action="equip",
-            character=self.caller,
-            target=target.get_display_name(self.caller),
-            duration=1)
+        ok = self.caller.ndb.combat_handler.add_action(
+                action="equip",
+                character=self.caller,
+                target=target,
+                duration=1)
 
-        self.caller.msg("You add 'equip {}' to the combat queue".format(
-            target.get_display_name(self.caller)))
+        if ok:
+            self.caller.msg("You add 'equip {}' to the combat queue".format(
+                target.get_display_name(self.caller)))
+        else:
+            self.caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
         self.caller.ndb.combat_handler.check_end_turn()
@@ -521,7 +607,8 @@ class CmdWrestle(default_cmds.MuxCommand):
     """
     key = 'wrestle'
     aliases = ['grapple']
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'full turn actions'
 
     def func(self):
         if not self.args:
@@ -533,7 +620,7 @@ class CmdWrestle(default_cmds.MuxCommand):
         else:
             switch = ''
 
-        combat_chars = self.caller.ndb.combat_handler.characters.values()
+        combat_chars = self.caller.ndb.combat_handler.db.characters.values()
 
         target = self.caller.search(
                     self.args,
@@ -554,7 +641,7 @@ class CmdWrestle(default_cmds.MuxCommand):
                     switch=switch,
                     target=target.get_display_name(self.caller)))
         else:
-            self.caller.mssg("You have already entered all actions for your turn.")
+            self.caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
         self.caller.ndb.combat_handler.check_end_turn()
@@ -576,14 +663,15 @@ class CmdTackle(default_cmds.MuxCommand):
     """
     key = 'tackle'
     aliases = []
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'multi turn actions'
 
     def func(self):
         if not self.args:
             self.caller.msg("Usage: tackle <target>")
             return
 
-        combat_chars = self.caller.ndb.combat_handler.characters.values()
+        combat_chars = self.caller.ndb.combat_handler.db.characters.values()
 
         target = self.caller.search(
                     self.args,
@@ -603,7 +691,7 @@ class CmdTackle(default_cmds.MuxCommand):
                 "You add 'tackle {target}' to the combat queue".format(
                     target=target.get_display_name(self.caller)))
         else:
-            self.caller.mssg("You have already entered all actions for your turn.")
+            self.caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
         self.caller.ndb.combat_handler.check_end_turn()
@@ -624,17 +712,20 @@ class CmdFlee(default_cmds.MuxCommand):
     """
     key = 'flee'
     aliases = ['escape']
-    help_category = 'combat'
+    locks = 'cmd:in_combat()'
+    help_category = 'full turn actions'
 
     def func(self):
 
-        self.caller.ndb.combat_handler.add_action(
-            action="flee",
-            character=self.caller,
-            target=self.caller,
-            duration=2)
-
-        self.caller.msg("You add 'flee' to the combat queue")
+        ok = self.caller.ndb.combat_handler.add_action(
+                action="flee",
+                character=self.caller,
+                target=self.caller,
+                duration=2)
+        if ok:
+            self.caller.msg("You add 'flee' to the combat queue")
+        else:
+            self.caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
         self.caller.ndb.combat_handler.check_end_turn()

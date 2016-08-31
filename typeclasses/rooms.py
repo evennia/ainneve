@@ -17,8 +17,6 @@ class Room(ExtendedRoom, ContribRPRoom):
             `terrain` type
         mv_delay (int): (read-only) The movement delay when entering the room;
             based on `terrain` type
-        range_field (tuple[int]): length and width of the room's combat
-            range field
         max_chars (int): The maximum number of characters and mobs
             allowed to occupy the room. one char per square unit
     """
@@ -39,7 +37,7 @@ class Room(ExtendedRoom, ContribRPRoom):
     def at_object_creation(self):
         super(Room, self).at_object_creation()
         self.db.terrain = 'EASY'
-        self.db.range_field = (3, 3)
+        self.db.max_chars = 0
         self.db.errmsg_capacity = "There isn't enough room there for you."
 
     def at_object_receive(self,  moved_obj, source_location):
@@ -48,7 +46,7 @@ class Room(ExtendedRoom, ContribRPRoom):
                 1 for c in self.contents
                 if c.is_typeclass('typeclasses.characters.Character'))
 
-            if char_count + 1 > self.max_chars:
+            if self.db.max_chars > 0 and char_count + 1 > self.db.max_chars:
                 # we're over capacity. send them back where they came
                 moved_obj.msg(self.db.errmsg_capacity)
                 moved_obj.move_to(source_location, quiet=True)
@@ -76,26 +74,4 @@ class Room(ExtendedRoom, ContribRPRoom):
         """Returns the movement delay for this room."""
         return self._TERRAINS[self.terrain]['delay']
 
-    @property
-    def range_field(self):
-        """Returns a tuple representing the range field."""
-        return self.db.range_field
-
-    @range_field.setter
-    def range_field(self, value):
-        if (len(value) == 2
-                and all(isinstance(v, int) and v > 0
-                        for v in value)):
-            self.db.range_field = tuple(value)
-        else:
-            raise ValueError('`range_field` must be a tuple of two positive integers.')
-
-    @property
-    def max_chars(self):
-        """Return the maximum number of chars allowed in the room.
-
-        Note:
-            This value includes PCs, NPCs, and mobs.
-        """
-        return self.range_field[0] * self.range_field[1]
 

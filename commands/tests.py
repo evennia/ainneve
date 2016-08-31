@@ -282,25 +282,21 @@ class BuildingTestCase(CommandTest):
     def test_rangefield_cmd(self):
         """test @rangefield command"""
         # no args
-        self.call(CmdRangeField(), "", "Usage: @rangefield [<room>] = (<length>, <width>)")
+        self.call(CmdRangeField(), "", "Usage: @rangefield [<room>] = <range>")
         # equal sign only
-        self.call(CmdRangeField(), "=", "Usage: @rangefield [<room>] = (<length>, <width>)")
+        self.call(CmdRangeField(), "=", "Usage: @rangefield [<room>] = <range>")
         # setting range field on current room
-        self.call(CmdRangeField(), "= (5, 4)", "Range field set on Room.")
-        self.assertEqual(self.room1.range_field, (5, 4))
-        # parentheses are optional and whitespace allowed
-        self.call(CmdRangeField(), "= 3 , 3", "Range field set on Room.")
-        self.assertEqual(self.room1.range_field, (3, 3))
+        self.call(CmdRangeField(), "= 5", "Range field set on Room.")
+        self.assertEqual(self.room1.range_field, 5)
         # invalid variations
-        self.call(CmdRangeField(), "= 5", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= (3, 4", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= 3, 4)", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= (3, 4, 5)", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= 3, 4, 5", "Invalid range field specified.")
-        self.assertEqual(self.room1.range_field, (3, 3))
+        self.call(CmdRangeField(), "= (3", "Invalid range field specified.")
+        self.call(CmdRangeField(), "= 3,", "Invalid range field specified.")
+        self.call(CmdRangeField(), "= (3)", "Invalid range field specified.")
+        self.call(CmdRangeField(), "= 3, 4", "Invalid range field specified.")
+        self.assertEqual(self.room1.range_field, 5)
         # setting range field on a different room
-        self.call(CmdRangeField(), "Room2 = (10, 3)", "Range field set on Room2.")
-        self.assertEqual(self.room2.range_field, (10, 3))
+        self.call(CmdRangeField(), "Room2 = 10", "Range field set on Room2.")
+        self.assertEqual(self.room2.range_field, 10)
 
     def test_settraits_cmd(self):
         """test @traits command"""

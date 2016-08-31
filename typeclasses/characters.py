@@ -56,6 +56,20 @@ class Character(ContribRPCharacter):
         self.traits.WM.fill_gauge()
         # Power Points are lost each turn
         self.traits.PP.reset_counter()
+        if self.nattributes.has('combat_handler'):
+            for _, item in self.equip:
+                if item and hasattr(item, 'attributes') and \
+                        item.attributes.has('combat_cmdset'):
+                    self.cmdset.add(item.db.combat_cmdset)
+
+    def at_turn_end(self):
+        """Hook called after turn actions are entered"""
+        if self.nattributes.has('combat_handler'):
+            for _, item in self.equip:
+                if item and hasattr(item, 'attributes') and \
+                        item.attributes.has('combat_cmdset') and \
+                        self.cmdset.has_cmdset(item.db.combat_cmdset):
+                    self.cmdset.remove(item.db.combat_cmdset)
 
 
 class NPC(Character):
@@ -63,6 +77,9 @@ class NPC(Character):
     """
     def at_object_creation(self):
         super(NPC, self).at_object_creation()
+
+        self.db.slots = {'attack': None,
+                         'armor': None}
 
         # initialize traits
         npc = Archetype()

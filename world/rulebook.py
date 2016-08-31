@@ -121,50 +121,52 @@ def resolve_combat(combat_handler, actiondict):
     {char.id:[(action1, char, target, duration),
               (action2, char, target, duration)], ...}
     """
-
-    combatants = combat_handler.db.characters
-
-    # tiebreaker resolution helper function. super non-deterministic
-    def _initiative_cmp(x, y):
-        # first tiebreaker: result of the std_roll
-        if x[2] == y[2]:
-            # second tiebreaker: PCs before NPCs
-            x_plyr, y_plyr = combatants[x[0]].has_player(), \
-                             combatants[y[0]].has_player()
-            if x_plyr and not y_plyr:
-                return 1
-            elif y_plyr and not x_plyr:
-                return -1
-            else:
-                # third tiebreaker: reroll
-                roll_x = std_roll() + combatants[x[0]].traits.PER.actual
-                roll_y = std_roll() + combatants[y[0]].traits.PER.actual
-                if roll_x != roll_y:
-                    return roll_x - roll_y
-                else:
-                    return random.choice((-1, 1))
-        else:
-            return y[2] - x[2]
-
-    # Do the Initiative roll to determine turn order
-    turn_order = []
-    intv_rolls = {}
-    for combatant in combatants.itervalues():
-        roll = std_roll()
-        initiative = roll + combatant.traits.PER.actual
-        if initiative in intv_rolls:
-            intv_rolls[initiative].append((combatant.id, initiative, roll))
-        else:
-            intv_rolls[initiative] = [(combatant.id, initiative, roll)]
-
-    # resolve ties and build the turn order
-    for intv in sorted(intv_rolls, reverse=True):
-        if len(intv_rolls[intv]) == 1:
-            turn_order += intv_rolls[intv][0]
-        else:  # more than one rolled same Initiative
-            turn_order += sorted(intv_rolls[intv], cmp=_initiative_cmp)
-
-    # process actions for characters in order
-    for dbref, _, _ in turn_order:
-        pass
-
+    from pprint import pformat
+    combat_handler.msg_all(pformat(actiondict))
+    return
+    # combatants = combat_handler.db.characters
+    #
+    # # tiebreaker resolution helper function. super non-deterministic
+    # def _initiative_cmp(x, y):
+    #     # first tiebreaker: result of the std_roll
+    #     if x[2] == y[2]:
+    #         # second tiebreaker: PCs before NPCs
+    #         x_plyr, y_plyr = combatants[x[0]].has_player(), \
+    #                          combatants[y[0]].has_player()
+    #         if x_plyr and not y_plyr:
+    #             return 1
+    #         elif y_plyr and not x_plyr:
+    #             return -1
+    #         else:
+    #             # third tiebreaker: reroll
+    #             roll_x = std_roll() + combatants[x[0]].traits.PER.actual
+    #             roll_y = std_roll() + combatants[y[0]].traits.PER.actual
+    #             if roll_x != roll_y:
+    #                 return roll_x - roll_y
+    #             else:
+    #                 return random.choice((-1, 1))
+    #     else:
+    #         return y[2] - x[2]
+    #
+    # # Do the Initiative roll to determine turn order
+    # turn_order = []
+    # intv_rolls = {}
+    # for combatant in combatants.values():
+    #     roll = std_roll()
+    #     initiative = roll + combatant.traits.PER.actual
+    #     if initiative in intv_rolls:
+    #         intv_rolls[initiative].append((combatant.id, initiative, roll))
+    #     else:
+    #         intv_rolls[initiative] = [(combatant.id, initiative, roll)]
+    #
+    # # resolve ties and build the turn order
+    # for intv in sorted(intv_rolls, reverse=True):
+    #     if len(intv_rolls[intv]) == 1:
+    #         turn_order += intv_rolls[intv][0]
+    #     else:  # more than one rolled same Initiative
+    #         turn_order += sorted(intv_rolls[intv], cmp=_initiative_cmp)
+    #
+    # # process actions for characters in order
+    # for dbref, _, _ in turn_order:
+    #     pass
+    #

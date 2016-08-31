@@ -27,10 +27,6 @@ riverport
 #
 @terrain = EASY
 #
-# set range field
-#
-@rangefield = (4, 3)
-#
 # next, set its description
 #
 @desc
@@ -83,8 +79,6 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (5, 3)
-#
 @desc
 
  The road stretches on to the east and west. Surrounded by green meadows
@@ -103,8 +97,6 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (5, 3)
-#
 @desc
 
  The road stretches on to the east and west. Surrounded by green meadows
@@ -119,8 +111,6 @@ riverport
 @tag riverport#04 = riverport : zone
 #
 @terrain = EASY
-#
-@rangefield = (5, 3)
 #
 @desc
 
@@ -137,8 +127,6 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (6, 6)
-#
 @desc
 
  A carpet of grass spreads out before you, bordered on the south edge by
@@ -152,8 +140,6 @@ riverport
 @tag riverport#06 = riverport : zone
 #
 @terrain = EASY
-#
-@rangefield = (6, 6)
 #
 @desc
 
@@ -174,8 +160,6 @@ riverport
 @tag riverport#07 = riverport : zone
 #
 @terrain = EASY
-#
-@rangefield = (6, 6)
 #
 @desc
 
@@ -200,8 +184,6 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (6, 6)
-#
 @desc
 
  Bordered to the west by the murmuring waters of the |rRiver Kai|n, this sun
@@ -224,8 +206,6 @@ riverport
 @tag riverport#09 = riverport : zone
 #
 @terrain = EASY
-#
-@rangefield = (6, 6)
 #
 @desc
 
@@ -262,8 +242,6 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (6, 6)
-#
 @desc
 
  A carpet of grass spreads out before you, bordered on the east edge by
@@ -285,8 +263,6 @@ riverport
 @tag riverport#11 = riverport : zone
 #
 @terrain = EASY
-#
-@rangefield = (6, 6)
 #
 @desc
 
@@ -312,7 +288,10 @@ riverport
 #
 @terrain = VEGETATION
 #
-@rangefield = (4, 4)
+# this is tight quarters, limit the number of characters
+# that can be present
+#
+@set here/max_chars = 7
 #
 @desc
 
@@ -335,8 +314,6 @@ riverport
 @tag riverport#13 = riverport : zone
 #
 @terrain = EASY
-#
-@rangefield = (6, 6)
 #
 @desc
 

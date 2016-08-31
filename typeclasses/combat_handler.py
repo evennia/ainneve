@@ -6,6 +6,9 @@ from evennia import TICKER_HANDLER as tickerhandler
 from evennia.utils.evmenu import EvMenu
 
 
+COMBAT_DISTANCES = {'melee': 0, 'reach': 1, 'ranged': 2}
+
+
 class CombatHandler(Script):
     """
     This implements the combat handler.
@@ -18,16 +21,18 @@ class CombatHandler(Script):
 
         self.key = "combat_handler_%i" % random.randint(1, 1000)
         self.desc = "handles combat"
-        self.interval = 60 * 2  # two minute timeout
+        self.interval = 5  # two minute timeout
         self.start_delay = True
         self.persistent = True
 
         # store all combatants
         self.db.characters = {}
         # distance between combatants
-        self.db.rangefield = {}
+        self.db.distances = {}
         # store all actions for each turn
         self.db.turn_actions = {}
+        # store any pending long actions
+        self.db.pending_actions = {}
         # number of actions entered per combatant
         self.db.action_count = {}
 
@@ -39,6 +44,7 @@ class CombatHandler(Script):
         at_turn_start every 6s
         """
         character.ndb.combat_handler = self
+        character.cmdset.add("commands.combat.CombatBaseCmdSet")
         character.cmdset.add("commands.combat.CombatCmdSet")
         tickerhandler.remove(6, character.at_turn_start)
 
@@ -52,8 +58,14 @@ class CombatHandler(Script):
         del self.db.characters[dbref]
         del self.db.turn_actions[dbref]
         del self.db.action_count[dbref]
+        for key in [k for k in self.db.distances.keys()
+                    if dbref in k]:
+            del self.db.distances[key]
+
         del character.ndb.combat_handler
-        character.cmdset.delete("commands.combat.CombatCmdSet")
+        if character.cmdset.has_cmdset("combat_cmdset"):
+            character.cmdset.delete("commands.combat.CombatCmdSet")
+        character.cmdset.delete("commands.combat.CombatBaseCmdSet")
         tickerhandler.add(6, character.at_turn_start)
 
     def at_start(self):
@@ -80,22 +92,23 @@ class CombatHandler(Script):
         between the timeout (no argument) and the controlled turn-end
         where we send an argument.
         """
+        for character in self.db.characters.values():
+            character.cmdset.delete("commands.combat.CombatCmdSet")
+            character.at_turn_end()
+
         if not args:
             self.msg_all("Turn timer timed out. Continuing.")
         self.end_turn()
 
     # Combat-handler methods
 
-    def add_location(self, location):
-        "Add a location to the combat handler in setup"
-        self.db.location = location
-
     def add_character(self, character):
         "Add combatant to handler"
         dbref = character.id
-        for ch in self.db.characters.keys():
-            self.db.range[frozenset((ch, character.id))] = \
-                self.db.location.range_field
+        for cid in self.db.characters.keys():
+            # all characters start at 'ranged' distance from each other
+            self.db.distances[frozenset((cid, character.id))] = \
+                COMBAT_DISTANCES['ranged']
 
         self.db.characters[dbref] = character
         self.db.action_count[dbref] = 0
@@ -108,6 +121,7 @@ class CombatHandler(Script):
         "Remove combatant from handler"
         if character.id in self.db.characters:
             self._cleanup_character(character)
+
         if not self.db.characters:
             # if we have no more characters in battle, kill this handler
             self.stop()
@@ -132,7 +146,7 @@ class CombatHandler(Script):
         """
         dbref = character.id
         count = self.db.action_count[dbref]
-        if 0 <= count + duration <= 2:  # only allow 2 duration worth of actions
+        if 0 <= count < 2:  # only allow 2 duration worth of actions
             self.db.turn_actions[dbref].append((action, character, target, duration))
         else:
             # report if we already used too many actions
@@ -165,7 +179,6 @@ class CombatHandler(Script):
             self.msg_all("Combat has ended")
             self.stop()
         else:
-            self.msg_all("Next turn begins ...")
             # reset counters before next turn
             for character in self.db.characters.values():
                 self.db.characters[character.id] = character
@@ -173,4 +186,6 @@ class CombatHandler(Script):
                 self.db.action_count[character.id] = sum([x[3] for x in self.db.turn_actions[character.id]])
                 self.db.pending_actions[character.id] = []
                 character.at_turn_start()
-                EvMenu(character, "typeclasses.combat_turn_menu")
+                character.cmdset.add("commands.combat.CombatCmdSet")
+
+            self.msg_all("Next turn begins. Declare your actions!")
