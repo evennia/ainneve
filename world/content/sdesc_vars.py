@@ -1,7 +1,22 @@
 """
-Variables
+Variables for dynamic sdesc generation
 """
-spider_adj_1 = [
+
+
+def with_articles(wordlist):
+    """Prepends the appropriate article to a list of words"""
+    output = []
+    vowels = 'aeiou'
+    for word in wordlist:
+        if word[0] in vowels:
+            output.append("an {}".format(word))
+        else:
+            output.append("a {}".format(word))
+
+    return output
+
+
+spider_adj_1 = with_articles([
     "brown-striped",
     "coal-black",
     "grey",
@@ -20,7 +35,7 @@ spider_adj_1 = [
     "repulsive",
     "green-striped",
     "dusty-grey",
-]
+])
 
 spider_adj_2 = [
     "long-legged",
@@ -42,7 +57,7 @@ spider_adj_2 = [
     "sleek",
 ]
 
-rat_adj_1 = [
+rat_adj_1 = with_articles([
     "brown",
     "ochre-furred",
     "grey",
@@ -65,7 +80,7 @@ rat_adj_1 = [
     "rotting-toothed",
     "large-pawed",
     "small-pawed",
-]
+])
 
 rat_adj_2 = [
     "scrawny",
@@ -93,7 +108,7 @@ rat_adj_2 = [
     "crippled",
 ]
 
-bird_adj_1 = [
+bird_adj_1 = with_articles([
     "tiny",
     "miniscule",
     "small",
@@ -141,7 +156,7 @@ bird_adj_1 = [
     "striped",
     "spotted",
     "dappled",
-]
+])
 
 bird_adj_2 = [
     "sharp-beaked",
@@ -178,7 +193,7 @@ bird_adj_2 = [
     "crowned",
 ]
 
-troll_adj_1 = [
+troll_adj_1 = with_articles([
     "immense",
     "huge",
     "gigantic",
@@ -220,7 +235,7 @@ troll_adj_1 = [
     "shiny-scalped",
     "wiry-haired",
     "bristly-haired",
-]
+])
 
 troll_adj_2 = [
     "slime-green-eyed",
@@ -269,7 +284,7 @@ troll_adj_2 = [
     "ulcerous-skinned",
 ]
 
-wolf_adj_1 = [
+wolf_adj_1 = with_articles([
     "sinewy",
     "muscular",
     "powerfully-muscled",
@@ -316,7 +331,7 @@ wolf_adj_1 = [
     "dark-brown",
     "muddy-brown",
     "matted-furred",
-]
+])
 
 wolf_adj_2 = [
     "narrow-muzzled",
@@ -351,7 +366,7 @@ wolf_adj_2 = [
     "feral",
 ]
 
-elf_adj_1 = [
+elf_adj_1 = with_articles([
     "fair",
     "ethereal",
     "graceful",
@@ -427,7 +442,7 @@ elf_adj_1 = [
     "silver-eyed",
     "hazel-eyed",
     "cinnamon-eyed",
-]
+])
 
 elf_adj_2 = [
     "black-haired",
@@ -456,7 +471,7 @@ elf_adj_2 = [
     "platinum-blonde-haired",
 ]
 
-human_adj_1 = [
+human_adj_1 = with_articles([
     "acned",
     "cadaverous",
     "dirty",
@@ -564,7 +579,7 @@ human_adj_1 = [
     "grey-eyed",
     "stormy-eyed",
     "hazel-eyed",
-]
+])
 
 human_adj_2 = [
     "black-haired",
@@ -613,7 +628,7 @@ human_adj_2 = [
     "delicate-shouldered",
 ]
 
-dwarf_adj_1 = [
+dwarf_adj_1 = with_articles([
     "florid-faced",
     "short",
     "compact",
@@ -676,7 +691,7 @@ dwarf_adj_1 = [
     "grey-eyed",
     "flint-eyed",
     "hazel-eyed",
-]
+])
 
 dwarf_adj_2 = [
     "black-haired",
@@ -721,7 +736,7 @@ dwarf_adj_2 = [
     "broad-shouldered",
 ]
 
-orc_adj_1 = [
+orc_adj_1 = with_articles([
     "acned",
     "froglike",
     "stumpy",
@@ -815,7 +830,7 @@ orc_adj_1 = [
     "potbellied",
     "flat-headed",
     "hollow-eyed",
-]
+])
 
 orc_adj_2 = [
     "black-haired",
@@ -863,7 +878,7 @@ orc_adj_2 = [
     "small-tusked",
 ]
 
-goblin_adj_1 = [
+goblin_adj_1 = with_articles([
     "acned",
     "cadaverous",
     "dirty",
@@ -931,7 +946,7 @@ goblin_adj_1 = [
     "dark-skinned",
     "wrinkled",
     "hollow-eyed",
-]
+])
 
 goblin_adj_2 = [
     "black-haired",

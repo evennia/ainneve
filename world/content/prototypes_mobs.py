@@ -86,7 +86,7 @@ DEER = {
 }
 WOLF = {
     "key":"a wolf npc",
-    "sdesc": lambda: "a {} {} wolf".format(random.choice(wolf_adj_1),random.choice(wolf_adj_2)),
+    "sdesc": lambda: "{} {} wolf".format(random.choice(wolf_adj_1),random.choice(wolf_adj_2)),
     "tag": ["NPC","AGGRESSIVE"],
     "typeclass": "typeclasses.characters.NPC",
     "desc": "Oh look, here's a wolf. It's probably going to attempt to eat you.",
@@ -104,7 +104,7 @@ WOLF = {
 
 SPIDER = {
     "key": "a spider npc",
-    "sdesc": lambda: "a {} {} spider".format(random.choice(spider_adj_1),random.choice(spider_adj_2)),
+    "sdesc": lambda: "{} {} spider".format(random.choice(spider_adj_1),random.choice(spider_adj_2)),
     "tag": ["NPC","AGGRESSIVE"],
     "typeclass": "typeclasses.characters.NPC",
     "desc": "Need a hand? Well just you wait. We'll help you out, we each have eight.",
@@ -122,7 +122,7 @@ SPIDER = {
 
 ORC = {
     "key": "an orc npc",
-    "sdesc": lambda: "a {} {} orc".format(random.choice(orc_adj_1),random.choice(orc_adj_2)),
+    "sdesc": lambda: "{} {} orc".format(random.choice(orc_adj_1),random.choice(orc_adj_2)),
     "tag": ["NPC","AGGRESSIVE"],
     "exec": "obj.execute_cmd('say My tags include {}'.format(obj.db.tag))",
     "typeclass": "typeclasses.characters.NPC",
