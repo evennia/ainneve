@@ -33,7 +33,7 @@ SAMPLE_NPC = {
 
 RAT = {
     "key":"a rat npc",
-    "sdesc": lambda: "a {} {} rat".format(random.choice(rat_adj_1),random.choice(rat_adj_2)),
+    "sdesc": lambda: "{}, {} rat".format(random.choice(rat_adj_1),random.choice(rat_adj_2)),
     "tag": ["NPC"],
     "typeclass": "typeclasses.characters.NPC",
     "desc": "Beware of rat poison.",
@@ -86,8 +86,8 @@ DEER = {
 }
 WOLF = {
     "key":"a wolf npc",
-    "sdesc": lambda: "{} {} wolf".format(random.choice(wolf_adj_1),random.choice(wolf_adj_2)),
-    "tag": ["NPC","AGGRESSIVE"],
+    "sdesc": lambda: "{}, {} wolf".format(random.choice(wolf_adj_1),random.choice(wolf_adj_2)),
+    "tag": ["NPC", "AGGRESSIVE"],
     "typeclass": "typeclasses.characters.NPC",
     "desc": "Oh look, here's a wolf. It's probably going to attempt to eat you.",
     "traits": {'STR': 5, 'DEX': 5, 'PER': 5, 'CHA': 5, 'INT': 5, 'VIT': 5,
@@ -104,8 +104,8 @@ WOLF = {
 
 SPIDER = {
     "key": "a spider npc",
-    "sdesc": lambda: "{} {} spider".format(random.choice(spider_adj_1),random.choice(spider_adj_2)),
-    "tag": ["NPC","AGGRESSIVE"],
+    "sdesc": lambda: "{}, {} spider".format(random.choice(spider_adj_1),random.choice(spider_adj_2)),
+    "tag": ["NPC", "AGGRESSIVE"],
     "typeclass": "typeclasses.characters.NPC",
     "desc": "Need a hand? Well just you wait. We'll help you out, we each have eight.",
     "traits": {'STR': 5, 'DEX': 5, 'PER': 5, 'CHA': 5, 'INT': 5, 'VIT': 5,
@@ -122,8 +122,8 @@ SPIDER = {
 
 ORC = {
     "key": "an orc npc",
-    "sdesc": lambda: "{} {} orc".format(random.choice(orc_adj_1),random.choice(orc_adj_2)),
-    "tag": ["NPC","AGGRESSIVE"],
+    "sdesc": lambda: "{}, {} orc".format(random.choice(orc_adj_1),random.choice(orc_adj_2)),
+    "tag": ["NPC", "AGGRESSIVE"],
     "exec": "obj.execute_cmd('say My tags include {}'.format(obj.db.tag))",
     "typeclass": "typeclasses.characters.NPC",
     "desc": "An intellectual creature at heart, the orc is a misunderstood beast who simply desires to be understood and loved. It expresses this love through extreme violence.",
