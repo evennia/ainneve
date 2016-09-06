@@ -291,7 +291,7 @@ riverport
 # this is tight quarters, limit the number of characters
 # that can be present
 #
-@set here/max_chars = 7
+@capacity = 7
 #
 @desc
 

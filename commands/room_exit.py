@@ -16,7 +16,7 @@ class AinneveRoomExitsCmdSet(CmdSet):
 
         # Ainneve room builder commands
         self.add(CmdTerrain())
-        self.add(CmdRangeField())
+        self.add(CmdCapacity())
 
         # exit commands
         self.add(CmdStop())
