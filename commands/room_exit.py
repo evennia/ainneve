@@ -78,7 +78,7 @@ class CmdCapacity(MuxCommand):
     Args:
       room: the room on which to set the capacity
       maxchars: (positive int) maximum number of characters
-                allowed in room
+                allowed in room or zero (0) for unlimited
 
     Notes:
       If <room> is omitted, defaults to your current location.
@@ -97,9 +97,9 @@ class CmdCapacity(MuxCommand):
         try:
             capacity = int(self.rhs.strip())
         except ValueError:
-            capacity = 0
+            capacity = -1
 
-        if capacity <= 0:
+        if capacity < 0:
             self.caller.msg("Invalid capacity specified.")
             return
 
@@ -116,7 +116,7 @@ class CmdCapacity(MuxCommand):
             return
 
         target.db.max_chars = capacity
-        self.caller.msg("Range field set on {}.".format(target.get_display_name()))
+        self.caller.msg("Capacity set on {}.".format(target.get_display_name(self.caller)))
 
 
 class CmdStop(MuxCommand):

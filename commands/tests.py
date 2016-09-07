@@ -5,12 +5,11 @@ from evennia.utils.test_resources import EvenniaTest
 from evennia.commands.default.tests import CommandTest
 from commands.equip import *
 from commands.chartraits import CmdSheet, CmdTraits
-from commands.room_exit import CmdRangeField, CmdTerrain
+from commands.room_exit import CmdCapacity, CmdTerrain
 from commands.building import CmdSpawn, CmdSetTraits, CmdSetSkills
 from typeclasses.characters import Character, NPC
 from typeclasses.weapons import Weapon
 from typeclasses.rooms import Room
-from world.races import apply_race
 from world.archetypes import apply_archetype, calculate_secondary_traits
 from utils.utils import sample_char
 
@@ -279,24 +278,28 @@ class BuildingTestCase(CommandTest):
         # setting terrain on a different room
         self.call(CmdTerrain(), "Room2 = QUICKSAND", "Terrain type 'QUICKSAND' set on Room2.")
 
-    def test_rangefield_cmd(self):
-        """test @rangefield command"""
+    def test_capacity_cmd(self):
+        """test @capacity command"""
         # no args
-        self.call(CmdRangeField(), "", "Usage: @rangefield [<room>] = <range>")
+        self.call(CmdCapacity(), "", "Usage: @capacity [<room>] = <maxchars>")
         # equal sign only
-        self.call(CmdRangeField(), "=", "Usage: @rangefield [<room>] = <range>")
-        # setting range field on current room
-        self.call(CmdRangeField(), "= 5", "Range field set on Room.")
-        self.assertEqual(self.room1.range_field, 5)
+        self.call(CmdCapacity(), "=", "Usage: @capacity [<room>] = <maxchars>")
+        # setting capacity on current room
+        self.call(CmdCapacity(), "= 0", "Capacity set on Room(#1) .")
+        self.assertEqual(self.room1.db.max_chars, 0)
+        self.call(CmdCapacity(), "= 5", "Capacity set on Room(#1) .")
+        self.assertEqual(self.room1.db.max_chars, 5)
         # invalid variations
-        self.call(CmdRangeField(), "= (3", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= 3,", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= (3)", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= 3, 4", "Invalid range field specified.")
-        self.assertEqual(self.room1.range_field, 5)
+        self.call(CmdCapacity(), "= -20", "Invalid capacity specified.")
+        self.call(CmdCapacity(), "= (3", "Invalid capacity specified.")
+        self.call(CmdCapacity(), "= 3,", "Invalid capacity specified.")
+        self.call(CmdCapacity(), "= (3)", "Invalid capacity specified.")
+        self.call(CmdCapacity(), "= 3, 4", "Invalid capacity specified.")
+        self.call(CmdCapacity(), "= LOTS", "Invalid capacity specified.")
+        self.assertEqual(self.room1.db.max_chars, 5)
         # setting range field on a different room
-        self.call(CmdRangeField(), "Room2 = 10", "Range field set on Room2.")
-        self.assertEqual(self.room2.range_field, 10)
+        self.call(CmdCapacity(), "Room2 = 10", "Capacity set on Room2(#2) .")
+        self.assertEqual(self.room2.db.max_chars, 10)
 
     def test_settraits_cmd(self):
         """test @traits command"""
