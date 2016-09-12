@@ -28,7 +28,7 @@ class ItemEncumbranceTestCase(EvenniaTest):
         self.obj1.db.weight = 1.0
         self.obj2.swap_typeclass('typeclasses.armors.Armor',
                                  clean_attributes=True,
-                                 run_start_hooks=True)
+                                 run_start_hooks="all")
         self.obj2.db.toughness = 1
         self.obj2.db.weight = 18.0
 
@@ -69,7 +69,7 @@ class EquipTestCase(CommandTest):
         self.obj2.db.desc = 'Test Obj2'
         self.obj2.swap_typeclass('typeclasses.armors.Armor',
                                  clean_attributes=True,
-                                 run_start_hooks=True)
+                                 run_start_hooks="all")
         self.obj2.db.toughness = 1
         self.obj2.db.weight = 2.0
 
@@ -92,7 +92,7 @@ class EquipTestCase(CommandTest):
         """test wield command for 2H weapons"""
         self.obj1.swap_typeclass('typeclasses.weapons.TwoHandedWeapon',
                                  clean_attributes=True,
-                                 run_start_hooks=True)
+                                 run_start_hooks="all")
         self.obj1.db.damage = 1
         self.obj1.db.weight = 1.0
         # pick it up to wield the weapon
@@ -107,7 +107,7 @@ class EquipTestCase(CommandTest):
         """test wield command for 1H ranged weapons"""
         self.obj1.swap_typeclass('typeclasses.weapons.RangedWeapon',
                                  clean_attributes=True,
-                                 run_start_hooks=True)
+                                 run_start_hooks="all")
         self.obj1.db.damage = 1
         self.obj1.db.weight = 1.0
         self.obj1.db.range = 5
@@ -123,7 +123,7 @@ class EquipTestCase(CommandTest):
         """test wield command for 2H ranged weapons"""
         self.obj1.swap_typeclass('typeclasses.weapons.TwoHandedRanged',
                                  clean_attributes=True,
-                                 run_start_hooks=True)
+                                 run_start_hooks="all")
         self.obj1.db.damage = 1
         self.obj1.db.weight = 1.0
         self.obj1.db.range = 5

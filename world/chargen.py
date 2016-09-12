@@ -530,7 +530,7 @@ def menunode_confirm(caller, raw_string):
          char.db.focus,
          char.db.desc) = [None for _ in xrange(4)]
 
-        char.sdesc.add('')
+        char.sdesc.add('a normal person')
         char.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}
         char.traits.clear()
         char.skills.clear()
