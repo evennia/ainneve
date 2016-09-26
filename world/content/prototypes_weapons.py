@@ -60,6 +60,7 @@ LANCE_POLEARM = {
     "weight": 4,
     "value": 2*SC,
     "damage": 4,
+    "range": ["melee", "reach"]
 }
 
 PIKE_POLEARM = {
@@ -71,6 +72,7 @@ PIKE_POLEARM = {
     "weight": 9,
     "value": 50*CC,
     "damage": 3,
+    "range": ["melee", "reach"]
 }
 
 MAPLE_STAFF = {
@@ -83,6 +85,7 @@ MAPLE_STAFF = {
     "weight": 2,
     "value": 2*CC,
     "damage": 0,
+    "range": ["melee", "reach"]
 }
 
 MACE_ROD = {
@@ -119,6 +122,7 @@ SCYTHE = {
     "weight": 1,
     "vaule": 1*SC,
     "damage": 1,
+    "range": ["melee", "reach"]
 }
 
 SHORT_SWORD = {
@@ -168,8 +172,7 @@ LONG_BOW = {
     "weight": 1,
     "value": 40*CC,
     "damage": 1,
-    "range": 16,
-    "ammunition": "arrows",
+    "ammunition": "arrow",
 }
 
 HAND_CROSSBOW = {
@@ -181,8 +184,7 @@ HAND_CROSSBOW = {
     "weight": 2,
     "value": 4*SC,
     "damage": 0,
-    "range": 8,
-    "ammunition": "quarrels",
+    "ammunition": "quarrel",
 }
 
 LIGHT_CROSSBOW = {
@@ -194,8 +196,7 @@ LIGHT_CROSSBOW = {
     "weight": 3,
     "value": 3*SC,
     "damage": 1,
-    "range": 11,
-    "ammunition": "quarrels",
+    "ammunition": "quarrel",
 }
 
 # Ammunition
@@ -203,41 +204,45 @@ LIGHT_CROSSBOW = {
 ARROW = {
     "key": "an obsidian-tipped arrow",
     "aliases": ["arrow"],
-    "typeclass": "typeclasses.items.Item",
+    "typeclass": "typeclasses.items.Bundlable",
     "desc": "Arrows crafted from reed wood and obsidian stone.",
     "weight": 1,
     "value": 2*CC,
+    "bundle_size": 10,
+    "prototype_name": "ARROW"
 }
 
 QUARREL = {
     "key": "a crossbow quarrel",
     "aliases": ["quarrel", "qua"],
-    "typeclass": "typeclasses.items.Item",
+    "typeclass": "typeclasses.items.Bundlable",
     "desc": "A quarrel for use in a crossbow.",
     "weight": 0.5,
-    "value": 3*CC
+    "value": 3*CC,
+    "bundle_size": 10,
+    "prototype_name": "QUARREL"
 }
 
 ARROW_BUNDLE = {
     "key": "a bundle of arrows",
-    "aliases": ["bundle of arrows", "bundle arrows", "arrows"],
-    "typeclass": "typeclasses.items.Item",
+    "aliases": ["bundle of arrows", "bundle arrow", "arrows"],
+    "typeclass": "typeclasses.items.Bundle",
     "desc": "A bundle of arrows held together with a thin leather strap.",
     "weight": 10,
     "value": 25*CC,
     "quantity": 10,
-    "contents_proto": "ARROW",
+    "prototype_name": "ARROW",
 }
 
 QUARREL_BUNDLE = {
     "key": "a bundle of quarrels",
-    "aliases": ["bundle of quarrels", "bundle quarrels", "quarrels"],
-    "typeclass": "typeclasses.items.Item",
-    "desc": "A bundle of crossbow quarrels held together with a thin leather strap.",
+    "aliases": ["bundle of quarrels", "bundle quarrel", "quarrels"],
+    "typeclass": "typeclasses.items.Bundle",
+    "desc": "A bundle of quarrels held together with a thin leather strap.",
     "weight": 5,
     "value": 30*CC,
     "quantity": 10,
-    "contents_proto": "QUARREL",
+    "prototype_name": "QUARREL",
 }
 
 # Thrown Ranged
@@ -251,7 +256,8 @@ THROWING_AXE = {
     "weight": 2,
     "value": 80*CC,
     "damage": 0,
-    "range": 3,
+    "range": ["reach"],
+    "ammunition": "throwing axe"
 }
 
 THROWING_DAGGER = {
@@ -263,19 +269,8 @@ THROWING_DAGGER = {
     "weight": 1,
     "value": 30*CC,
     "damage": 0,
-    "range": 2,
-}
-
-JAVELIN = {
-    "key": "a javelin",
-    "aliases": ["javelin"],
-    "typeclass": "typeclasses.weapons.RangedWeapon",
-    "desc": "Long and light, the javelin has the longest range of thrown "
-            "weapons.",
-    "weight": 1,
-    "value": 15*CC,
-    "damage": 1,
-    "range": 6,
+    "range": ["reach"],
+    "ammunition": "throwing dagger"
 }
 
 TRIDENT = {
@@ -287,5 +282,18 @@ TRIDENT = {
     "weight": 2,
     "value": 1*SC,
     "damage": 2,
-    "range": 2,
+    "range": ["reach"],
+    "ammunition": "trident"
+}
+
+JAVELIN = {
+    "key": "a javelin",
+    "aliases": ["javelin"],
+    "typeclass": "typeclasses.weapons.RangedWeapon",
+    "desc": "Long and light, the javelin has the longest range of thrown "
+            "weapons.",
+    "weight": 1,
+    "value": 15*CC,
+    "damage": 1,
+    "ammunition": "javelin"
 }

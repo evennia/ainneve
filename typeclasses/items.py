@@ -3,6 +3,8 @@ Generic Item typeclasses
 """
 
 from typeclasses.objects import Object
+from evennia import create_object
+from evennia.utils.spawner import spawn
 
 
 class Item(Object):
@@ -34,6 +36,53 @@ class Item(Object):
         dropper.traits.ENC.current -= self.db.weight
         dropper.traits.MV.mod = \
             int(-(dropper.traits.ENC.actual // (2 * dropper.traits.STR.actual)))
+
+
+class Bundlable(Item):
+    """Typeclass for items that can be bundled."""
+    def at_object_creation(self):
+        super(Bundlable, self).at_object_creation()
+        self.db.bundle_size = 999
+        self.db.prototype_name = None
+
+    def at_get(self, getter):
+        super(Bundlable, self).at_get(getter)
+        bundle_key = self.aliases.all()[0]
+        others = [obj for obj in getter.contents
+                  if obj.is_typeclass('typeclasses.items.Bundlable')
+                  and bundle_key in obj.aliases.all()]
+
+        if len(others) >= self.db.bundle_size \
+                and self.db.prototype_name and self.aliases.all():
+
+            # we have enough to create a bundle
+
+            bundle = create_object(
+                typeclass='typeclasses.items.Bundle',
+                key='a bundle of {}s'.format(bundle_key),
+                aliases=['{} bundle'.format(bundle_key)],
+                location=self.location
+            )
+            bundle.db.desc = ("A bundle of {item}s held together "
+                              "with a thin leather strap.").format(
+                item=bundle_key
+            )
+            bundle.db.value = self.db.bundle_size * self.db.value
+            bundle.db.weight = self.db.bundle_size * self.db.weight
+            bundle.db.quantity = self.db.bundle_size
+            bundle.db.prototype_name = self.db.prototype_name
+            for obj in others[:self.db.bundle_size]:
+                obj.delete()
+
+
+class Bundle(Item):
+    """Typeclass for bundles of Items."""
+    def expand(self):
+        """Expands a bundle into its component items."""
+        for i in xrange(self.db.quantity):
+            spawn(dict(prototype=self.db.prototype_name,
+                       location=self.location))
+        self.delete()
 
 
 class Equippable(Item):

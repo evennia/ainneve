@@ -53,10 +53,11 @@ class CmdInventory(MuxCommand):
                 stat = " "
                 if item.attributes.has('damage'):
                     stat += "(|rDamage: {:>2d}|n) ".format(item.db.damage)
-                if item.attributes.has('range'):
-                    stat += "(|GRange: {:>2d}|n) ".format(item.db.range)
                 if item.attributes.has('toughness'):
                     stat += "(|yToughness: {:>2d}|n)".format(item.db.toughness)
+                if item.attributes.has('range'):
+                    stat += "(|G{}|n) ".format(
+                        ", ".join([r.capitalize() for r in item.db.range]))
                 data[2].append(stat)
             table = EvTable(header=False, table=data, border=None, valign='t')
             string = "|YYou are carrying:|n\n{}".format(table)
@@ -168,10 +169,11 @@ class CmdEquip(MuxCommand):
                 stat = " "
                 if item.attributes.has('damage'):
                     stat += "(|rDamage: {:>2d}|n) ".format(item.db.damage)
-                if item.attributes.has('range'):
-                    stat += "(|GRange: {:>2d}|n) ".format(item.db.range)
                 if item.attributes.has('toughness'):
                     stat += "(|yToughness: {:>2d}|n)".format(item.db.toughness)
+                if item.attributes.has('range'):
+                    stat += "(|G{}|n) ".format(
+                        ", ".join([r.capitalize() for r in item.db.range]))
 
                 data.append(
                     "  |b{slot:>{swidth}.{swidth}}|n: {item:<20.20} {stat}".format(
@@ -187,7 +189,7 @@ class CmdEquip(MuxCommand):
                 table = EvTable(header=False, border=None, table=[data])
                 output = "|YYour equipment:|n\n{}".format(table)
 
-            self.caller.msg(output)
+            caller.msg(output)
 
 
 class CmdWear(MuxCommand):
