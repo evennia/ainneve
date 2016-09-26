@@ -630,14 +630,15 @@ class ChargenTestCase(EvenniaTest):
         self.session.execute_cmd('done')
         self.session.execute_cmd('test sdesc')
         self.session.execute_cmd('test description')
-        self.session.execute_cmd('n')
+        self.session.execute_cmd('no')
+
         self.assertEqual(len(self.char1.traits.all), 0)
         self.assertEqual(len(self.char1.skills.all), 0)
         self.assertEqual(len(self.char1.contents), 0)
         self.assertIsNone(self.char1.db.archetype)
         self.assertIsNone(self.char1.db.race)
         self.assertIsNone(self.char1.db.focus)
-        self.assertEqual(self.char1.sdesc.get(), '')
+        self.assertEqual(self.char1.sdesc.get(), 'a normal person')
         self.assertIsNone(self.char1.db.desc)
         self.assertDictEqual(dict(self.char1.db.wallet),
                              {'GC': 0, 'SC': 0, 'CC': 0})

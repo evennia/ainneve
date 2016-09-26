@@ -27,7 +27,7 @@ class ItemEncumbranceTestCase(EvenniaTest):
         self.obj1.db.weight = 1.0
         self.obj2.swap_typeclass('typeclasses.armors.Armor',
                                  clean_attributes=True,
-                                 run_start_hooks=True)
+                                 run_start_hooks="all")
         self.obj2.db.toughness = 1
         self.obj2.db.weight = 18.0
 
@@ -68,14 +68,14 @@ class EquipTestCase(CommandTest):
         self.obj2.db.desc = 'Test Obj2'
         self.obj2.swap_typeclass('typeclasses.armors.Armor',
                                  clean_attributes=True,
-                                 run_start_hooks=True)
+                                 run_start_hooks="all")
         self.obj2.db.toughness = 1
         self.obj2.db.weight = 2.0
 
     def test_wield_1h_weapon(self):
         """test wield command for 1H weapons"""
         # can't wield from the ground
-        self.call(CmdWield(), 'Obj', "You don't have Obj in your inventory.")
+        self.call(CmdWield(), 'Obj', "You don't have 'Obj' in your inventory.")
         # pick it up to wield the weapon
         self.char1.execute_cmd('get Obj')
         self.call(CmdWield(), 'Obj', "You wield Obj.")
@@ -91,7 +91,7 @@ class EquipTestCase(CommandTest):
         """test wield command for 2H weapons"""
         self.obj1.swap_typeclass('typeclasses.weapons.TwoHandedWeapon',
                                  clean_attributes=True,
-                                 run_start_hooks=True)
+                                 run_start_hooks="all")
         self.obj1.db.damage = 1
         self.obj1.db.weight = 1.0
         # pick it up to wield the weapon
@@ -106,7 +106,7 @@ class EquipTestCase(CommandTest):
         """test wield command for 1H ranged weapons"""
         self.obj1.swap_typeclass('typeclasses.weapons.RangedWeapon',
                                  clean_attributes=True,
-                                 run_start_hooks=True)
+                                 run_start_hooks="all")
         self.obj1.db.damage = 1
         self.obj1.db.weight = 1.0
         self.obj1.db.range = 5
@@ -122,7 +122,7 @@ class EquipTestCase(CommandTest):
         """test wield command for 2H ranged weapons"""
         self.obj1.swap_typeclass('typeclasses.weapons.TwoHandedRanged',
                                  clean_attributes=True,
-                                 run_start_hooks=True)
+                                 run_start_hooks="all")
         self.obj1.db.damage = 1
         self.obj1.db.weight = 1.0
         self.obj1.db.range = 5
@@ -137,7 +137,7 @@ class EquipTestCase(CommandTest):
     def test_wear(self):
         """test wear command"""
         # can't wear from the ground
-        self.call(CmdWear(), 'Obj2', "You don't have Obj2 in your inventory.")
+        self.call(CmdWear(), 'Obj2', "You don't have 'Obj2' in your inventory.")
         # pick it up to wear armor
         self.char1.execute_cmd('get Obj2')
         self.call(CmdWear(), 'Obj2', "You wear Obj2.")
@@ -171,7 +171,7 @@ class EquipTestCase(CommandTest):
 
     def test_remove(self):
         """test the remove command"""
-        self.call(CmdRemove(), "Obj", "You do not have Obj equipped.")
+        self.call(CmdRemove(), "Obj", "You do not have 'Obj' equipped.")
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('wield Obj')
         self.call(CmdRemove(), "Obj", "You remove Obj.")
