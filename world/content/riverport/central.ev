@@ -361,6 +361,8 @@ riverport
 #
 @tag riverport#15 = riverport : zone
 #
+@tag riverport#15 = no_attack : flags
+#
 @terrain = EASY
 #
 @desc
@@ -376,6 +378,8 @@ riverport
 @dig/tel Shrine of Grass;riverport#16 = archway;arch;shrine;door,archway;arch;out
 #
 @tag riverport#16 = riverport : zone
+#
+@tag riverport#16 = no_attack : flags
 #
 @terrain = EASY
 #

@@ -115,12 +115,25 @@ class CmdInitiateAttack(default_cmds.MuxCommand):
         if not target:
             return
 
+        if target.ndb.no_attack:
+            caller.msg("You cannot attack {target} at this time.".format(
+                target=target.get_display_name(caller)
+            ))
+            return
+
+        if 'no_attack' in caller.location.tags.all(category='flags'):
+            caller.msg("Combat is not allowed in this location.")
+            return
+
         # set up combat
         if target.ndb.combat_handler:
             # target is already in combat - join it
             target.ndb.combat_handler.add_character(caller)
-            target.ndb.combat_handler.msg_all("{} joins combat!".format(
-                caller.get_display_name(target)))
+            target.ndb.combat_handler.combat_msg(
+                ("You join the fight!",
+                 "{actor} joins combat!"),
+                actor=caller
+            )
         else:
             # create a new combat handler
             chandler = create_script("typeclasses.combat_handler.CombatHandler")

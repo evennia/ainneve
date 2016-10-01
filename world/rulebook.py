@@ -346,8 +346,15 @@ def _do_attack(character, target, args):
 
         if any((arg.startswith('s') for arg in args)):
             # 'subdue': deduct stamina instead of health
-            target.traits.SP.current -= damage
-            status = 'dmg_sp'
+            if target.traits.SP >= damage:
+                target.traits.SP.current -= damage
+                status = 'dmg_sp'
+            else:
+                # if we don't have enough SP, damages HP instead
+                damage = damage - target.traits.SP
+                target.traits.SP.current = 0
+                target.traits.HP.current -= damage
+                status = 'dmg_hp'
 
         else:
             target.traits.HP.current -= damage
@@ -439,8 +446,15 @@ def _do_kick(character, target, args):
 
             if any((arg.startswith('s') for arg in args)):
                 # 'subdue': deduct stamina instead of health
-                target.traits.SP.current -= damage
-                status = 'dmg_sp'
+                if target.traits.SP >= damage:
+                    target.traits.SP.current -= damage
+                    status = 'dmg_sp'
+                else:
+                    # if we don't have enough SP, damages HP instead
+                    damage = damage - target.traits.SP
+                    target.traits.SP.current = 0
+                    target.traits.HP.current -= damage
+                    status = 'dmg_hp'
 
             else:
                 target.traits.HP.current -= damage
@@ -551,8 +565,15 @@ def _do_strike(character, target, args):
 
         if any((arg.startswith('s') for arg in args)):
             # 'subdue': deduct stamina instead of health
-            target.traits.SP.current -= damage
-            status = 'dmg_sp'
+            if target.traits.SP >= damage:
+                target.traits.SP.current -= damage
+                status = 'dmg_sp'
+            else:
+                # if we don't have enough SP, damages HP instead
+                damage = damage - target.traits.SP
+                target.traits.SP.current = 0
+                target.traits.HP.current -= damage
+                status = 'dmg_hp'
 
         else:
             target.traits.HP.current -= damage
@@ -713,6 +734,7 @@ def _do_flee(character, _, args):
 
             def enable_attack():
                 del character.ndb.no_attack
+                character.msg("Beware! You are once again vulnerable to attack.")
 
             utils.delay(safe_time, enable_attack)
         else:
