@@ -138,7 +138,13 @@ def resolve_death(killer, victim, combat_handler):
         exclude=(killer, victim))
 
     # award XP
-    xp_gained = int(floor(0.1 * victim.traits.XP.actual))
+    if victim.is_typeclass('typeclasses.characters.Character'):
+        # in PVP, gain 10% of opponents XP
+        xp_gained = int(floor(0.1 * victim.traits.XP.actual))
+    else:
+        # XP trait on NPCs contains the full award
+        xp_gained = victim.traits.XP.actual
+
     killer.traits.XP.base += xp_gained
     killer.msg("You gain {} XP".format(xp_gained))
 
