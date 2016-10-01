@@ -7,14 +7,13 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-from math import floor
-from evennia.contrib.rpsystem import ContribRPCharacter, parse_sdescs_and_recogs
-from evennia.utils import lazy_property, delay
+from evennia.contrib.rpsystem import ContribRPCharacter
+from evennia.utils import lazy_property
 from world.equip import EquipHandler
 from world.traits import TraitHandler
 from world.skills import apply_skills
 from world.archetypes import Archetype
-from world.rulebook import d_roll
+from world.death import CharDeathHandler, NPCDeathHandler
 
 
 class Character(ContribRPCharacter):
@@ -37,8 +36,8 @@ class Character(ContribRPCharacter):
 
         # Non-persistent attributes
         self.ndb.group = None
-	self.ndb.appr_lose = {}
-	self.ndb.appr_win = {}
+        self.ndb.appr_lose = {}
+        self.ndb.appr_win = {}
 
     @lazy_property
     def traits(self):
@@ -81,17 +80,7 @@ class Character(ContribRPCharacter):
 
     def at_death(self):
         """Hook called when a character dies."""
-        self.msg("You have died.")
-        self.db.pose = self.db.pose_strings['death']
-
-        self.ndb.death_cb = delay(60, self.at_revive)
-
-    def at_revive(self):
-        """Hook called when a character returns to life"""
-        self.move_to(self.home, quiet=True)
-        self.db.pose = self.db.pose_default
-        self.traits.HP.fill_gauge()
-        self.traits.XP.base = floor(0.1 * self.traits.XP.actual)
+        self.scripts.add(CharDeathHandler)
 
 
 class NPC(Character):
@@ -112,20 +101,4 @@ class NPC(Character):
 
     def at_death(self):
         """Hook called when an NPC dies."""
-        super(NPC, self).at_death()
-        self.ndb.death_cb.cancel()
-        self.ndb.death_cb = delay(d_roll('1d6') * 10, self.at_decomp)
-
-    def at_decomp(self):
-        self.location.msg_contents(
-            "The remains of {npc} rot away to dust.",
-            mapping=dict(npc=self),
-            exclude=self)
-        limbo = self.search('Limbo', global_search=True)
-        self.move_to(limbo, quiet=True)
-        self.db.pose = self.db.pose_default
-        self.ndb.death_cb = delay(10 * d_roll('1d12') + 30, self.at_revive)
-
-    def at_revive(self):
-        self.traits.HP.fill_gauge()
-        self.move_to(self.home)
+        self.scripts.add(NPCDeathHandler)

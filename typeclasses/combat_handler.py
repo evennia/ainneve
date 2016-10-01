@@ -1,18 +1,20 @@
 
-
-
 from collections import deque
 from operator import add
 import random
 from .scripts import Script
 from evennia import TICKER_HANDLER as tickerhandler
-from evennia.utils import utils
+from evennia.utils import utils, make_iter
 
 
 COMBAT_DISTANCES = {'melee': 0, 'reach': 1, 'ranged': 2}
 WRESTLING_POSITIONS = ('STANDING', 'CLINCHED', 'TAKE DOWN', 'PINNED')
 
-ACTIONS_PER_TURN = utils.variable_from_module('world.rulebook', 'ACTIONS_PER_TURN')
+_ACTIONS_PER_TURN = utils.variable_from_module('world.rulebook', 'ACTIONS_PER_TURN')
+_COMBAT_PROMPT = ("|M[|n HP: |g{tr.HP.actual}|n "
+                  "|| WM: |w{tr.WM.actual}|n "
+                  "|| BM: |x{tr.BM.actual}|n "
+                  "|| SP: |y{tr.SP.actual}|n |M]|n")
 
 
 class CombatHandler(Script):
@@ -52,6 +54,8 @@ class CombatHandler(Script):
             character.ndb.combat_handler = self
             character.cmdset.add("commands.combat.CombatBaseCmdSet")
             character.cmdset.add("commands.combat.CombatCmdSet")
+            prompt = _COMBAT_PROMPT.format(tr=character.traits)
+            character.msg(prompt=prompt)
 
     def _cleanup_character(self, character):
         """
@@ -73,6 +77,7 @@ class CombatHandler(Script):
             character.cmdset.remove("commands.combat.CombatCmdSet")
         character.cmdset.remove("commands.combat.CombatBaseCmdSet")
         tickerhandler.add(6, character.at_turn_start)
+        character.msg(prompt=' ')
 
     def at_start(self):
         """
@@ -102,11 +107,11 @@ class CombatHandler(Script):
             self.msg_all("Turn timer timed out. Continuing.")
             # fill any dawdlers with the 'nothing' action
             for dbref in self.db.action_count.keys():
-                if self.db.action_count[dbref] < ACTIONS_PER_TURN:
+                if self.db.action_count[dbref] < _ACTIONS_PER_TURN:
                     self.add_action('nothing',
                                     self.db.characters[dbref],
                                     None,
-                                    ACTIONS_PER_TURN - self.db.action_count[dbref])
+                                    _ACTIONS_PER_TURN - self.db.action_count[dbref])
         self.end_turn()
 
     # Combat-handler methods
@@ -141,6 +146,64 @@ class CombatHandler(Script):
             if character not in exclude:
                 character.msg(message)
 
+    def combat_msg(self, messages, actor, target=None, exclude=None, **kwargs):
+        """Sends messaging to combat participants and vicinity.
+
+        Args:
+          messages (tuple): tuple of messages with up to three items:
+              1. a message sent to the actor
+              2. a message sent to the actor's location
+              3. an message sent to the target (optional)
+
+          actor (Character): the character taking the action, keyed
+                in messages as {actor}.
+          target (Character, optional): the character or object being
+                targeted in the action, keyed in messages as {target}.
+          kwargs: any other format substitution keys should be passed
+                in as kwargs.
+
+        Example:
+            ch.combat_msg(("You attack {target} with {weapon}.",
+                           "{actor} attacks {target} with {weapon}.",
+                           "{actor} attacks you with {weapon}."),
+                          actor=attacker,
+                          target=defender,
+                          weapon=weapon)
+        """
+        exclude = make_iter(exclude) if exclude else []
+        exclude.append(actor)
+
+        # actor messaging
+        mapping = {t: sub.get_display_name(actor)
+                   if hasattr(sub, 'get_display_name')
+                   else str(sub)
+                   for t, sub in kwargs.items()}
+        if target:
+            exclude.append(target)
+            mapping.update({'target': target.get_display_name(actor)
+                            if hasattr(target, 'get_display_name')
+                            else str(target)})
+
+        actor.msg(messages[0].format(**mapping),
+                  prompt=_COMBAT_PROMPT.format(tr=actor.traits))
+
+        # room messaging
+        mapping = {t: sub for t, sub in kwargs.items()}
+        mapping.update({'actor': actor, 'target': target})
+        actor.location.msg_contents(messages[1],
+                                    mapping=mapping,
+                                    exclude=exclude)
+
+        # target messaging
+        if target:
+            mapping = {t: sub.get_display_name(target)
+                       if hasattr(sub, 'get_display_name')
+                       else str(sub)
+                       for t, sub in kwargs.items()}
+            mapping['actor'] = actor.get_display_name(target)
+            target.msg(messages[2].format(**mapping),
+                       prompt=_COMBAT_PROMPT.format(tr=target.traits))
+
     def add_action(self, action, character, target, duration, longturn=False):
         """
         Called by combat commands to register an action with the handler.
@@ -156,7 +219,7 @@ class CombatHandler(Script):
         """
         dbref = character.id
         count = self.db.action_count[dbref]
-        if 0 <= count < ACTIONS_PER_TURN or longturn:
+        if 0 <= count < _ACTIONS_PER_TURN or longturn:
             self.db.turn_actions[dbref].append((action, character, target, duration))
         else:
             # report if we already used too many actions

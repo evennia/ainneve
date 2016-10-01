@@ -26,6 +26,23 @@ class Weapon(Equippable):
         self.db.damage = self.damage
         self.db.handedness = self.handedness
         self.db.combat_cmdset = 'commands.combat.MeleeWeaponCmdSet'
+        self.db.messages = \
+            {'dmg_hp':
+                 ("You attack {target} with {weapon}, hurting them so bad",
+                  "{actor} attacks {target} with {weapon}, striking a painful blow.",
+                  "{actor} attacks you with {weapon} and strikes a painful blow."),
+             'dmg_sp':
+                 ("You stun {target} with {weapon}, bringing them closer to submission.",
+                  "{actor} stuns {target} with {weapon}.",
+                  "{actor} stuns you with {weapon}, and you feel your resolve weaken."),
+             'dodged':
+                 ("{target} dodges your attack, and {weapon} through the air impotently.",
+                  "{weapon} fails to meet its target as {target} dodges {actor}'s attack.",
+                  "You successfully dodge {actor}'s attack with {weapon}."),
+             'missed':
+                 ("You attack {target} with {weapon} and miss.",
+                  "{actor} attacks {target} with {weapon} and misses.",
+                  "{actor} attacks you with {weapon} and misses.")}
 
     def at_equip(self, character):
         character.traits.ATKM.mod += self.db.damage
@@ -66,7 +83,7 @@ class RangedWeapon(Weapon):
         if not ammunition:
             # no individual ammo found, search for bundle
             bundle = [obj for obj in self.location.contents
-                      if "{} bundle".format(self.db.ammunition)
+                      if "bundle {}".format(self.db.ammunition)
                           in obj.aliases.all()
                       and obj.is_typeclass('typeclasses.items.Bundle')]
 

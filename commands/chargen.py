@@ -128,14 +128,23 @@ class CmdCharCreate(MuxPlayerCommand):
         # create the character
         from evennia.objects.models import ObjectDB
 
-        start_location = ObjectDB.objects.get_id(settings.START_LOCATION)
-        default_home = ObjectDB.objects.get_id(settings.DEFAULT_HOME)
+        start_location = search.objects('Kai River Bridge')
+        start_location = start_location[0] if start_location \
+            else ObjectDB.objects.get_id(settings.START_LOCATION)
+
+        home = search.objects('Shrine of Grass')
+        home = home[0] if home \
+            else ObjectDB.objects.get_id(settings.DEFAULT_HOME)
+
         typeclass = settings.BASE_CHARACTER_TYPECLASS
         permissions = settings.PERMISSION_PLAYER_DEFAULT
 
         # check whether a character already exists
         new_character = None
-        candidates = search.objects(key, typeclass='typeclasses.characters.Character')
+        candidates = search.objects(
+            key,
+            typeclass='typeclasses.characters.Character')
+
         if candidates:
             for c in candidates:
                 if c.access(player, 'puppet'):
@@ -147,7 +156,7 @@ class CmdCharCreate(MuxPlayerCommand):
 
             new_character = create.create_object(typeclass, key=key,
                                                  location=None,
-                                                 home=default_home,
+                                                 home=home,
                                                  permissions=permissions)
             # only allow creator (and immortals) to puppet this char
             new_character.locks.add(

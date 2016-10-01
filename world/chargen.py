@@ -623,7 +623,8 @@ def _format_item_details(item):
 
     if item['typeclass'] in ("typeclasses.weapons.RangedWeapon",
                              "typeclasses.weapons.TwoHandedRanged"):
-        col2.append("          |CRange|n: |G{}|n".format(item['range']))
+        col2.append("          |CRange|n: |G{}|n".format(
+            ", ".join([r.capitalize() for r in item['range']])))
 
     if item['typeclass'] in ("typeclasses.armors.Armor",
                              "typeclasses.armors.Shield"):

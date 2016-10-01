@@ -86,7 +86,7 @@ riverport
  well-maintained. In the distance, you hear the sound of burbling water
  coming from the |gRiver Kai|n.
 
- To the north, a grassy meadow extends along the banks of the |rKai|n.
+ To the north, a grassy meadow extends along the banks of the |gKai|n.
 
 ######
 # eastern road segment #2
@@ -163,7 +163,7 @@ riverport
 #
 @desc
 
- Bordered to the west by the murmuring waters of the |rRiver Kai|n, this sun
+ Bordered to the west by the murmuring waters of the |gRiver Kai|n, this sun
  drenched meadow is carpeted with short grass. Along the river bank, tall
  reeds no doubt hide the homes of river-going critters.
 
@@ -186,7 +186,7 @@ riverport
 #
 @desc
 
- Bordered to the west by the murmuring waters of the |rRiver Kai|n, this sun
+ Bordered to the west by the murmuring waters of the |gRiver Kai|n, this sun
  drenched meadow is carpeted with short grass. Along the river bank, tall
  reeds no doubt hide the homes of river-going critters.
 
@@ -327,4 +327,65 @@ riverport
 #
 @open southeast;se, northwest;nw = riverport#08
 
+######
+# path to respawning shrine
 #
+# Shrine path
+#
+@tel riverport#02
+#
+@tunnel/tel s = A Dirt Path;riverport#14
+#
+@tag riverport#14 = riverport : zone
+#
+@terrain = EASY
+#
+@desc
+
+ A dirt |wpath|n leads through a grassy feald.
+
+ To the west, reeds rise along the shores of the |gKai|n. To the southeast, a
+ grove of trees that look as though they were positioned intentionally shrouds
+ a small, ancient building in the distance.
+
+#
+@detail path =
+
+ The path is simply a stretch of meadow grass worn thin, tamped down by the feet
+ of pilgrims and mourners for the fallen on the way to the |gShrine of Grass|n.
+
+######
+# Shrine of Grass - Entrance
+#
+@tunnel/tel se = Shrine of Grass - Entrance;riverport#15
+#
+@tag riverport#15 = riverport : zone
+#
+@terrain = EASY
+#
+@desc
+
+ Amid a circle of trees and come upon a small stone structure. You can see
+ a large, open |warchway|n on one side of the shrine. There is no caretaker
+ to be seen, but the area is well-kept, and you can see wisps of smoke
+ rising to the sky above the rooftop.
+
+######
+# Shrine of Grass
+#
+@dig/tel Shrine of Grass;riverport#16 = archway;arch;shrine;door,archway;arch;out
+#
+@tag riverport#16 = riverport : zone
+#
+@terrain = EASY
+#
+@desc
+
+ The smooth stones of the shrine's floor and walls surround you, and you feel
+ energy surging within them. You see trees looming before an open sky through
+ the tall, open |warchway|n at the front of the shrine. A fire burning at the
+ center of what appears to be a shallow pool of shimmering purple liquid is
+ opposite the archway.
+
+#
+

@@ -16,6 +16,7 @@ HAND_AXE = {
     "weight": 1,
     "value": 60*CC,
     "damage": 2,
+    "range": ["melee"]
 }
 
 BATTLE_AXE = {
@@ -27,6 +28,7 @@ BATTLE_AXE = {
     "weight": 3,
     "value": 3*SC,
     "damage": 4,
+    "range": ["melee"]
 }
 
 DAGGER = {
@@ -38,6 +40,7 @@ DAGGER = {
     "weight": 0.5,
     "value": 30*CC,
     "damage": 1,
+    "range": ["melee"]
 }
 
 MAUL_HAMMER = {
@@ -49,6 +52,7 @@ MAUL_HAMMER = {
     "weight": 5,
     "value": 2*SC,
     "damage": 4,
+    "range": ["melee"]
 }
 
 LANCE_POLEARM = {
@@ -98,6 +102,7 @@ MACE_ROD = {
     "weight": 2,
     "value": 50*CC,
     "damage": 2,
+    "range": ["melee"]
 }
 
 MORNINGSTAR_ROD = {
@@ -110,6 +115,7 @@ MORNINGSTAR_ROD = {
     "weight": 2,
     "value": 1*SC,
     "damage": 3,
+    "range": ["melee"]
 }
 
 SCYTHE = {
@@ -134,6 +140,7 @@ SHORT_SWORD = {
     "weight": 1,
     "value": 1*SC,
     "damage": 2,
+    "range": ["melee"]
 }
 
 RAPIER = {
@@ -145,6 +152,7 @@ RAPIER = {
     "weight": 1,
     "value": 3*SC,
     "damage": 3,
+    "range": ["melee"]
 }
 
 WHIP = {
@@ -156,6 +164,7 @@ WHIP = {
     "weight": 1,
     "value": 30*CC,
     "damage": 1,
+    "range": ["melee"]
 }
 
 
@@ -173,6 +182,7 @@ LONG_BOW = {
     "value": 40*CC,
     "damage": 1,
     "ammunition": "arrow",
+    "range": ["ranged", "reach"]
 }
 
 HAND_CROSSBOW = {
@@ -185,6 +195,7 @@ HAND_CROSSBOW = {
     "value": 4*SC,
     "damage": 0,
     "ammunition": "quarrel",
+    "range": ["ranged", "reach"]
 }
 
 LIGHT_CROSSBOW = {
@@ -197,6 +208,7 @@ LIGHT_CROSSBOW = {
     "value": 3*SC,
     "damage": 1,
     "ammunition": "quarrel",
+    "range": ["ranged", "reach"]
 }
 
 # Ammunition
@@ -295,5 +307,6 @@ JAVELIN = {
     "weight": 1,
     "value": 15*CC,
     "damage": 1,
-    "ammunition": "javelin"
+    "ammunition": "javelin",
+    "range": ["ranged", "reach"]
 }

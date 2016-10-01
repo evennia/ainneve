@@ -155,11 +155,13 @@ class CmdEquip(MuxCommand):
                 if hasattr(obj, "at_equip"):
                     obj.at_equip(caller)
 
-                caller.msg("You {} {}.".format(action, obj))
+                caller.msg("You {} {}.".format(action,
+                                               obj.get_display_name(caller)))
                 caller.location.msg_contents(
-                    "{} {}s {}.".format(caller.name.capitalize(),
-                                        action,
-                                        obj.name),
+                    "{actor} {action}s {obj}.",
+                    mapping=dict(actor=caller,
+                                 obj=obj,
+                                 action=action),
                     exclude=caller)
         else:
             # no arguments; display current equip
