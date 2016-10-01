@@ -143,7 +143,7 @@ def resolve_death(killer, victim, combat_handler):
         xp_gained = int(floor(0.1 * victim.traits.XP.actual))
     else:
         # XP trait on NPCs contains the full award
-        xp_gained = victim.traits.XP.actual
+        xp_gained = int(victim.traits.XP.actual)
 
     killer.traits.XP.base += xp_gained
     killer.msg("You gain {} XP".format(xp_gained))
@@ -151,7 +151,7 @@ def resolve_death(killer, victim, combat_handler):
 
 def _do_nothing(character, _, args):
     """Default combat action if no action has been entered."""
-    if '_cont1' in args:  # only message on the last repeat
+    if 'continuing_1' in args:  # only message on the last repeat
         ch = character.ndb.combat_handler
         ch.combat_msg(
             ("Your attention wanders, despite the heated battle raging around you.",
@@ -391,7 +391,7 @@ def _do_attack(character, target, args):
 def _do_kick(character, target, args):
     """Implements the 'kick' combat command."""
     ch = character.ndb.combat_handler
-    if not any(arg.startswith('_cont') for arg in args):
+    if not any(arg.startswith('continuing') for arg in args):
         if character.db.position != 'STANDING':
             # if you are in any wrestling position other
             # than free standing, all you can do is wrestle to break free
@@ -680,7 +680,7 @@ def _do_dodge(*args):
 def _do_flee(character, _, args):
     """Implements the 'flee' combat command."""
     ch = character.ndb.combat_handler
-    if not any(arg.startswith("_cont") for arg in args):
+    if not any(arg.startswith("continuing") for arg in args):
         ch.combat_msg(
             ("You begin to search desperately for an escape route.",
              "{actor} looks about frantically."),
@@ -782,7 +782,7 @@ def process_next_action(combat_handler):
         if duration > 1:
             # action takes more than one subturn; return it to the queue
             turn_actions[current_charid].append(
-                ('{}/_cont{}'.format(action, duration - 1),
+                ('{}/continuing_{}'.format(action, duration - 1),
                  character,
                  target,
                  duration - 1)
@@ -812,6 +812,15 @@ def resolve_combat(combat_handler):
     """
 
     combatants = combat_handler.db.characters
+
+    # fill any dawdlers with the 'nothing' action
+    for dbref in combat_handler.db.action_count.keys():
+        if combat_handler.db.action_count[dbref] < ACTIONS_PER_TURN:
+            combat_handler.add_action(
+                'nothing',
+                combat_handler.db.characters[dbref],
+                None,
+                ACTIONS_PER_TURN - combat_handler.db.action_count[dbref])
 
     # tiebreaker resolution helper function. super non-deterministic
     def _initiative_cmp(x, y):

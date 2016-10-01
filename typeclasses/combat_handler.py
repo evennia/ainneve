@@ -105,13 +105,6 @@ class CombatHandler(Script):
         """
         if not args:
             self.msg_all("Turn timer timed out. Continuing.")
-            # fill any dawdlers with the 'nothing' action
-            for dbref in self.db.action_count.keys():
-                if self.db.action_count[dbref] < _ACTIONS_PER_TURN:
-                    self.add_action('nothing',
-                                    self.db.characters[dbref],
-                                    None,
-                                    _ACTIONS_PER_TURN - self.db.action_count[dbref])
         self.end_turn()
 
     # Combat-handler methods
@@ -223,8 +216,26 @@ class CombatHandler(Script):
         else:
             # report if we already used too many actions
             return False
-        self.db.action_count[dbref] = sum([x[3] for x in self.db.turn_actions[dbref]])
+        self.db.action_count[dbref] = \
+            sum([x[3] for x in self.db.turn_actions[dbref]])
         return True
+
+    def remove_last_action(self, character):
+        """Removes the last action in the queue for specified character.
+
+        Returns:
+            Either a tuple containing the action and target removed,
+            or a tuple containing (False, False)
+        """
+        dbref = character.id
+
+        if len(self.db.turn_actions[dbref]) == 0:
+            return False, False
+        else:
+            action, _, target, _ = self.db.turn_actions[dbref].pop()
+            self.db.action_count[dbref] = \
+                sum([x[3] for x in self.db.turn_actions[dbref]])
+            return action, target
 
     def get_range(self, character, target):
         """Returns the range for a pair of combatants."""

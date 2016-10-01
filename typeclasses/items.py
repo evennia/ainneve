@@ -60,7 +60,7 @@ class Bundlable(Item):
             bundle = create_object(
                 typeclass='typeclasses.items.Bundle',
                 key='a bundle of {}s'.format(bundle_key),
-                aliases=['{} bundle'.format(bundle_key)],
+                aliases=['bundle {}'.format(bundle_key)],
                 location=self.location
             )
             bundle.db.desc = ("A bundle of {item}s held together "

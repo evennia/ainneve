@@ -55,6 +55,7 @@ class CombatCmdSet(CmdSet):
 
     def at_cmdset_creation(self):
         """Populate CmdSet"""
+        self.add(CmdRemoveAction())
         self.add(CmdDropItem())
         self.add(CmdGetItem())
         self.add(CmdEquip())
@@ -64,8 +65,8 @@ class CombatCmdSet(CmdSet):
         self.add(CmdAdvance())
         self.add(CmdRetreat())
         self.add(CmdFlee())
-        #self.add(CmdWrestle())
-        #self.add(CmdTackle())
+        # self.add(CmdWrestle())
+        # self.add(CmdTackle())
 
 
 class MeleeWeaponCmdSet(CmdSet):
@@ -181,25 +182,30 @@ class CmdAttack(default_cmds.MuxCommand):
 
     def func(self):
         caller = self.caller
+        ch = caller.ndb.combat_handler
+        combat_chars = ch.db.characters.values()
 
-        attack_type = self.attack_type if hasattr(self, 'attack_type') \
-                        else 'attack'
+        attack_type = self.attack_type \
+            if hasattr(self, 'attack_type') else 'attack'
+
         duration = self.duration if hasattr(self, 'duration') else 1
+        target = None
 
         if not self.args:
-            caller.msg("Usage: {}[/s] <target>".format(attack_type))
-            return
+            if len(combat_chars) == 2:
+                target = [x for x in combat_chars if x.id != caller.id][0]
+            else:
+                caller.msg("Usage: {}[/s] <target>".format(attack_type))
+                return
 
         if len(self.switches) > 0:
             switch = '/{}'.format(self.switches[0])
         else:
             switch = ''
 
-        combat_chars = caller.ndb.combat_handler.db.characters.values()
-
-        target = caller.search(
-                    self.args,
-                    candidates=combat_chars)
+        target = target or caller.search(
+            self.args,
+            candidates=combat_chars)
 
         if not target:
             return
@@ -220,7 +226,7 @@ class CmdAttack(default_cmds.MuxCommand):
             caller.msg("You have already entered all actions for your turn.")
 
         # tell the handler to check if turn is over
-        caller.ndb.combat_handler.check_end_turn()
+        ch.check_end_turn()
 
 
 class CmdAttackMelee(CmdAttack):
@@ -669,21 +675,14 @@ class CmdTackle(default_cmds.MuxCommand):
         if not target:
             return
 
-
-        ok1 = caller.ndb.combat_handler.add_action(
-                action="charge",
-                character=caller,
-                target=target,
-                duration=1)
-
-        ok2 = caller.ndb.combat_handler.add_action(
+        ok = caller.ndb.combat_handler.add_action(
                 action="tackle",
                 character=caller,
                 target=target,
-                duration=2,
+                duration=3,
                 longturn=True)
 
-        if ok1 and ok2:
+        if ok:
             caller.msg(
                 "You add 'tackle {target}' to the combat queue".format(
                     target=target.get_display_name(self.caller)))
@@ -736,44 +735,74 @@ class CmdCombatLook(default_cmds.MuxCommand):
     Usage:
       look
 
-    Provides a quick summary of combat status.
+    Provides a summary of combat status, including opponents
+    by range, remaining time to enter actions, and a listing
+    of currently entered actions.
     """
     key = 'look'
     aliases = ['l', 'ls']
     locks = 'cmd:in_combat()'
-    help_category = 'free actions'
+    help_category = 'free instant actions'
 
     def func(self):
         caller = self.caller
         ch = caller.ndb.combat_handler
 
         caller.msg("You are in combat.")
-        caller.msg("Opponents:")
+        caller.msg("  Opponents:")
         opponents_by_range = ch.get_proximity(caller)
-        for range in opponents_by_range:
-            for opp_id in opponents_by_range[range]:
+        for rng in opponents_by_range:
+            for opp_id in opponents_by_range[rng]:
                 opponent = ch.db.characters[opp_id]
                 caller.msg(
-                    "   {opponent} at |G{range}|n range.".format(
+                    "    {opponent} at |G{range}|n range.".format(
                         opponent=opponent.get_display_name(caller),
-                        range=range,
+                        range=rng,
                         stance=opponent.db.position))
 
         if ch.is_active:
             caller.msg(
-                "The current turn timer has {} seconds remaining.".format(
+                "  The current turn timer has |y{}|n seconds remaining.".format(
                     ch.time_until_next_repeat()))
             if len(ch.db.turn_actions[caller.id]):
-                caller.msg("You have entered the following actions:")
+                caller.msg("  You have entered the following actions:")
                 durations = ['free', 'half-turn', 'full-turn', 'multi-turn']
                 for idx, (action, _, target, duration) \
                         in enumerate(ch.db.turn_actions[caller.id]):
                     duration = duration if duration < len(durations) \
                         else len(durations)-1
                     caller.msg(
-                        "  {idx}: |w{action:<10}|n {target:<30} (|Y{duration} action)|n".format(
+                        "    {idx}: |w{action:<10}|n {target:<30} (|Y{duration} action|n)".format(
                             idx=idx+1,
                             action=action,
                             target='' if target == caller else target,
                             duration=durations[duration]))
 
+
+class CmdRemoveAction(default_cmds.MuxCommand):
+    """
+    assess the combat situation
+
+    Usage:
+      remove
+
+    Removes the last action in the action queue for this
+    turn.
+    """
+    key = 'remove'
+    aliases = ['rem', 'remove action', 'rem act']
+    locks = 'cmd:in_combat()'
+    help_category = 'free instant actions'
+
+    def func(self):
+        caller = self.caller
+        ch = caller.ndb.combat_handler
+
+        action, target = ch.remove_last_action(caller)
+        if action:
+            caller.msg('Removed "{action} {target}" action.'.format(
+                action=action,
+                target='' if target == caller else target.get_display_name(caller)
+            ))
+        else:
+            caller.msg('You have not yet entered any actions this turn.')
