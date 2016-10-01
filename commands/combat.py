@@ -44,6 +44,7 @@ class CombatBaseCmdSet(CmdSet):
 
         self.add(CmdEmote())
         self.add(CmdPose())
+        self.add(CmdCombatLook())
 
 
 class CombatCmdSet(CmdSet):
@@ -726,3 +727,53 @@ class CmdFlee(default_cmds.MuxCommand):
 
         # tell the handler to check if turn is over
         caller.ndb.combat_handler.check_end_turn()
+
+
+class CmdCombatLook(default_cmds.MuxCommand):
+    """
+    assess the combat situation
+
+    Usage:
+      look
+
+    Provides a quick summary of combat status.
+    """
+    key = 'look'
+    aliases = ['l', 'ls']
+    locks = 'cmd:in_combat()'
+    help_category = 'free actions'
+
+    def func(self):
+        caller = self.caller
+        ch = caller.ndb.combat_handler
+
+        caller.msg("You are in combat.")
+        caller.msg("Opponents:")
+        opponents_by_range = ch.get_proximity(caller)
+        for range in opponents_by_range:
+            for opp_id in opponents_by_range[range]:
+                opponent = ch.db.characters[opp_id]
+                caller.msg(
+                    "   {opponent} at |G{range}|n range.".format(
+                        opponent=opponent.get_display_name(caller),
+                        range=range,
+                        stance=opponent.db.position))
+
+        if ch.is_active:
+            caller.msg(
+                "The current turn timer has {} seconds remaining.".format(
+                    ch.time_until_next_repeat()))
+            if len(ch.db.turn_actions[caller.id]):
+                caller.msg("You have entered the following actions:")
+                durations = ['free', 'half-turn', 'full-turn', 'multi-turn']
+                for idx, (action, _, target, duration) \
+                        in enumerate(ch.db.turn_actions[caller.id]):
+                    duration = duration if duration < len(durations) \
+                        else len(durations)-1
+                    caller.msg(
+                        "  {idx}: |w{action:<10}|n {target:<30} (|Y{duration} action)|n".format(
+                            idx=idx+1,
+                            action=action,
+                            target='' if target == caller else target,
+                            duration=durations[duration]))
+

@@ -1,5 +1,5 @@
 
-from collections import deque
+from collections import deque, OrderedDict
 from operator import add
 import random
 from .scripts import Script
@@ -7,7 +7,7 @@ from evennia import TICKER_HANDLER as tickerhandler
 from evennia.utils import utils, make_iter
 
 
-COMBAT_DISTANCES = {'melee': 0, 'reach': 1, 'ranged': 2}
+COMBAT_DISTANCES = ['melee', 'reach', 'ranged']
 WRESTLING_POSITIONS = ('STANDING', 'CLINCHED', 'TAKE DOWN', 'PINNED')
 
 _ACTIONS_PER_TURN = utils.variable_from_module('world.rulebook', 'ACTIONS_PER_TURN')
@@ -121,8 +121,7 @@ class CombatHandler(Script):
         dbref = character.id
         for cid in self.db.characters.keys():
             # all characters start at 'ranged' distance from each other
-            self.db.distances[frozenset((cid, character.id))] = \
-                COMBAT_DISTANCES['ranged']
+            self.db.distances[frozenset((cid, character.id))] = 'ranged'
 
         self.db.characters[dbref] = character
         self.db.action_count[dbref] = 0
@@ -227,14 +226,9 @@ class CombatHandler(Script):
         self.db.action_count[dbref] = sum([x[3] for x in self.db.turn_actions[dbref]])
         return True
 
-    def get_range(self, character, target, numeric=False):
+    def get_range(self, character, target):
         """Returns the range for a pair of combatants."""
-        range_value = self.db.distances[frozenset((character.id, target.id))]
-        if numeric:
-            return range_value
-        else:
-            rmap = dict(map(lambda rnm: (COMBAT_DISTANCES[rnm], rnm), COMBAT_DISTANCES.keys()))
-            return rmap[range_value]
+        return self.db.distances[frozenset((character.id, target.id))]
 
     def get_min_range(self, character, max=False):
         """Returns the name of the nearest range wth opponents.
@@ -244,16 +238,18 @@ class CombatHandler(Script):
           max (boolean): if true, return the farthest range
                          containing opponents
             """
-        char_prox = self._get_proximity(character)
-        for rng in sorted(COMBAT_DISTANCES.keys(),
-                          key=lambda k: COMBAT_DISTANCES[k],
-                          reverse=max):
-            if len(char_prox[COMBAT_DISTANCES[rng]]) > 0:
+        char_prox = self.get_proximity(character)
+        for rng in char_prox:
+            if len(char_prox[rng]) > 0:
                 return rng
+        return None
 
-    def _get_proximity(self, character):
+    def get_proximity(self, character):
         """Returns a list of lists of character dbrefs by distance."""
-        proximities = [[], [], []]
+        proximities = OrderedDict()
+        for rng in COMBAT_DISTANCES:
+            proximities[rng] = []
+
         if character:
             for id, rng in [(next(iter(k.difference(frozenset((character.id,))))), r)
                             for k, r in self.db.distances.items()
@@ -264,34 +260,33 @@ class CombatHandler(Script):
 
     def move_character(self, character, to_range, from_range, target=None):
         """Changes a character's range with respect to one or more other combatants."""
+        _CD = COMBAT_DISTANCES
         distances = self.db.distances
-        char_prox = self._get_proximity(character)
-        targ_prox = self._get_proximity(target)
+        char_prox = self.get_proximity(character)
+        targ_prox = self.get_proximity(target)
 
         if target:
             # advancing; set the distance between the character and target
-            distances[frozenset((character.id, target.id))] = \
-                COMBAT_DISTANCES[to_range]
+            distances[frozenset((character.id, target.id))] = to_range
 
             if to_range == 'melee':
                 # char takes on target's distances for all others
-                for rng in COMBAT_DISTANCES.keys():
-                    for cid in targ_prox[COMBAT_DISTANCES[rng]]:
+                for rng in _CD:
+                    for cid in targ_prox[rng]:
                         if cid != character.id:
-                            distances[frozenset((character.id, cid))] = \
-                                COMBAT_DISTANCES[rng]
+                            distances[frozenset((character.id, cid))] = rng
 
         else:  # retreating; to_range is either 'reach' or 'ranged'
             from world.rulebook import skill_check
             # have to pass a balance skill test to retreat from melee
             ok = True
             if from_range == 'melee':
-                ok = skill_check(character.skills.balance.actual, 4) or \
-                        COMBAT_DISTANCES[to_range] > COMBAT_DISTANCES[from_range]
+                ok = skill_check(character.skills.balance.actual, 4) and \
+                     _CD.index(to_range) > _CD.index(from_range)
             if ok:
-                for cid in reduce(add, char_prox[:COMBAT_DISTANCES[to_range]]):
-                    distances[frozenset((character.id, cid))] = \
-                        COMBAT_DISTANCES[to_range]
+                for cid in reduce(add, [char_prox[rng] for rng
+                                        in _CD[:_CD.index(to_range)]]):
+                    distances[frozenset((character.id, cid))] = to_range
         return True
 
     def check_end_turn(self):
