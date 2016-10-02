@@ -32,7 +32,8 @@ class Character(ContribRPCharacter):
         self.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}
         self.db.position = 'STANDING'
 
-        self.db.pose_strings = {'death': 'lies dead.'}
+        self.db.pose = self.db.pose or self.db.pose_default
+        self.db.pose_death = 'lies dead.'
 
         # Non-persistent attributes
         self.ndb.group = None

@@ -53,7 +53,7 @@ class CharDeathHandler(DeathHandler):
                                        mapping={'character': self.obj},
                                        exclude=self.obj)
 
-        self.obj.db.pose = self.obj.db.pose_strings['death']
+        self.obj.db.pose = self.obj.db.pose_death
         self.obj.traits.XP.base = floor(0.1 * self.obj.traits.XP.actual)
         delay(20, getattr(self, self.db.death_sequence[self.db.death_step]))
 
@@ -109,11 +109,12 @@ class NPCDeathHandler(DeathHandler):
 
     def at_start(self):
         """Handles the 'phases' of death"""
+        super(NPCDeathHandler, self).at_start()
         self.obj.location.msg_contents("{character} falls dead.",
                                        mapping={'character': self.obj},
                                        exclude=self.obj)
 
-        self.obj.db.pose = self.obj.db.pose_strings['death']
+        self.obj.db.pose = self.obj.db.pose_death
         delay(10 * d_roll('1d6'),
               getattr(self, self.db.death_sequence[self.db.death_step]))
 
