@@ -357,7 +357,7 @@ riverport
 ######
 # Shrine of Grass - Entrance
 #
-@tunnel/tel se = Shrine of Grass - Entrance;riverport#15
+@tunnel/tel se = The Grassy Knoll ;riverport#15
 #
 @tag riverport#15 = riverport : zone
 #
@@ -367,10 +367,10 @@ riverport
 #
 @desc
 
- Amid a circle of trees and come upon a small stone structure. You can see
- a large, open |warchway|n on one side of the shrine. There is no caretaker
- to be seen, but the area is well-kept, and you can see wisps of smoke
- rising to the sky above the rooftop.
+ You enter a circle of trees and come upon a small stone structure. You
+ can see a large, open |warchway|n on one side of the shrine. There is
+ no caretaker to be seen, but the area is well-kept, and you can see wisps
+ of smoke rising to the sky above the clearing.
 
 ######
 # Shrine of Grass

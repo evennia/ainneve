@@ -30,3 +30,8 @@ def sample_char(char, archetype, race, focus=None):
     tickerhandler.add(interval=6, callback=char.at_turn_start)
     skills.apply_skills(char)
     skills.finalize_skills(char.skills)
+
+
+def call_immediate(delay, callback, *args, **kwargs):
+    """utility function to be patched in place of ...utils.delay for testing"""
+    callback(*args, **kwargs)

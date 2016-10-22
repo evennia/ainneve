@@ -35,11 +35,6 @@ class Character(ContribRPCharacter):
         self.db.pose = self.db.pose or self.db.pose_default
         self.db.pose_death = 'lies dead.'
 
-        # Non-persistent attributes
-        self.ndb.group = None
-        self.ndb.appr_lose = {}
-        self.ndb.appr_win = {}
-
     @lazy_property
     def traits(self):
         """TraitHandler that manages character traits."""

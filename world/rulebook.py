@@ -24,6 +24,7 @@ from evennia.utils import utils, make_iter
 COMBAT_DELAY = 2
 ACTIONS_PER_TURN = 2
 
+COMBAT_DISTANCES = utils.variable_from_module('typeclasses.combat_handler', 'COMBAT_DISTANCES')
 WRESTLING_POSITIONS = utils.variable_from_module('typeclasses.combat_handler', 'WRESTLING_POSITIONS')
 
 
@@ -125,17 +126,14 @@ def skill_check(skill, target=5):
 
 def resolve_death(killer, victim, combat_handler):
     """Called when a victim is killed during combat."""
-    victim.at_death()
-    combat_handler.remove_character(victim)
-    combat_handler.db.turn_order.remove(victim.id)
-
-    killer.msg("You have defeated {victim}".format(
-        victim=victim
-    ))
     killer.location.msg_contents(
         "{killer} has vanquished {victim}.",
         mapping={'killer': killer, 'victim': victim},
-        exclude=(killer, victim))
+        exclude=victim)
+
+    victim.at_death()
+    combat_handler.remove_character(victim)
+    combat_handler.db.turn_order.remove(victim.id)
 
     # award XP
     if victim.is_typeclass('typeclasses.characters.Character'):
@@ -146,16 +144,17 @@ def resolve_death(killer, victim, combat_handler):
         xp_gained = int(victim.traits.XP.actual)
 
     killer.traits.XP.base += xp_gained
-    killer.msg("You gain {} XP".format(xp_gained))
+    killer.msg("{actor} gains {xp} XP".format(
+        actor=killer,
+        xp=xp_gained))
 
 
-def _do_nothing(character, _, args):
+def _do_nothing(st_remaining, character, _, args):
     """Default combat action if no action has been entered."""
-    if 'continuing_1' in args:  # only message on the last repeat
+    if st_remaining <= 0:  # only message on the last repeat
         ch = character.ndb.combat_handler
         ch.combat_msg(
-            ("Your attention wanders, despite the heated battle raging around you.",
-             "{actor} stares into space vacantly."),
+            "{actor} stares into space vacantly.",
             actor=character)
 
         return 0.5 * COMBAT_DELAY
@@ -163,26 +162,40 @@ def _do_nothing(character, _, args):
         return 0.2 * COMBAT_DELAY
 
 
-def _do_drop(character, target, _):
+def _do_drop(st_remaining, character, target, _):
     """Implement the 'drop item' combat action."""
-    # drop the item and run hook
-    target.move_to(character.location, quiet=True)
-    if hasattr(target, 'at_drop'):
-        target.at_drop(character)
-
-    # messaging
     ch = character.ndb.combat_handler
-    ch.combat_msg(
-        ("You drop {item}.",
-         "{actor} drops {item}."),
-        actor=character,
-        item=target)
+    # drop the item and run hook
+    if target in character.contents:
+        if target in character.equip:
+            character.equip.remove(target)
+            if hasattr(target, 'at_remove'):
+                target.at_remove(character)
 
-    return 0.5 * COMBAT_DELAY
+        target.move_to(character.location, quiet=True)
+        if hasattr(target, 'at_drop'):
+            target.at_drop(character)
+
+        # messaging
+        ch.combat_msg(
+            "{actor} drops {item}.",
+            actor=character,
+            item=target)
+
+        return 0.5 * COMBAT_DELAY
+
+    else:
+        ch.combat_msg(
+            "{actor} searches their bag, looking for {item}.",
+            actor=character,
+            item=target)
+
+        return 0.2 * COMBAT_DELAY
 
 
-def _do_get(character, target, _):
+def _do_get(st_remaining, character, target, _):
     """Implement the 'get item' combat action."""
+    ch = character.ndb.combat_handler
     if target in character.location.contents:
         # get the item and run hook
         target.move_to(character, quiet=True)
@@ -190,29 +203,35 @@ def _do_get(character, target, _):
             target.at_get(character)
 
         # messaging
-        ch = character.ndb.combat_handler
         ch.combat_msg(
-            ("You get {item}.",
-             "{actor} gets {item}."),
+            "{actor} gets {item}.",
             actor=character,
             item=target)
 
         return 1 * COMBAT_DELAY
 
     else:
-        character.msg("You cannot get {}".format(target.get_display_name(character)))
-        character.location.msg_contents(
-            "{actor} searches around looking for something.",
-            mapping={'actor': character}
-        )
+        ch.combat_msg(
+            "{actor} searches around looking for {target}.",
+            actor=character,
+            target=target)
+
         return 0.5 * COMBAT_DELAY
 
 
-def _do_equip(character, target, _):
+def _do_equip(st_remaining, character, target, _):
     """Implement the 'equip' combat action, replacing any
     currently equipped item.
     """
     ch = character.ndb.combat_handler
+    # confirm the item is in character's possesion
+    if target not in character.contents:
+        ch.combat_msg(
+            "{actor} looks around, confused.",
+            actor=character,
+            item=target)
+        return 0 * COMBAT_DELAY
+
     # handle swapping items if needed
     occupied_slots = [character.equip.get(s) for s in target.db.slots
                       if character.equip.get(s)]
@@ -220,16 +239,14 @@ def _do_equip(character, target, _):
         for item in occupied_slots:
             character.equip.remove(item)
             ch.combat_msg(
-                ("You remove {item}",
-                 "{actor} removes {item}."),
+                "{actor} removes {item}.",
                 actor=character,
                 item=item)
 
     # equip the item and call hooks
     if not character.equip.add(target):
         ch.combat_msg(
-            ("You can't equip {item}.",
-             "{actor} looks at {item}, wasting precious time."),
+            "{actor} looks at {item}, wasting precious time.",
             actor=character,
             item=target)
 
@@ -240,23 +257,55 @@ def _do_equip(character, target, _):
 
     # messaging
     ch.combat_msg(
-        ("You equip {item}",
-         "{actor} equips {item}."),
+        "{actor} equips {item}.",
         actor=character,
         item=target)
 
     return 1 * COMBAT_DELAY
 
 
-def _do_attack(character, target, args):
+def _do_remove(st_remaining, character, target, _):
+    """Implement the 'remove' combat action, removing a
+    currently equipped item.
+    """
+    ch = character.ndb.combat_handler
+    # confirm the item is in character's possesion
+    if target not in character.equip:
+        ch.combat_msg(
+            "{actor} looks around, confused.",
+            actor=character,
+            item=target)
+        return 0 * COMBAT_DELAY
+
+    # remove the item and call hooks
+    if not character.equip.remove(target):
+        ch.combat_msg(
+            "{actor} adjusts {item}, wasting precious time.",
+            actor=character,
+            item=target)
+
+        return 0 * COMBAT_DELAY
+
+    if hasattr(target, "at_remove"):
+        target.at_remove(character)
+
+    # messaging
+    ch.combat_msg(
+        "{actor} removes {item}.",
+        actor=character,
+        item=target)
+
+    return 1 * COMBAT_DELAY
+
+
+def _do_attack(st_remaining, character, target, args):
     """Implement melee and ranged 'attack' ch actions."""
     ch = character.ndb.combat_handler
 
     # confirm the target is still in combat
     if not target.id in ch.db.characters:
         ch.combat_msg(
-            ("You are unable to attack {defender}.",
-             "{actor} is unable to attack {defender}."),
+            "{actor} is unable to attack {defender}.",
             actor=character,
             defender=target)
 
@@ -274,34 +323,20 @@ def _do_attack(character, target, args):
                    if s.startswith('wield')
                    and character.equip.get(s) is not None])
 
-    weapons_by_range = defaultdict(list)
-    for weapon in weapons:
-        if weapon.attributes.has('range'):
-            for rng in make_iter(weapon.db.range):
-                weapons_by_range[rng].append(weapon)
+    weapon_ranges = dict(melee=('melee',),
+                         reach=('reach', 'melee'),
+                         ranged=('ranged', 'reach'))
+    weapon = None
+    for weap in weapons:
+        if weap.attributes.has('range'):
+            if attack_range in weapon_ranges[weap.db.range]:
+                weapon = weap
 
-    attack_type = None
-
-    if attack_range == 'melee' and weapons_by_range['melee']:
-        attack_type = 'melee'
-
-    elif attack_range == 'reach':
-        if weapons_by_range['reach']:
-            attack_type = 'reach'
-
-        elif weapons_by_range['ranged']:
-            attack_type = 'ranged'
-            character.traits.ATKR.mod += 1
-
-    else:  # attack_range == COMBAT_DISTANCES['ranged']
-        if weapons_by_range['ranged']:
-            attack_type = 'ranged'
-
-    if not attack_type:
-        character.msg("You do not have an appropriate weapon to attack.")
+    if not weapon:
+        ch.combat_msg(
+            "{actor} does not have an appropriate weapon to attack.",
+            actor=character)
         return 0
-
-    weapon = weapons_by_range[attack_type][0]
 
     # check whether the target is dodging
     dodging = target.nattributes.has('dodging')
@@ -313,24 +348,31 @@ def _do_attack(character, target, args):
         atk_roll = std_roll()
 
     ammunition = None
-    if attack_type == 'melee':
+    if weapon.db.range in ('melee', 'reach'):
         # calculate damage
         damage = (atk_roll + character.traits.ATKM) - target.traits.DEF
 
-    else:  # attack_type == 'ranged'
+    else:  # weapon range is 'ranged'
         # confirm we have proper ammunition
         ammunition = weapon.get_ammunition_to_fire()
 
         if not ammunition:
             ch.combat_msg(
-                ("You do not have any {ammo}s",
-                 "{actor}'s quiver has no more {ammo}s"),
+                "{actor} does not have any {ammo}s in their quiver.",
                 actor=character,
                 ammo=weapon.db.ammunition)
             return 0
 
+        if attack_range == 'reach':
+            # ranged weapons get a +1 bonus at reach range
+            character.traits.ATKR.mod += 1
+
         # calculate damage
         damage = (atk_roll + character.traits.ATKR) - target.traits.DEF
+
+        if attack_range == 'reach':
+            # remove the bonus
+            character.traits.ATKR.mod -= 1
 
     # apply damage
     if damage > 0:
@@ -340,8 +382,7 @@ def _do_attack(character, target, args):
 
         if dodging:
             ch.combat_msg(
-                ("You try to dodge the incoming attack, but",
-                 "{actor} tries to dodge, but"),
+                "{actor} tries to dodge, but",
                 actor=target)
 
         if any((arg.startswith('s') for arg in args)):
@@ -388,41 +429,37 @@ def _do_attack(character, target, args):
         # target has died
         resolve_death(character, target, ch)
 
-    if attack_range == 'reach' and attack_type == 'ranged':
-        # remove the range bonus
-        character.traits.ATKR.mod -= 1
-
     return 1 * COMBAT_DELAY
 
 
-def _do_kick(character, target, args):
+def _do_kick(st_remaining, character, target, args):
     """Implements the 'kick' combat command."""
     ch = character.ndb.combat_handler
-    if not any(arg.startswith('continuing') for arg in args):
-        if character.db.position != 'STANDING':
-            # if you are in any wrestling position other
-            # than free standing, all you can do is wrestle to break free
-            return _do_wrestle(character, target, ['break'])
 
-        # two-phase action - first turn; messaging only
+    # if character.db.position != 'STANDING':
+    #     # if you are in any wrestling position other
+    #     # than free standing, all you can do is wrestle to break free
+    #     return _do_wrestle(character, target, ['break'])
+
+    # kicking takes two-subturns to complete
+    if st_remaining > 0:
+        # irst subturn: messaging only
         ch.combat_msg(
-            ("You take a step toward {target}.",
-             "{actor} takes a step toward {target}.",
-             "{actor} takes a step toward you."),
+            "{actor} takes a step toward {target}.",
             actor=character,
             target=target)
 
     else:
-        # confirm the target is still in combat
-        # and is within range
+        # second subturn: checks and resolution
+
+        # confirm the target is still in combat and is within range
         attack_range = ch.get_range(character, target)
         if target.id not in ch.db.characters \
                 or attack_range != 'melee':
             ch.combat_msg(
-                ("You are unable to kick {defender}.",
-                 "{actor} is unable to kick {defender}."),
+                "{actor} is unable to kick {target}.",
                 actor=character,
-                defender=target)
+                target=target)
 
             return 0.2 * COMBAT_DELAY
 
@@ -439,8 +476,7 @@ def _do_kick(character, target, args):
         if damage > 0:
             if dodging:
                 ch.combat_msg(
-                    ("You try to dodge the incoming attack, but",
-                     "{actor} tries to dodge, but"),
+                    "{actor} tries to dodge, but",
                     actor=target
                 )
 
@@ -469,23 +505,11 @@ def _do_kick(character, target, args):
             # TODO: add 'off-balance' status effect to character once effects are implemented
 
         messages = {
-            'dmg_hp': ("You kick {target} savagely, sending them reeling.",
-                       "{actor} kicks {target} savagely, sending them reeling.",
-                       "{actor} kicks you savagely, sending you reeling."),
-            'dmg_sp': ("You kick {target} squarely in the chest, bringing them "
-                       "closer to submission.",
-                       "{actor} kicks {target} squarely in the chest, and {target} "
+            'dmg_hp': "{actor} kicks {target} savagely, sending them reeling.",
+            'dmg_sp': "{actor} kicks {target} squarely in the chest, and {target} "
                        "staggers from the blow.",
-                       "{actor} kicks you hard in the chest and you feel your "
-                       "resolve weaken."),
-            'dodged': ("You attempt to kick {target}, but they dodge, leaving you "
-                       "off balance.",
-                       "{target} dodges a kick from {actor}, throwing {actor} off balance.",
-                       "{actor} attempts to kick you, but you duck to one side."),
-            'missed': ("You kick at {target} with all your might, but fail to connect, "
-                       "throwing you off balance.",
-                       "{actor} kicks toward {target} and misses.",
-                       "{actor} tries to kick you but misses, falling off balance.")
+            'dodged': "{target} dodges a kick from {actor}, throwing {actor} off balance.",
+            'missed': "{actor} kicks toward {target} and misses."
         }
 
         ch.combat_msg(
@@ -509,7 +533,7 @@ def _do_kick(character, target, args):
     return 1 * COMBAT_DELAY
 
 
-def _do_strike(character, target, args):
+def _do_strike(st_remaining, character, target, args):
     """Implements the 'strike' combat command."""
     ch = character.ndb.combat_handler
 
@@ -528,20 +552,19 @@ def _do_strike(character, target, args):
     attack_range = ch.get_range(character, target)
     if attack_range != 'melee':
         ch.combat_msg(
-            ("You are too far to strike {defender}.",
-             "{actor} is to far away from {defender} to strike them."),
+            "{actor} is too far away from {target} to strike them.",
             actor=character,
-            defender=target)
+            target=target)
         return 0.2 * COMBAT_DELAY
 
     # and has at least one free hand
     strikes = sum(1 if character.equip.get(slot) is None else 0
                   for slot in character.db.slots
                   if slot.startswith('wield'))
+
     if strikes <= 0:
         ch.combat_msg(
-            ("You do not have a free hand.",
-             "{actor} goes to punch, but does not have a free hand."),
+            "{actor} goes to punch, but does not have a free hand.",
             actor=character)
         return 0.2 * COMBAT_DELAY
 
@@ -554,12 +577,11 @@ def _do_strike(character, target, args):
     else:
         atk_roll = std_roll()
 
-    damage = (atk_roll + character.traits.ATKU + 2) - target.traits.DEF
+    damage = (atk_roll + character.traits.ATKU) - target.traits.DEF
     if damage > 0:
         if dodging:
             ch.combat_msg(
-                ("You try to dodge the incoming attack, but",
-                 "{actor} tries to dodge, but"),
+                "{actor} tries to dodge, but",
                 actor=target
             )
 
@@ -585,22 +607,11 @@ def _do_strike(character, target, args):
             status = 'missed'
 
     messages = {
-        'dmg_hp': ("You strike {target} savagely with your fist.",
-                   "{actor} strikes {target} savagely with their fist.",
-                   "{actor} strikes you savagely with their fist."),
-        'dmg_sp': ("You strike {target} hard in the chest, bringing them "
-                   "closer to submission.",
-                   "{actor} strikes {target} hard in the chest, and {target} "
+        'dmg_hp': "{actor} strikes {target} savagely with their fist.",
+        'dmg_sp': "{actor} strikes {target} hard in the chest, and {target} "
                    "staggers from the blow.",
-                   "{actor} strikes you hard in the chest and you feel your "
-                   "resolve weaken."),
-        'dodged': ("You attempt to strike {target}, but they dodge the punch.",
-                   "{target} dodges a punch from {actor}.",
-                   "{actor} attempts to strike you, but you dodge it easily."),
-        'missed': ("You attempt to strike {target} with all your might, but "
-                   "your fist fails to connect",
-                   "{actor} attempts to punch {target} and misses.",
-                   "{actor} tries to punch you but misses.")
+        'dodged': "{target} dodges a punch from {actor}.",
+        'missed': "{actor} attempts to punch {target} and misses."
     }
 
     ch.combat_msg(
@@ -621,16 +632,17 @@ def _do_strike(character, target, args):
         # target has died
         resolve_death(character, target, ch)
 
+    #print(args)
     if 'end' not in args:
         if strikes > 1:
             # we have two free hands; do a second strike
             args.append('end')
-            utils.delay(0.5 * COMBAT_DELAY, _do_strike, character, target, args)
+            utils.delay(0.5 * COMBAT_DELAY, _do_strike, 0, character, target, args)
 
         return 1 * COMBAT_DELAY
 
 
-def _do_advance(character, target, args):
+def _do_advance(st_remaining, character, target, args):
     """Implements the 'advance' combat command."""
     ch = character.ndb.combat_handler
     start_range = ch.get_range(character, target)
@@ -638,75 +650,85 @@ def _do_advance(character, target, args):
                     else 'melee'
 
     if start_range == end_range:
-        character.msg("You are already at {range} with {target}.".format(
+        ch.combat_msg(
+            "{actor} is already at |G{range}|n with {target}.",
+            actor=character,
             range=end_range,
-            target=target.get_display_name(character)
-        ))
+            target=target
+        )
         return 0.2 * COMBAT_DELAY
 
-    ok = ch.move_character(character, end_range, start_range, target)
-
-    if ok:
+    elif start_range == 'melee':
         ch.combat_msg(
-            ("You advance on {target} to {range} range.",
-             "{actor} advances to {range} range with {target}.",
-             "{actor} advances on you to {range} range."),
+            "{actor} cannot advance any farther on {target}.",
             actor=character,
-            target=target,
-            range=end_range)
-
-        return 1 * COMBAT_DELAY
-
-    else:
-        character.msg("You are unable to advance on {target}".format(
-            target=target.get_display_name(character)
-        ))
-        character.location.msg_contents(
-            "{actor} stumbles and fails to move.",
-            mapping={'actor': character},
-            exclude=character
+            target=target
         )
-        return 0.5 * COMBAT_DELAY
+        return 0.2 * COMBAT_DELAY
+
+    ch.move_character(character, end_range, target)
+
+    ch.combat_msg(
+        "{actor} advances to |G{range}|n range with {target}.",
+        actor=character,
+        target=target,
+        range=end_range)
+
+    return 1 * COMBAT_DELAY
 
 
-def _do_retreat(character, _, args):
+def _do_retreat(st_remaining, character, _, args):
     """Implements the 'retreat' combat command."""
     ch = character.ndb.combat_handler
     end_range = 'reach' if any(arg.startswith('r') for arg in args) \
                     else 'ranged'
     start_range = ch.get_min_range(character)
 
-    ok = ch.move_character(character, end_range, start_range)
+    if start_range == end_range:
+        ch.combat_msg(
+            "{actor} has already retreated to |G{range}|n range.",
+            actor=character,
+            range=end_range)
+
+        return 0.2 * COMBAT_DELAY
+
+    elif start_range == 'melee':
+        ok = skill_check(character.skills.balance.actual, 4)
+
+    else:
+        ok = True
 
     if ok:
+        ch.move_character(character, end_range)
         ch.combat_msg(
-            ("You retreat from your enemies to {range} distance.",
-             "{actor} retreats to {range} distance."),
+            "{actor} retreats to |G{range}|n distance.",
             actor=character,
             range=end_range)
     else:
         ch.combat_msg(
-            ("You stumble in your attempt to retreat and are unable.",
-             "{actor} attempts to retreat but stumbles and is unable."),
+            "{actor} attempts to retreat but stumbles and is unable.",
             actor=character)
 
     return 1 * COMBAT_DELAY
 
 
 def _do_dodge(*args):
-    """Dodging is handled in attack actions. This is essentially a placeholder."""
+    """Dodging is handled in attack actions.
+       This is just a placeholder."""
     return 0
 
 
-def _do_flee(character, _, args):
+def _do_flee(st_remaining, character, _, args):
     """Implements the 'flee' combat command."""
     ch = character.ndb.combat_handler
-    if not any(arg.startswith("continuing") for arg in args):
+    # fleeing takes two subturns
+    if st_remaining > 0:
+        # first subturn: messaging only
         ch.combat_msg(
-            ("You begin to search desperately for an escape route.",
-             "{actor} looks about frantically."),
+            "{actor} looks about frantically for an escape route.",
             actor=character)
     else:
+        # second subturn: skill check and resolution
         min_range = ch.get_min_range(character)
 
         if min_range == 'melee':
@@ -722,11 +744,13 @@ def _do_flee(character, _, args):
         ok = skill_check(character.skills.escape.actual, target_num)
         if ok:
             # successfully escaped
-            ch.remove_character(character)
             ch.combat_msg(
-                ("You slip through your enemies' fingers and escape!",
-                 "{actor} seizes the opportunity to escape the fight!"),
+                "{actor} seizes the opportunity to escape the fight!",
                 actor=character)
+            ch.remove_character(character)
+
+            character.msg("{actor} knows they are safe, for a time...".format(
+                actor=character.get_display_name(character)))
 
             # prevent re-attack for a time
             character.ndb.no_attack = True
@@ -734,14 +758,14 @@ def _do_flee(character, _, args):
 
             def enable_attack():
                 del character.ndb.no_attack
-                character.msg("Beware! You are once again vulnerable to attack.")
+                character.msg("{actor} feels somehow more vulnerable than just a moment ago.".format(
+                    actor=character.get_display_name(character)))
 
             utils.delay(safe_time, enable_attack)
         else:
             # failed to escape
             ch.combat_msg(
-                ("You are locked in close combat and cannot get away.",
-                 "{actor} looks around frantically for an escape route, but is boxed in."),
+                "{actor} tries to escape, but is boxed in.",
                 actor=character)
 
     return 1 * COMBAT_DELAY
@@ -801,20 +825,24 @@ def process_next_action(combat_handler):
 
         combat_handler.ndb.actions_taken[current_charid] += duration
 
-        if duration > 1:
+        args = action.split('/')[1:]
+
+        # we decrement the duration for this turn
+        duration -= 1
+        if duration > 0:
             # action takes more than one subturn; return it to the queue
             turn_actions[current_charid].append(
-                ('{}/continuing_{}'.format(action, duration - 1),
+                (action,
                  character,
                  target,
-                 duration - 1)
+                 duration)
             )
             combat_handler.db.actor_idx += 1
 
-        args, action = action.split('/')[1:], action.split('/')[0]
-        action_func = '_do_{}'.format(action)
+        action_func = '_do_{}'.format(action.split('/')[0])
 
-        delay = globals()[action_func](character, target, args)
+        # action_func receives the number of subturns remaining in the action
+        delay = globals()[action_func](duration, character, target, args)
     else:
         combat_handler.db.actor_idx += 1
 
@@ -825,14 +853,21 @@ def process_next_action(combat_handler):
 
 
 def resolve_combat(combat_handler):
-    """
-    This is called by the combat handler
-    actiondict is a dictionary with a list of two actions
-    for each character:
-    {char.id:[(action1, char, target, duration),
-              (action2, char, target, duration)], ...}
-    """
+    """Called by the combat handler to resolve combat.
 
+    Each turn, an initiative roll is done behind the scenes
+    for all combat participants. This determines the order
+    that the `process_next_action` function executes the actions.
+
+    According to OA combat rules, each turn is handled as two
+    subturns. It is possible to modify the number of subturns
+    in each turn by modifying the `ACTIONS_PER_TURN` module
+    variable above.
+
+    Args:
+        combat_handler: an instance of the combat handler
+                invoking this function
+    """
     combatants = combat_handler.db.characters
 
     # fill any dawdlers with the 'nothing' action
@@ -851,8 +886,8 @@ def resolve_combat(combat_handler):
             return y[2] - x[2]
         else:
             # second tiebreaker: PCs before NPCs
-            x_plyr, y_plyr = combatants[x[0]].has_player(), \
-                             combatants[y[0]].has_player()
+            x_plyr, y_plyr = combatants[x[0]].has_player, \
+                             combatants[y[0]].has_player
             if x_plyr and not y_plyr:
                 return 1
             elif y_plyr and not x_plyr:
@@ -888,8 +923,8 @@ def resolve_combat(combat_handler):
     combat_handler.db.turn_order = turn_order
     combat_handler.db.subturn = 0
 
-    # here, actor_idx is set to trigger the "end" of subturn 0
-    # within the process_next_action call
+    # here, actor_idx is initialized to trigger the "end"
+    # of subturn 0 within the process_next_action call
     combat_handler.db.actor_idx = len(turn_order)
 
     # begin processing actions for characters in order

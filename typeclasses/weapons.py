@@ -18,7 +18,7 @@ class Weapon(Equippable):
 
     damage = 0
     handedness = 1
-    range = ['melee']
+    range = 'melee'
 
     def at_object_creation(self):
         super(Weapon, self).at_object_creation()
@@ -26,23 +26,12 @@ class Weapon(Equippable):
         self.db.damage = self.damage
         self.db.handedness = self.handedness
         self.db.combat_cmdset = 'commands.combat.MeleeWeaponCmdSet'
-        self.db.messages = \
-            {'dmg_hp':
-                 ("You attack {target} with {weapon}, hurting them so bad",
-                  "{actor} attacks {target} with {weapon}, striking a painful blow.",
-                  "{actor} attacks you with {weapon} and strikes a painful blow."),
-             'dmg_sp':
-                 ("You stun {target} with {weapon}, bringing them closer to submission.",
-                  "{actor} stuns {target} with {weapon}.",
-                  "{actor} stuns you with {weapon}, and you feel your resolve weaken."),
-             'dodged':
-                 ("{target} dodges your attack, and {weapon} through the air impotently.",
-                  "{weapon} fails to meet its target as {target} dodges {actor}'s attack.",
-                  "You successfully dodge {actor}'s attack with {weapon}."),
-             'missed':
-                 ("You attack {target} with {weapon} and miss.",
-                  "{actor} attacks {target} with {weapon} and misses.",
-                  "{actor} attacks you with {weapon} and misses.")}
+        self.db.messages = {
+            'dmg_hp': "{actor} attacks {target} with {weapon}, striking a painful blow.",
+            'dmg_sp': "{actor} stuns {target} with {weapon}.",
+            'dodged': "{weapon} fails to meet its target as {target} dodges {actor}'s attack.",
+            'missed': "{actor} attacks {target} with {weapon} and misses."
+        }
 
     def at_equip(self, character):
         character.traits.ATKM.mod += self.db.damage
@@ -59,7 +48,7 @@ class RangedWeapon(Weapon):
         range (int): range of weapon in (units?)
         ammunition Optional(str): type of ammunition used (thrown if None)
     """
-    range = ['ranged', 'reach']
+    range = 'ranged'
     ammunition = None
 
     def at_object_creation(self):

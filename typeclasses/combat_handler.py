@@ -138,14 +138,16 @@ class CombatHandler(Script):
             if character not in exclude:
                 character.msg(message)
 
-    def combat_msg(self, messages, actor, target=None, exclude=None, **kwargs):
+    def combat_msg(self, message, actor, target=None, exclude=(), **kwargs):
         """Sends messaging to combat participants and vicinity.
 
         Args:
-          messages (tuple): tuple of messages with up to three items:
-              1. a message sent to the actor
-              2. a message sent to the actor's location
-              3. an message sent to the target (optional)
+          message (str): Message string in director stance to be
+                delivered. Contains string format keys matching
+                the other arguments as described below.
+
+          exclude (tuple, optional): Not substituted into the message string;
+                a tuple or list of objects to exclude from receiving the message.
 
           actor (Character): the character taking the action, keyed
                 in messages as {actor}.
@@ -155,46 +157,39 @@ class CombatHandler(Script):
                 in as kwargs.
 
         Example:
-            ch.combat_msg(("You attack {target} with {weapon}.",
-                           "{actor} attacks {target} with {weapon}.",
-                           "{actor} attacks you with {weapon}."),
+            ch.combat_msg("{actor} attacks {target} with {weapon}.",
                           actor=attacker,
                           target=defender,
                           weapon=weapon)
         """
         exclude = make_iter(exclude) if exclude else []
-        exclude.append(actor)
 
-        # actor messaging
-        mapping = {t: sub.get_display_name(actor)
-                   if hasattr(sub, 'get_display_name')
-                   else str(sub)
-                   for t, sub in kwargs.items()}
-        if target:
-            exclude.append(target)
-            mapping.update({'target': target.get_display_name(actor)
-                            if hasattr(target, 'get_display_name')
-                            else str(target)})
+        kwargs.update(dict(actor=actor, target=target))
 
-        actor.msg(messages[0].format(**mapping),
-                  prompt=_COMBAT_PROMPT.format(tr=actor.traits))
+        for character in self.db.characters.values():
+            if character == actor:
+                cbt_prefix = '|b->|n '
+            elif character == target:
+                cbt_prefix = '|m<-|n '
+            else:
+                cbt_prefix = '|x..|n '
 
-        # room messaging
-        mapping = {t: sub for t, sub in kwargs.items()}
-        mapping.update({'actor': actor, 'target': target})
-        actor.location.msg_contents(messages[1],
-                                    mapping=mapping,
-                                    exclude=exclude)
+            if character not in exclude:
+                mapping = {token: val.get_display_name(character)
+                                   if hasattr(val, 'get_display_name')
+                                   else str(val)
+                           for token, val in kwargs.items()}
 
-        # target messaging
-        if target:
-            mapping = {t: sub.get_display_name(target)
-                       if hasattr(sub, 'get_display_name')
-                       else str(sub)
-                       for t, sub in kwargs.items()}
-            mapping['actor'] = actor.get_display_name(target)
-            target.msg(messages[2].format(**mapping),
-                       prompt=_COMBAT_PROMPT.format(tr=target.traits))
+                character.msg(
+                    (cbt_prefix + message).format(**mapping),
+                    prompt=_COMBAT_PROMPT.format(tr=character.traits))
+
+        # send messaging to others in the same room but not in combat
+        actor.location.msg_contents(
+            message=message,
+            mapping=kwargs,
+            exclude=exclude + self.db.characters.values()
+        )
 
     def add_action(self, action, character, target, duration, longturn=False):
         """
@@ -269,7 +264,7 @@ class CombatHandler(Script):
 
         return proximities
 
-    def move_character(self, character, to_range, from_range, target=None):
+    def move_character(self, character, to_range, target=None):
         """Changes a character's range with respect to one or more other combatants."""
         _CD = COMBAT_DISTANCES
         distances = self.db.distances
@@ -288,17 +283,9 @@ class CombatHandler(Script):
                             distances[frozenset((character.id, cid))] = rng
 
         else:  # retreating; to_range is either 'reach' or 'ranged'
-            from world.rulebook import skill_check
-            # have to pass a balance skill test to retreat from melee
-            ok = True
-            if from_range == 'melee':
-                ok = skill_check(character.skills.balance.actual, 4) and \
-                     _CD.index(to_range) > _CD.index(from_range)
-            if ok:
-                for cid in reduce(add, [char_prox[rng] for rng
-                                        in _CD[:_CD.index(to_range)]]):
-                    distances[frozenset((character.id, cid))] = to_range
-        return True
+            for cid in reduce(add, [char_prox[rng] for rng
+                                    in _CD[:_CD.index(to_range)]]):
+                distances[frozenset((character.id, cid))] = to_range
 
     def check_end_turn(self):
         """

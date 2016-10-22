@@ -1,16 +1,20 @@
 """
 Command test module
 """
+from mock import Mock
+from evennia import create_object
 from evennia.utils.test_resources import EvenniaTest
 from evennia.commands.default.tests import CommandTest
-from commands.equip import *
+from commands import equip, combat
 from commands.chartraits import CmdSheet, CmdTraits
 from commands.room_exit import CmdCapacity, CmdTerrain
 from commands.building import CmdSpawn, CmdSetTraits, CmdSetSkills
 from typeclasses.characters import Character, NPC
 from typeclasses.weapons import Weapon
 from typeclasses.rooms import Room
+from typeclasses.test_combat_handler import AinneveCombatTest
 from world.archetypes import apply_archetype, calculate_secondary_traits
+from world.races import apply_race
 from utils.utils import sample_char
 
 
@@ -75,17 +79,17 @@ class EquipTestCase(CommandTest):
     def test_wield_1h_weapon(self):
         """test wield command for 1H weapons"""
         # can't wield from the ground
-        self.call(CmdWield(), 'Obj', "You don't have 'Obj' in your inventory.")
+        self.call(equip.CmdWield(), 'Obj', "You don't have 'Obj' in your inventory.")
         # pick it up to wield the weapon
         self.char1.execute_cmd('get Obj')
-        self.call(CmdWield(), 'Obj', "You wield Obj.")
+        self.call(equip.CmdWield(), 'Obj', "You wield Obj")
         # test the at_equip hooks
         self.assertEqual(self.char1.traits.ATKM.actual, 8)
         self.assertEqual(self.char1.equip.get('wield1'), self.obj1)
         self.assertIs(self.char1.equip.get('wield2'), None)
         # can't wield armor
         self.char1.execute_cmd('get Obj2')
-        self.call(CmdWield(), 'Obj2', "You can't wield Obj2.")
+        self.call(equip.CmdWield(), 'Obj2', "You can't wield Obj2")
 
     def test_wield_2h_weapon(self):
         """test wield command for 2H weapons"""
@@ -137,55 +141,55 @@ class EquipTestCase(CommandTest):
     def test_wear(self):
         """test wear command"""
         # can't wear from the ground
-        self.call(CmdWear(), 'Obj2', "You don't have 'Obj2' in your inventory.")
+        self.call(equip.CmdWear(), 'Obj2', "You don't have 'Obj2' in your inventory.")
         # pick it up to wear armor
         self.char1.execute_cmd('get Obj2')
-        self.call(CmdWear(), 'Obj2', "You wear Obj2.")
+        self.call(equip.CmdWear(), 'Obj2', "You wear Obj2")
         # check at_equip hooks ran
         self.assertEqual(self.char1.equip.get('armor'), self.obj2)
         # cannot wear a weapon
         self.char1.execute_cmd('get Obj')
-        self.call(CmdWear(), 'Obj', "You can't wear Obj.")
+        self.call(equip.CmdWear(), 'Obj', "You can't wear Obj")
 
     def test_equip_list(self):
         """test the equip command"""
-        self.call(CmdEquip(), "", "You have nothing in your equipment.")
+        self.call(equip.CmdEquip(), "", "You have nothing in your equipment.")
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('wield Obj')
         self.char1.execute_cmd('get Obj2')
         self.char1.execute_cmd('wear Obj2')
         output = (
 "Your equipment:\n"
-"   Wield1: Obj                   (Damage:  1)    \n"
+"   Wield1: Obj                   (Damage:  1) (Melee)  \n"
 "    Armor: Obj2                  (Toughness:  1)")
-        self.call(CmdEquip(), "", output)
+        self.call(equip.CmdEquip(), "", output)
         self.char1.execute_cmd('drop Obj')
-        self.call(CmdEquip(), "", "Your equipment:\n    Armor: Obj2                  (Toughness:  1)")
+        self.call(equip.CmdEquip(), "", "Your equipment:\n    Armor: Obj2                  (Toughness:  1)")
 
     def test_equip_item(self):
         """test equipping items with equip"""
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('get Obj2')
-        self.call(CmdEquip(), "Obj", "You wield Obj.")
-        self.call(CmdEquip(), "Obj2", "You wear Obj2.")
+        self.call(equip.CmdEquip(), "Obj", "You wield Obj")
+        self.call(equip.CmdEquip(), "Obj2", "You wear Obj2")
 
     def test_remove(self):
         """test the remove command"""
-        self.call(CmdRemove(), "Obj", "You do not have 'Obj' equipped.")
+        self.call(equip.CmdRemove(), "Obj", "You do not have 'Obj' equipped.")
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('wield Obj')
-        self.call(CmdRemove(), "Obj", "You remove Obj.")
+        self.call(equip.CmdRemove(), "Obj", "You remove Obj")
 
     def test_inventory(self):
         """test the inventory command"""
         # empty inventory
-        self.call(CmdInventory(), "", "You are not carrying anything.")
+        self.call(equip.CmdInventory(), "", "You are not carrying anything.")
         # can see an object when picked up
         self.char1.execute_cmd('get Obj')
-        self.call(CmdInventory(), "", "You are carrying:\n Obj  Test Obj   (Damage:  1)")
+        self.call(equip.CmdInventory(), "", "You are carrying:\n Obj  Test Obj   (Damage:  1)")
         # but not when equipped
         self.char1.execute_cmd('wield Obj')
-        self.call(CmdInventory(), "", "You are not carrying anything.")
+        self.call(equip.CmdInventory(), "", "You are not carrying anything.")
 
 
 class CharTraitsTestCase(CommandTest):
@@ -267,16 +271,16 @@ class BuildingTestCase(CommandTest):
         # equal sign only gives usage
         self.call(CmdTerrain(), "=", "Usage: @terrain [<room>] = <terrain>")
         # setting terrain on current room
-        self.call(CmdTerrain(), "= DIFFICULT", "Terrain type 'DIFFICULT' set on Room.")
+        self.call(CmdTerrain(), "= DIFFICULT", "Terrain type 'DIFFICULT' set on Room")
         self.assertEqual(self.room1.terrain, 'DIFFICULT')
         # terrain is case insensitive
-        self.call(CmdTerrain(), "= vegetation", "Terrain type 'VEGETATION' set on Room.")
+        self.call(CmdTerrain(), "= vegetation", "Terrain type 'VEGETATION' set on Room")
         self.assertEqual(self.room1.terrain, 'VEGETATION')
         # attempt with invalid terrain name
         self.call(CmdTerrain(), "= INVALID", "Invalid terrain type.")
         self.assertEqual(self.room1.terrain, 'VEGETATION')
         # setting terrain on a different room
-        self.call(CmdTerrain(), "Room2 = QUICKSAND", "Terrain type 'QUICKSAND' set on Room2.")
+        self.call(CmdTerrain(), "Room2 = QUICKSAND", "Terrain type 'QUICKSAND' set on Room2")
 
     def test_capacity_cmd(self):
         """test @capacity command"""
@@ -285,9 +289,9 @@ class BuildingTestCase(CommandTest):
         # equal sign only
         self.call(CmdCapacity(), "=", "Usage: @capacity [<room>] = <maxchars>")
         # setting capacity on current room
-        self.call(CmdCapacity(), "= 0", "Capacity set on Room(#1) .")
+        self.call(CmdCapacity(), "= 0", "Capacity set on Room")
         self.assertEqual(self.room1.db.max_chars, 0)
-        self.call(CmdCapacity(), "= 5", "Capacity set on Room(#1) .")
+        self.call(CmdCapacity(), "= 5", "Capacity set on Room")
         self.assertEqual(self.room1.db.max_chars, 5)
         # invalid variations
         self.call(CmdCapacity(), "= -20", "Invalid capacity specified.")
@@ -298,7 +302,7 @@ class BuildingTestCase(CommandTest):
         self.call(CmdCapacity(), "= LOTS", "Invalid capacity specified.")
         self.assertEqual(self.room1.db.max_chars, 5)
         # setting range field on a different room
-        self.call(CmdCapacity(), "Room2 = 10", "Capacity set on Room2(#2) .")
+        self.call(CmdCapacity(), "Room2 = 10", "Capacity set on Room2")
         self.assertEqual(self.room2.db.max_chars, 10)
 
     def test_settraits_cmd(self):
@@ -347,6 +351,8 @@ class BuildingTestCase(CommandTest):
 
     def test_spawn_cmd(self):
         """test overridden @spawn command"""
+        from django.conf import settings
+        settings.PROTOTYPE_MODULES = []
         # no args
         self.call(CmdSpawn(), "", "Usage: @spawn {key:value, key, value, ... }\nAvailable prototypes:")
         # spawn prototype with traits and skills
@@ -365,3 +371,226 @@ class BuildingTestCase(CommandTest):
         self.assertEqual(bunny.skills.jump, 6)
         self.assertEqual(bunny.skills.medicine, 1)
         self.assertEqual(bunny.skills.sneak, 2)
+
+
+class InitCombatTestCase(CommandTest):
+    """Test case for 'attack' command to initiate combat."""
+    def setUp(self):
+        self.character_typeclass = Character
+        self.object_typeclass = NPC
+        self.room_typeclass = Room
+        super(InitCombatTestCase, self).setUp()
+        # obj1 is an NPC; set its sdesc to key for testing
+        self.obj1.sdesc.add(self.obj1.key)
+        # make obj2 an Object;
+        self.obj3 = create_object('typeclasses.objects.Object',
+                                  key='Obj3',
+                                  location=self.room1)
+        # set up char1
+        apply_archetype(self.char1, 'warrior')
+        apply_race(self.char1, 'human', 'cunning')
+        self.char1.traits.STR.base += 3
+        self.char1.traits.PER.base += 1
+        self.char1.traits.DEX.base += 1
+        self.char1.traits.VIT.base += 3
+        calculate_secondary_traits(self.char1.traits)
+
+    def test_init_attack_invalid(self):
+        """test failure against invalid target"""
+        self.call(combat.CmdInitiateAttack(), "", "Usage: attack <target>")
+        self.call(combat.CmdInitiateAttack(), "nothere", "Could not find 'nothere'.")
+        self.call(combat.CmdInitiateAttack(), "Obj3", "Combat against Obj3(#8) is not supported.")
+
+    def test_init_attack(self):
+        """test successful combat initiation"""
+        self.call(combat.CmdInitiateAttack(), "obj", "{'prompt': '[ HP: 9 M: 0 M: 0 |SP: 9 ]'}|You attack Obj(#4)! You are in combat.|Next turn begins. Declare your actions!")
+
+
+class AinneveCombatCmdsTest(CommandTest, AinneveCombatTest):
+    """Test case for the process of entering Combat commands."""
+
+    def test_get_item(self):
+        """test 'get' combat command"""
+        self.call(combat.CmdGetItem(), "", "Usage: get <obj>")
+        self.call(combat.CmdGetItem(), "panther", "Could not find 'panther'.")
+        self.call(combat.CmdGetItem(), "Obj", "You cannot get Obj(#4).")
+        self.call(combat.CmdGetItem(), "sword", "You add 'get a short sword(#8)' to the combat queue.")
+        self.call(combat.CmdGetItem(), "bow", "You add 'get a long bow(#10)' to the combat queue.")
+        self.call(combat.CmdGetItem(), "polearm", "You have already entered all actions for your turn.")
+        self.assertIn(('get', self.char1, self.melee, 1),
+                      self.script.db.turn_actions[self.char1.id])
+        self.assertIn(('get', self.char1, self.ranged, 1),
+                      self.script.db.turn_actions[self.char1.id])
+        self.assertNotIn(('get', self.char1, self.reach, 1),
+                         self.script.db.turn_actions[self.char1.id])
+
+    def test_drop_item(self):
+        """test 'drop' combat command"""
+        self.melee.move_to(self.char1, quiet=True)
+        self.call(combat.CmdDropItem(), "", "Usage: drop <item>")
+        self.call(combat.CmdDropItem(), "bow", "Can't find bow in your inventory.")
+        self.call(combat.CmdDropItem(), "sword", "You add 'drop a short sword(#8)' to the combat queue.")
+        self.assertIn(('drop', self.char1, self.melee, 0),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_equip_item(self):
+        """test 'equip' combat command"""
+        self.melee.move_to(self.char1, quiet=True)
+        self.ranged.move_to(self.char1, quiet=True)
+        # since a char could say 'get polearm; equip polearm' in one turn,
+        # we equip does not check that char1 has target in inventory
+        self.call(combat.CmdEquip(), "polearm", "You add 'equip a pike polearm(#9)' to the combat queue.")
+        self.assertIn(('equip', self.char1, self.reach, 1),
+                      self.script.db.turn_actions[self.char1.id])
+        self.call(combat.CmdEquip(), "sword", "You add 'equip a short sword(#8)' to the combat queue.")
+        self.assertIn(('equip', self.char1, self.melee, 1),
+                      self.script.db.turn_actions[self.char1.id])
+        self.call(combat.CmdEquip(), "bow", "You have already entered all actions for your turn.")
+
+    def test_equip_status(self):
+        """test 'equip' instant status command"""
+        self.call(combat.CmdEquip(), "", "You have nothing in your equipment.")
+        self.melee.move_to(self.char1, quiet=True)
+        self.char1.equip.add(self.melee)
+        self.call(combat.CmdEquip(), "", "Your equipment:\n   Wield1: a short sword         (Damage:  2) (Melee)")
+
+    def test_advance_1on1(self):
+        """test 'advance' combat command"""
+        self.script.remove_character(self.obj2)
+        self.script.remove_character(self.obj3)
+        self.script.remove_character(self.char2)
+        self.assertEqual(len(self.script.db.characters), 2)
+        self.call(combat.CmdAdvance(), "", "You add 'advance on Obj(#4)' to the combat queue.")
+        self.assertIn(('advance', self.char1, self.obj1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_advance_multi(self):
+        """test 'advance' combat command with more than two combatants"""
+        self.call(combat.CmdAdvance(), "", "Usage: advance[/reach] <target>")
+        self.call(combat.CmdAdvance(), "obj", "You add 'advance on Obj(#4)' to the combat queue.")
+        self.assertIn(('advance', self.char1, self.obj1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_advance_to_reach(self):
+        """test 'advance/reach' combat command"""
+        self.call(combat.CmdAdvance(), "/reach obj", "You add 'advance to reach on Obj(#4)' to the combat queue.")
+        self.assertIn(('advance/reach', self.char1, self.obj1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_retreat(self):
+        """test 'retreat' combat command"""
+        self.call(combat.CmdRetreat(), "", "You add 'retreat' to the combat queue.")
+        self.assertIn(('retreat', self.char1, self.char1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_retreat_to_reach(self):
+        """test 'retreat/reach' combat command"""
+        self.call(combat.CmdRetreat(), "/reach", "You add 'retreat to reach' to the combat queue.")
+        self.assertIn(('retreat/reach', self.char1, self.char1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_flee(self):
+        """test 'retreat' combat command"""
+        self.call(combat.CmdFlee(), "", "You add 'flee' to the combat queue.")
+        self.assertIn(('flee', self.char1, self.char1, 2),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_dodge(self):
+        """test 'dodge' combat command"""
+        self.call(combat.CmdDodge(), "", "You add 'dodge' to the combat queue.")
+        self.assertIn(('dodge', self.char1, self.char1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_kick_1on1(self):
+        """test 'kick' combat command"""
+        self.script.remove_character(self.obj2)
+        self.script.remove_character(self.obj3)
+        self.script.remove_character(self.char2)
+        self.assertEqual(len(self.script.db.characters), 2)
+        self.call(combat.CmdKick(), "", "You add 'kick Obj(#4)' to the combat queue.")
+        self.assertIn(('kick', self.char1, self.obj1, 2),
+                      self.script.db.turn_actions[self.char1.id])
+        self.call(combat.CmdKick(), "", "You have already entered all actions for your turn.")
+
+    def test_kick_subdue(self):
+        self.call(combat.CmdKick(), "/subdue obj", "You add 'kick/subdue Obj(#4)' to the combat queue.")
+        self.assertIn(('kick/subdue', self.char1, self.obj1, 2),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_kick_multi(self):
+        """test 'kick' combat command"""
+        self.call(combat.CmdKick(), "", "Usage: kick[/s] <target>")
+        self.call(combat.CmdKick(), "obj", "You add 'kick Obj(#4)' to the combat queue.")
+        self.assertIn(('kick', self.char1, self.obj1, 2),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_strike_1on1(self):
+        """test 'strike' combat command"""
+        self.script.remove_character(self.obj2)
+        self.script.remove_character(self.obj3)
+        self.script.remove_character(self.char2)
+        self.assertEqual(len(self.script.db.characters), 2)
+        self.call(combat.CmdStrike(), "", "You add 'strike Obj(#4)' to the combat queue.")
+        self.assertIn(('strike', self.char1, self.obj1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+        self.call(combat.CmdStrike(), "/subdue", "You add 'strike/subdue Obj(#4)' to the combat queue.")
+        self.assertIn(('strike/subdue', self.char1, self.obj1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+        self.call(combat.CmdStrike(), "", "You have already entered all actions for your turn.")
+
+    def test_strike_multi(self):
+        """test 'strike' combat command"""
+        self.call(combat.CmdStrike(), "", "Usage: strike[/s] <target>")
+        self.call(combat.CmdStrike(), "obj", "You add 'strike Obj(#4)' to the combat queue.")
+        self.assertIn(('strike', self.char1, self.obj1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+
+    def test_attack_1on1(self):
+        """test 'attack' combat command"""
+        self.script.remove_character(self.obj2)
+        self.script.remove_character(self.obj3)
+        self.script.remove_character(self.char2)
+        self.assertEqual(len(self.script.db.characters), 2)
+        self.call(combat.CmdAttackRanged(), "", "You add 'attack Obj(#4)' to the combat queue.")
+        self.assertIn(('attack', self.char1, self.obj1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+        self.call(combat.CmdAttackMelee(), "", "You add 'attack Obj(#4)' to the combat queue.")
+
+    def test_attack_multi(self):
+        """test 'attack' command with multiple opponents"""
+        self.call(combat.CmdAttackRanged(), "", "Usage: attack[/s] <target>")
+        self.call(combat.CmdAttackRanged(), "obj", "You add 'attack Obj(#4)' to the combat queue.")
+        self.assertIn(('attack', self.char1, self.obj1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+        self.call(combat.CmdAttackMelee(), "obj", "You add 'attack Obj(#4)' to the combat queue.")
+
+    def test_combat_look(self):
+        """test 'look' combat command"""
+        self.call(combat.CmdCombatLook(), "", "You are in combat.|  Opponents:|    Obj2(#5) at ranged range.|    A normal person(#7) at ranged range.|    Obj(#4) at ranged range.|    Obj3(#11) at ranged range.|")
+        self.char1.execute_cmd('advance obj')
+        self.char1.execute_cmd('strike obj')
+        expected_output = ['You are in combat.',
+                           '  Opponents:',
+                           '    Obj2(#5) at ranged range.',
+                           '    A normal person(#7) at ranged range.',
+                           '    Obj(#4) at ranged range.',
+                           '    Obj3(#11) at ranged range.',
+                           '  You have entered the following actions:',
+                           '    1: advance                   Obj(#4)                    (halfturn action)',
+                           '    2: strike                    Obj(#4)                    (halfturn action)'
+                           ]
+        self.char1.execute_cmd('look')
+        msg, prompt = self.parse_msg_mock(self.char1)
+        msg = msg.split('|')
+        for mesg in expected_output:
+            self.assertIn(mesg, msg)
+
+    def test_combat_cancel(self):
+        """test 'cancel' combat command"""
+        self.char1.execute_cmd('advance obj')
+        self.char1.execute_cmd('strike obj')
+        self.assertIn(('advance', self.char1, self.obj1, 1),
+                      self.script.db.turn_actions[self.char1.id])
+        self.call(combat.CmdCancelAction(), "", 'Canceled "strike Obj(#4)" action.')
+        self.assertNotIn(('strike', self.char1, self.obj1, 1),
+                         self.script.db.turn_actions[self.char1.id])

@@ -6,6 +6,7 @@ Combat commands
 
 from evennia import default_cmds, CmdSet, create_script
 from evennia.contrib.rpsystem import CmdEmote, CmdPose
+from evennia.utils.utils import inherits_from
 from evennia.utils.evtable import EvTable
 from commands.equip import CmdInventory
 
@@ -55,7 +56,7 @@ class CombatCmdSet(CmdSet):
 
     def at_cmdset_creation(self):
         """Populate CmdSet"""
-        self.add(CmdRemoveAction())
+        self.add(CmdCancelAction())
         self.add(CmdDropItem())
         self.add(CmdGetItem())
         self.add(CmdEquip())
@@ -115,6 +116,11 @@ class CmdInitiateAttack(default_cmds.MuxCommand):
         if not target:
             return
 
+        if not inherits_from(target, 'typeclasses.characters.Character'):
+            caller.msg("Combat against {target} is not supported.".format(
+                target=target.get_display_name(caller)))
+            return
+
         if target.ndb.no_attack:
             caller.msg("You cannot attack {target} at this time.".format(
                 target=target.get_display_name(caller)
@@ -130,8 +136,7 @@ class CmdInitiateAttack(default_cmds.MuxCommand):
             # target is already in combat - join it
             target.ndb.combat_handler.add_character(caller)
             target.ndb.combat_handler.combat_msg(
-                ("You join the fight!",
-                 "{actor} joins combat!"),
+                "{actor} joins combat!" ,
                 actor=caller
             )
         else:
@@ -167,8 +172,12 @@ class CmdDropItem(default_cmds.MuxCommand):
         if not self.args:
             caller.msg("Usage: drop <item>")
             return
-        target = caller.search(self.args,
-                               candidates=self.caller.contents)
+        target = caller.search(
+            self.args,
+            candidates=self.caller.contents,
+            nofound_string="Can't find {item} in your inventory.".format(
+                item=self.args))
+
         if not target:
             return
 
@@ -179,7 +188,7 @@ class CmdDropItem(default_cmds.MuxCommand):
             duration=0)
 
         caller.msg(
-            "You add 'drop {}' to the combat queue".format(
+            "You add 'drop {}' to the combat queue.".format(
                 target.get_display_name(caller)))
 
         # tell the handler to check if turn is over
@@ -198,10 +207,8 @@ class CmdAttack(default_cmds.MuxCommand):
         ch = caller.ndb.combat_handler
         combat_chars = ch.db.characters.values()
 
-        attack_type = self.attack_type \
-            if hasattr(self, 'attack_type') else 'attack'
-
-        duration = self.duration if hasattr(self, 'duration') else 1
+        attack_type = getattr(self, 'attack_type', 'attack')
+        duration = getattr(self, 'duration', 1)
         target = None
 
         if not self.args:
@@ -231,7 +238,7 @@ class CmdAttack(default_cmds.MuxCommand):
 
         if ok:
             caller.msg(
-                "You add '{attack}{switch} {target}' to the combat queue".format(
+                "You add '{attack}{switch} {target}' to the combat queue.".format(
                     attack=attack_type,
                     switch=switch,
                     target=target.get_display_name(caller)))
@@ -366,7 +373,7 @@ class CmdDodge(default_cmds.MuxCommand):
                 target=self.caller,
                 duration=1)
         if ok:
-            caller.msg("You add 'dodge' to the combat queue")
+            caller.msg("You add 'dodge' to the combat queue.")
         else:
             caller.msg("You have already entered all actions for your turn.")
 
@@ -403,7 +410,7 @@ class CmdAdvance(default_cmds.MuxCommand):
             if len(combat_chars) == 2:
                 target = [x for x in combat_chars if x.id != caller.id][0]
             else:
-                caller.msg("Usage: advance <target>")
+                caller.msg("Usage: advance[/reach] <target>")
                 return
 
         target = target or caller.search(
@@ -413,13 +420,17 @@ class CmdAdvance(default_cmds.MuxCommand):
         if not target:
             return
 
+        sw_reach = "/reach" if any(sw.startswith("r") for sw
+                                   in self.switches) else ""
+
         ok = caller.ndb.combat_handler.add_action(
-                action="advance",
+                action="advance{}".format(sw_reach),
                 character=caller,
                 target=target,
                 duration=1)
         if ok:
-            caller.msg("You add 'advance on {target}' to the combat queue".format(
+            caller.msg("You add 'advance{range} on {target}' to the combat queue.".format(
+                range=" to reach" if sw_reach else "",
                 target=target.get_display_name(caller)
             ))
         else:
@@ -454,13 +465,17 @@ class CmdRetreat(default_cmds.MuxCommand):
     def func(self):
         caller = self.caller
 
+        sw_reach = "/reach" if any(sw.startswith("r") for sw
+                                   in self.switches) else ""
+
         ok = caller.ndb.combat_handler.add_action(
-                action="retreat",
+                action="retreat{}".format(sw_reach),
                 character=self.caller,
                 target=self.caller,
                 duration=1)
         if ok:
-            caller.msg("You add 'retreat' to the combat queue")
+            caller.msg("You add 'retreat{range}' to the combat queue.".format(
+                range=" to reach" if sw_reach else ""))
         else:
             caller.msg("You have already entered all actions for your turn.")
 
@@ -500,13 +515,18 @@ class CmdGetItem(default_cmds.CmdGet):
         if not target:
             return
 
+        if not target.access(caller, "get"):
+            caller.msg("You cannot get {}.".format(
+                target.get_display_name(caller)))
+            return
+
         ok = caller.ndb.combat_handler.add_action(
                 action="get",
                 character=self.caller,
                 target=target,
                 duration=1)
         if ok:
-            caller.msg("You add 'get {}' to the combat queue".format(
+            caller.msg("You add 'get {}' to the combat queue.".format(
                 target.get_display_name(self.caller)))
         else:
             caller.msg("You have already entered all actions for your turn.")
@@ -545,6 +565,11 @@ class CmdEquip(default_cmds.MuxCommand):
             if not target:
                 return
 
+            if not target.access(caller, "equip"):
+                caller.msg("You cannot equip {}.".format(
+                    target.get_display_name(caller)))
+                return
+
             ok = caller.ndb.combat_handler.add_action(
                     action="equip",
                     character=self.caller,
@@ -552,7 +577,7 @@ class CmdEquip(default_cmds.MuxCommand):
                     duration=1)
 
             if ok:
-                caller.msg("You add 'equip {}' to the combat queue".format(
+                caller.msg("You add 'equip {}' to the combat queue.".format(
                     target.get_display_name(caller)))
             else:
                 caller.msg("You have already entered all actions for your turn.")
@@ -733,7 +758,7 @@ class CmdFlee(default_cmds.MuxCommand):
                 target=caller,
                 duration=2)
         if ok:
-            caller.msg("You add 'flee' to the combat queue")
+            caller.msg("You add 'flee' to the combat queue.")
         else:
             caller.msg("You have already entered all actions for your turn.")
 
@@ -770,8 +795,7 @@ class CmdCombatLook(default_cmds.MuxCommand):
                 caller.msg(
                     "    {opponent} at |G{range}|n range.".format(
                         opponent=opponent.get_display_name(caller),
-                        range=rng,
-                        stance=opponent.db.position))
+                        range=rng))
 
         if ch.is_active:
             caller.msg(
@@ -785,25 +809,29 @@ class CmdCombatLook(default_cmds.MuxCommand):
                     duration = duration if duration < len(durations) \
                         else len(durations)-1
                     caller.msg(
-                        "    {idx}: |w{action:<10}|n {target:<30} (|Y{duration} action|n)".format(
+                        "    {idx}: |w{action:<25}|n {target:<30} (|Y{duration} action|n)".format(
                             idx=idx+1,
                             action=action,
-                            target='' if target == caller else target,
+                            target='' if target == caller
+                                   else target.get_display_name(caller),
                             duration=durations[duration]))
 
 
-class CmdRemoveAction(default_cmds.MuxCommand):
+class CmdCancelAction(default_cmds.MuxCommand):
     """
-    assess the combat situation
+    cancel a combat action
 
     Usage:
-      remove
+      cancel[/all]
 
-    Removes the last action in the action queue for this
-    turn.
+    Switches:
+      all: cancels all actions instead of last added
+
+    Removes the last action or optionally all actions
+    in the action queue for this turn.
     """
-    key = 'remove'
-    aliases = ['rem', 'remove action', 'rem act']
+    key = 'cancel'
+    aliases = ['can', 'cxl', 'x']
     locks = 'cmd:in_combat()'
     help_category = 'free instant actions'
 
@@ -811,11 +839,19 @@ class CmdRemoveAction(default_cmds.MuxCommand):
         caller = self.caller
         ch = caller.ndb.combat_handler
 
-        action, target = ch.remove_last_action(caller)
-        if action:
-            caller.msg('Removed "{action} {target}" action.'.format(
-                action=action,
-                target='' if target == caller else target.get_display_name(caller)
-            ))
+        if 'all' in self.switches:
+            action = True
+            while action:
+                action, target = ch.remove_last_action(caller)
+            caller.msg('All combat actions have been canceled.')
+
         else:
-            caller.msg('You have not yet entered any actions this turn.')
+            action, target = ch.remove_last_action(caller)
+            if action:
+                caller.msg('Canceled "{action}{target}" action.'.format(
+                    action=action,
+                    target='' if target == caller
+                           else ' {}'.format(target.get_display_name(caller))
+                ))
+            else:
+                caller.msg('You have not yet entered any actions this turn.')

@@ -22,7 +22,7 @@ class Item(Object):
         super(Item, self).at_object_creation()
         self.locks.add(";".join(("puppet:perm(Wizards)",
                                  "equip:false()",
-                                 "hold:true()"
+                                 "get:true()"
                                  )))
         self.db.value = self.value
         self.db.weight = float(self.weight)
