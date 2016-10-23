@@ -59,8 +59,7 @@ class CmdInventory(MuxCommand):
                 if item.attributes.has('toughness'):
                     stat += "(|yToughness: {:>2d}|n)".format(item.db.toughness)
                 if item.attributes.has('range'):
-                    stat += "(|G{}|n) ".format(
-                        ", ".join([r.capitalize() for r in item.db.range]))
+                    stat += "(|G{}|n) ".format(item.db.range.capitalize())
                 data[2].append(stat)
             table = EvTable(header=False, table=data, border=None, valign='t')
             string = "|YYou are carrying:|n\n{}".format(table)

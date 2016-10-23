@@ -186,7 +186,7 @@ class EquipTestCase(CommandTest):
         self.call(equip.CmdInventory(), "", "You are not carrying anything.")
         # can see an object when picked up
         self.char1.execute_cmd('get Obj')
-        self.call(equip.CmdInventory(), "", "You are carrying:\n Obj  Test Obj   (Damage:  1)")
+        self.call(equip.CmdInventory(), "", "You are carrying:\n Obj  Test Obj  (Damage:  1)        \n                (Melee)")
         # but not when equipped
         self.char1.execute_cmd('wield Obj')
         self.call(equip.CmdInventory(), "", "You are not carrying anything.")
@@ -574,7 +574,7 @@ class AinneveCombatCmdsTest(CommandTest, AinneveCombatTest):
                            '    Obj2(#5) at ranged range.',
                            '    Char2(#7) at ranged range.',
                            '    Obj(#4) at ranged range.',
-                           '    Obj3(#11) at ranged range.',
+                           '    Obj3(#12) at ranged range.',
                            '  You have entered the following actions:',
                            '    1: advance                   Obj(#4)                    (halfturn action)',
                            '    2: strike                    Obj(#4)                    (halfturn action)'
