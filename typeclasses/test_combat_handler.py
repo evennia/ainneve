@@ -81,3 +81,237 @@ class AinneveCombatTest(EvenniaTest):
 
         return msg, prompt
 
+
+class AinneveCombatHandlerTestCase(AinneveCombatTest):
+    """Test case for the Ainneve combat handler script."""
+
+    def test_characters(self):
+        """test adding and removing characters from a handler"""
+        # the default script already has characters; create our own
+        ch = create.create_script('typeclasses.combat_handler.CombatHandler', key="Script")
+
+        self.assertEqual(len(ch.db.characters), 0)
+        self.assertEqual(len(ch.db.action_count), 0)
+        self.assertEqual(len(ch.db.turn_actions), 0)
+
+        # add a character
+        ch.add_character(self.char1)
+
+        self.assertEqual(len(ch.db.characters), 1)
+        self.assertEqual(len(ch.db.action_count), 1)
+        self.assertEqual(len(ch.db.turn_actions), 1)
+        self.assertEqual(len(ch.db.distances), 0)
+
+        # add a second character (NPC)
+        ch.add_character(self.obj1)
+
+        self.assertEqual(len(ch.db.characters), 2)
+        self.assertEqual(len(ch.db.action_count), 2)
+        self.assertEqual(len(ch.db.turn_actions), 2)
+        self.assertEqual(len(ch.db.distances), 1)
+
+        self.assertIn(self.char1.id, ch.db.characters)
+        self.assertIn(self.char1.id, ch.db.action_count)
+        self.assertIn(self.char1.id, ch.db.turn_actions)
+
+        self.assertIn(self.obj1.id, ch.db.characters)
+        self.assertIn(self.obj1.id, ch.db.action_count)
+        self.assertIn(self.obj1.id, ch.db.turn_actions)
+
+        self.assertIn(frozenset((self.char1.id, self.obj1.id)), ch.db.distances)
+
+        # remove the NPC
+        ch.remove_character(self.obj1)
+
+        self.assertEqual(len(ch.db.characters), 1)
+        self.assertEqual(len(ch.db.action_count), 1)
+        self.assertEqual(len(ch.db.turn_actions), 1)
+        self.assertEqual(len(ch.db.distances), 0)
+
+        self.assertNotIn(self.obj1.id, ch.db.characters)
+        self.assertNotIn(self.obj1.id, ch.db.action_count)
+        self.assertNotIn(self.obj1.id, ch.db.turn_actions)
+
+    def test_actions(self):
+        """test adding and removing combat actions"""
+        ch = self.script
+
+        # can't remove if there are no actions
+        self.assertFalse(ch.remove_last_action(self.char1))
+
+        # adding a single half turn action
+        self.assertTrue(ch.add_action("advance", self.char1, self.obj1, 1))
+        self.assertEqual(len(ch.db.turn_actions[self.char1.id]), 1)
+        self.assertEqual(ch.db.action_count[self.char1.id], 1)
+
+        # adding a free action doesn't increment `action_count`
+        self.assertTrue(ch.add_action("drop", self.char1, self.melee, 0))
+        self.assertEqual(len(ch.db.turn_actions[self.char1.id]), 2)
+        self.assertEqual(ch.db.action_count[self.char1.id], 1)
+
+        # adding a second half turn action
+        self.assertTrue(ch.add_action("retreat", self.char1, self.char1, 1))
+        self.assertEqual(len(ch.db.turn_actions[self.char1.id]), 3)
+        self.assertEqual(ch.db.action_count[self.char1.id], 2)
+
+        # adding a third isn't possible
+        self.assertFalse(ch.add_action("advance", self.char1, self.obj1, 1))
+        self.assertEqual(len(ch.db.turn_actions[self.char1.id]), 3)
+        self.assertEqual(ch.db.action_count[self.char1.id], 2)
+
+        # canceling the most recent action
+        self.assertEqual(("retreat", self.char1), ch.remove_last_action(self.char1))
+        self.assertEqual(len(ch.db.turn_actions[self.char1.id]), 2)
+        self.assertEqual(ch.db.action_count[self.char1.id], 1)
+
+        # adding a full-turn action on top of a half-turn action is allowed
+        self.assertTrue(ch.add_action("kick", self.char1, self.char1, 2))
+        self.assertEqual(len(ch.db.turn_actions[self.char1.id]), 3)
+        self.assertEqual(ch.db.action_count[self.char1.id], 3)
+
+    def test_range_and_movement(self):
+        """test methods for working with combat range and movement"""
+        ch = self.script
+
+        # everyone starts at ranged from each other
+        self.assertEqual(ch.get_range(self.char1, self.char2), 'ranged')
+        self.assertEqual(ch.get_range(self.char1, self.obj1), 'ranged')
+        self.assertEqual(ch.get_range(self.char1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj1), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj2, self.obj3), 'ranged')
+
+        # moving to reach with one opponent doesn't change range
+        # with any other opponents
+        ch.move_character(self.char1, 'reach', self.char2)
+
+        self.assertEqual(ch.get_range(self.char1, self.char2), 'reach')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj1), 'ranged')
+        self.assertEqual(ch.get_range(self.char1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj1), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj2, self.obj3), 'ranged')
+
+        # moving another character obj1 to melee with char2 brings
+        # it also to reach with char1, as it is already at reach with char2
+        ch.move_character(self.obj1, 'melee', self.char2)
+
+        self.assertEqual(ch.get_range(self.char1, self.char2), 'reach')
+        self.assertEqual(ch.get_range(self.char1, self.obj1), 'reach')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj1), 'melee')  # <--
+        self.assertEqual(ch.get_range(self.char2, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj2, self.obj3), 'ranged')
+
+        # once again, moving a new character obj2 to reach with char1
+        # only affects the range between them, and doesn't change
+        # obj2's relationship with char2 or obj1
+        ch.move_character(self.obj2, 'reach', self.char1)
+
+        self.assertEqual(ch.get_range(self.char1, self.char2), 'reach')
+        self.assertEqual(ch.get_range(self.char1, self.obj1), 'reach')
+        self.assertEqual(ch.get_range(self.char1, self.obj2), 'reach')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj1), 'melee')
+        self.assertEqual(ch.get_range(self.char2, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj2, self.obj3), 'ranged')
+
+        # advancing char1 to melee with char2 also brings it to melee
+        # with obj1 and moves to ranged with obj2
+        ch.move_character(self.char1, 'melee', self.char2)
+
+        self.assertEqual(ch.get_range(self.char1, self.char2), 'melee')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj1), 'melee')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj2), 'ranged')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj1), 'melee')
+        self.assertEqual(ch.get_range(self.char2, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj2, self.obj3), 'ranged')
+
+        # advancing to reach on a different char
+        ch.move_character(self.char1, 'reach', self.obj2)
+
+        self.assertEqual(ch.get_range(self.char1, self.char2), 'melee')
+        self.assertEqual(ch.get_range(self.char1, self.obj1), 'melee')
+        self.assertEqual(ch.get_range(self.char1, self.obj2), 'reach')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj1), 'melee')
+        self.assertEqual(ch.get_range(self.char2, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj2, self.obj3), 'ranged')
+
+        # retreating to reach from any who are too close
+        ch.move_character(self.char1, 'reach')
+
+        self.assertEqual(ch.get_range(self.char1, self.char2), 'reach')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj1), 'reach')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj2), 'reach')
+        self.assertEqual(ch.get_range(self.char1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj1), 'melee')
+        self.assertEqual(ch.get_range(self.char2, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj2, self.obj3), 'ranged')
+
+        # advancing to melee takes on all the target's range relationships
+        ch.move_character(self.char1, 'melee', self.obj3)
+
+        self.assertEqual(ch.get_range(self.char1, self.char2), 'ranged')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj1), 'ranged')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj2), 'ranged')  # <--
+        self.assertEqual(ch.get_range(self.char1, self.obj3), 'melee')  # <--
+        self.assertEqual(ch.get_range(self.char2, self.obj1), 'melee')
+        self.assertEqual(ch.get_range(self.char2, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj2, self.obj3), 'ranged')
+
+        # full retreat to ranged
+        ch.move_character(self.char1, 'ranged')
+
+        self.assertEqual(ch.get_range(self.char1, self.char2), 'ranged')
+        self.assertEqual(ch.get_range(self.char1, self.obj1), 'ranged')
+        self.assertEqual(ch.get_range(self.char1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char1, self.obj3), 'ranged')  # <--
+        self.assertEqual(ch.get_range(self.char2, self.obj1), 'melee')
+        self.assertEqual(ch.get_range(self.char2, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.char2, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj2), 'ranged')
+        self.assertEqual(ch.get_range(self.obj1, self.obj3), 'ranged')
+        self.assertEqual(ch.get_range(self.obj2, self.obj3), 'ranged')
+
+    def test_get_proximity(self):
+        """test the get_proximity method"""
+        ch = self.script
+        self.assertEqual(repr(ch.get_proximity(self.char1)),
+                         "OrderedDict([('melee', []), ('reach', []), ('ranged', [5, 7, 12, 4])])")
+
+        ch.move_character(self.obj1, 'melee', self.char2)
+        ch.move_character(self.obj2, 'reach', self.char2)
+        ch.move_character(self.char1, 'melee', self.char2)
+
+        self.assertEqual(repr(ch.get_proximity(self.char1)),
+                         "OrderedDict([('melee', [7, 4]), ('reach', [5]), ('ranged', [12])])")
+

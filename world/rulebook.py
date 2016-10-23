@@ -12,6 +12,23 @@ Roll / Check Functions
     - `std_roll()`
     - `skill_check(skill, target=5)`
 
+Rule System Functions
+
+    - `resolve_combat`
+    - `resolve_death`
+    - `process_next_action`
+    - `_do_*`
+
+    This group of functions, along with the `CombatHandler` script class,
+    comprises Ainneve's combat system. Each turn, the handler script will
+    call `resolve_combat`, which performs an initiative roll for all players
+    to determine turn order, and makes the first call to `process_next_action`.
+
+    Using the determined turn order, `process_next_action` selects the appropriate
+    `_do_*` function to carry out the next action, executes it, and sets a
+    delayed call back to itself to handle the next action. After all actions
+    are processed for a turn, control is returned to the `CombatHandler` to
+    get input for the next turn.
 """
 
 import re
@@ -125,7 +142,13 @@ def skill_check(skill, target=5):
 
 
 def resolve_death(killer, victim, combat_handler):
-    """Called when a victim is killed during combat."""
+    """Called when a victim is killed during combat.
+
+    Args:
+        killer (Character): the character causing `victim`'s death
+        victim (Character): the character being killed
+        combat_handler (CombatHandler): combat in which the killing is happening
+    """
     killer.location.msg_contents(
         "{killer} has vanquished {victim}.",
         mapping={'killer': killer, 'victim': victim},
@@ -632,7 +655,6 @@ def _do_strike(st_remaining, character, target, args):
         # target has died
         resolve_death(character, target, ch)
 
-    #print(args)
     if 'end' not in args:
         if strikes > 1:
             # we have two free hands; do a second strike
@@ -771,7 +793,7 @@ def _do_flee(st_remaining, character, _, args):
     return 1 * COMBAT_DELAY
 
 
-def _do_wrestle(character, target, args):
+def _do_wrestle(st_remaining, character, target, args):
     """Implements the 'wrestle' combat command."""
     return 0 * COMBAT_DELAY
 
@@ -779,11 +801,23 @@ def _do_wrestle(character, target, args):
 def process_next_action(combat_handler):
     """
     Callback that handles processing combat actions
+
     Args:
         combat_handler: instance of a combat handler
 
     Returns:
         None
+
+    Based on the combat handler's data, this callback
+    selects an appropriate `_do_*` function to execute
+    the combat action. These handlers are all called
+    with the signature:
+
+        `_do_action(subturns_remaining, character, target, args)`
+
+    Each `_do_*` function should return a time delay
+    in seconds before the next call to `process_next_action`
+    should be run.
     """
     turn_actions = combat_handler.db.turn_actions
     turn_order = combat_handler.db.turn_order

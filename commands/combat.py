@@ -1,7 +1,5 @@
 """
-Combat commands
-
-
+Combat commands.
 """
 
 from evennia import default_cmds, CmdSet, create_script
@@ -840,14 +838,15 @@ class CmdCancelAction(default_cmds.MuxCommand):
         ch = caller.ndb.combat_handler
 
         if 'all' in self.switches:
-            action = True
-            while action:
-                action, target = ch.remove_last_action(caller)
+            removed = True
+            while removed:
+                removed = ch.remove_last_action(caller)
             caller.msg('All combat actions have been canceled.')
 
         else:
-            action, target = ch.remove_last_action(caller)
-            if action:
+            removed = ch.remove_last_action(caller)
+            if removed:
+                action, target = removed
                 caller.msg('Canceled "{action}{target}" action.'.format(
                     action=action,
                     target='' if target == caller

@@ -195,7 +195,7 @@ class CombatHandler(Script):
         """
         Called by combat commands to register an action with the handler.
 
-         action - string identifying the action, like "hit" or "parry"
+         action - string identifying the action
          character - the character performing the action
          target - the target character or None
          duration - the duration of the action
@@ -220,12 +220,12 @@ class CombatHandler(Script):
 
         Returns:
             Either a tuple containing the action and target removed,
-            or a tuple containing (False, False)
+            or False
         """
         dbref = character.id
 
         if len(self.db.turn_actions[dbref]) == 0:
-            return False, False
+            return False
         else:
             action, _, target, _ = self.db.turn_actions[dbref].pop()
             self.db.action_count[dbref] = \
@@ -236,13 +236,11 @@ class CombatHandler(Script):
         """Returns the range for a pair of combatants."""
         return self.db.distances[frozenset((character.id, target.id))]
 
-    def get_min_range(self, character, max=False):
+    def get_min_range(self, character):
         """Returns the name of the nearest range wth opponents.
 
         Args:
           character (Character): character object to center on
-          max (boolean): if true, return the farthest range
-                         containing opponents
             """
         char_prox = self.get_proximity(character)
         for rng in char_prox:
