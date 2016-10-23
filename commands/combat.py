@@ -595,8 +595,7 @@ class CmdEquip(default_cmds.MuxCommand):
                 if item.attributes.has('toughness'):
                     stat += "(|yToughness: {:>2d}|n)".format(item.db.toughness)
                 if item.attributes.has('range'):
-                    stat += "(|G{}|n) ".format(
-                        ", ".join([r.capitalize() for r in item.db.range]))
+                    stat += "(|G{}|n) ".format(item.db.range.capitalize())
 
                 data.append(
                     "  |b{slot:>{swidth}.{swidth}}|n: {item:<20.20} {stat}".format(

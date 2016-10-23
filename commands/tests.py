@@ -566,13 +566,13 @@ class AinneveCombatCmdsTest(CommandTest, AinneveCombatTest):
 
     def test_combat_look(self):
         """test 'look' combat command"""
-        self.call(combat.CmdCombatLook(), "", "You are in combat.|  Opponents:|    Obj2(#5) at ranged range.|    A normal person(#7) at ranged range.|    Obj(#4) at ranged range.|    Obj3(#11) at ranged range.|")
+        self.call(combat.CmdCombatLook(), "", "You are in combat.|  Opponents:|    Obj2(#5) at ranged range.|    Char2(#7) at ranged range.|    Obj3(#12) at ranged range.|    Obj(#4) at ranged range.|")
         self.char1.execute_cmd('advance obj')
         self.char1.execute_cmd('strike obj')
         expected_output = ['You are in combat.',
                            '  Opponents:',
                            '    Obj2(#5) at ranged range.',
-                           '    A normal person(#7) at ranged range.',
+                           '    Char2(#7) at ranged range.',
                            '    Obj(#4) at ranged range.',
                            '    Obj3(#11) at ranged range.',
                            '  You have entered the following actions:',
