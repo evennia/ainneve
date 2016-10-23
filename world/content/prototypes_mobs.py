@@ -93,7 +93,7 @@ WOLF = {
     "traits": {'STR': 5, 'DEX': 5, 'PER': 5, 'CHA': 5, 'INT': 5, 'VIT': 5,
                'BM': 5, 'WM': 5, 'MAG': 10,
                'REFL': 5, 'FORT': 5, 'WILL': 5, 'ENC': 50,
-               'HP': 5, 'MV': 5, 'SP': 5, 'LV': 1, 'ACT': 5,
+               'HP': 5, 'MV': 5, 'SP': 5, 'LV': 1, 'ACT': 5, 'XP': 1,
                'ATKM': 5, 'DEF': 5, 'ATKR': 5, 'PP': 5, 'ATKU': 5},
     "skills": {'escape': 1, 'climb': 1, 'jump': 1,
                'lockpick': 1, 'listen': 1, 'sense': 1,

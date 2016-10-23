@@ -225,6 +225,10 @@ riverport
  arms around. It is by far the tallest structure in central Riverport.
 
 #
+# add a testing NPC wolf
+@spawn {'prototype': 'WOLF', 'sdesc': "Ol' Scurvy", 'aliases': ['wolf']}
+
+#
 # open additional exits
 #
 @open southwest;sw, northeast;ne = riverport#07
