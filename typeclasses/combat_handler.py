@@ -29,7 +29,7 @@ class CombatHandler(Script):
 
         self.key = "combat_handler_%i" % random.randint(1, 1000)
         self.desc = "handles combat"
-        self.interval = 15  # two minute timeout
+        self.interval = 2 * 60  # two minute timeout
         self.start_delay = True
         self.persistent = True
 
