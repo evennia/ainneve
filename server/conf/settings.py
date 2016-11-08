@@ -24,6 +24,7 @@ from evennia.settings_default import *
 
 # This is the name of your game. Make it catchy!
 SERVERNAME = "Ainneve"
+IRC_ENABLED = True
 
 ######################################################################
 # Django web features
