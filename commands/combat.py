@@ -44,6 +44,7 @@ class CombatBaseCmdSet(CmdSet):
         self.add(CmdEmote())
         self.add(CmdPose())
         self.add(CmdCombatLook())
+        self.add(default_cmds.CmdHelp())
 
 
 class CombatCmdSet(CmdSet):
