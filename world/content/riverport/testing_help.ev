@@ -17,7 +17,6 @@
 #
 #
 @help/add/force Combat =
- |wCombat|n
 
  Combat in Ainneve is initiated with the |wattack|n command, and is turn-based.
  The duration of a combat action may be free (zero duration), half-turn, or
