@@ -196,7 +196,7 @@ class CmdCharCreate(MuxPlayerCommand):
             if char.db.chargen_complete:
                 char.location = start_location
                 player.puppet_object(session, char)
-                char.execute_cmd("help testing")
+                char.execute_cmd("help getting started")
 
         EvMenu(session,
                "world.chargen",
