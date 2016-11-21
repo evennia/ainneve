@@ -226,7 +226,21 @@ riverport
 
 #
 # add a testing NPC wolf
-@spawn {'prototype': 'WOLF', 'sdesc': "Ol' Scurvy", 'aliases': ['wolf']}
+@spawn "WOLF"
+#
+# set his sdesc; this is unfortunate
+#
+@py w=me.search("wolf"); w.sdesc.add("Ol' Scurvy")
+#
+@desc Ol' Scurvy = Wretched and fearsome-looking, the wolf growls as the fur on its back bristles at the sight of hapless travelers.
+#
+# give him a weapon
+#
+@create/drop his jaws;teeth:typeclasses.weapons.TwoHandedWeapon
+#
+@set teeth/slots = ['wield']
+#
+@py t=me.search('teeth');w=me.search("Ol' Scurvy");t.move_to(w, quiet=True);me.msg(w.equip.add(t))
 
 #
 # open additional exits
@@ -395,5 +409,4 @@ riverport
  center of what appears to be a shallow pool of shimmering purple liquid is
  opposite the archway.
 
-#
 

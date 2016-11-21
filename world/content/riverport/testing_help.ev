@@ -1,0 +1,55 @@
+#
+# Set up helpfiles for testing
+#
+@help/add/force Getting Started =
+ |wWelcome to |mAinneve|w!|n
+
+ This is a pre-alpha, live instance of the example game for Evennia. It is very much
+ a work in progress, and we need your help with testing the new |rcombat system|n.
+ (see '|whelp combat|n' for more)
+
+ If you find there is no one around to fight against, you can search the meadow to
+ find our buddy, |cOl' Skurvy|n, to beat up on.
+
+ If you have any feedback to give, please comment on the Combat Pull Request, which
+ can be found at https://github.com/evennia/ainneve/pull/86
+
+#
+#
+@help/add/force Combat =
+ |wCombat|n
+
+ Combat in Ainneve is initiated with the |wattack|n command, and is turn-based.
+ The duration of a combat action may be free (zero duration), half-turn, or
+ full-turn.
+
+ At the start of each turn, all combatants declare their actions. If a full-turn
+ action is entered after a half-turn, the action is completed over the course of
+ the two turns.
+
+ |wRange|n
+
+ Range is the distance between characters in combat. In Ainneve, there are three
+ possible ranges. The farthest being |Granged|n, moving closer brings a character
+ to |Greach|n range, and for close combat, |Gmelee|n range.
+
+ All weapons are effective at one or more ranges. Melee weapons tend to be the
+ strongest but only allow attack from melee range. Reach weapons can be used
+ at either melee or reach range, and Ranged weapons can attack enemies at
+ reach or ranged range.
+
+ Be sure to |wequip|n your weapons and armor before entering combat. You can still
+ equip them during the battle, but it is a half-turn action. Best to come prepared.
+
+ |wAttacking|n
+
+ The '|wattack|n' command is only available when a weapon is equipped. If you are
+ unarmed, only the unarmed attacks '|wkick|n' and '|wstrike|n' are available.
+ Both of these are melee attacks.
+
+ More detailed information on combat is available in the Ainneve wiki at:
+
+ https://github.com/evennia/ainneve/wiki/Combat-v0.1
+
+ #
+

@@ -323,8 +323,8 @@ class CombatHandler(Script):
                 self.db.characters[character.id] = character
                 self.db.action_count[character.id] = \
                     sum([x[3] for x in self.db.turn_actions[character.id]])
-                character.at_turn_start()
                 character.cmdset.add("commands.combat.CombatCmdSet")
+                character.at_turn_start()
 
             self.msg_all("Next turn begins. Declare your actions!")
             self.unpause()

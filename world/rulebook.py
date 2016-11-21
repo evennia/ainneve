@@ -168,7 +168,7 @@ def resolve_death(killer, victim, combat_handler):
 
     killer.traits.XP.base += xp_gained
     killer.msg("{actor} gains {xp} XP".format(
-        actor=killer,
+        actor=killer.get_display_name(killer),
         xp=xp_gained))
 
 

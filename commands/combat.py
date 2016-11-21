@@ -3,7 +3,7 @@ Combat commands.
 """
 
 from evennia import default_cmds, CmdSet, create_script
-from evennia.contrib.rpsystem import CmdEmote, CmdPose
+from evennia.contrib.rpsystem import CmdEmote, CmdPose, CmdSay
 from evennia.utils.utils import inherits_from
 from evennia.utils.evtable import EvTable
 from commands.equip import CmdInventory
@@ -29,22 +29,28 @@ class CombatBaseCmdSet(CmdSet):
     no_exits = True
 
     def at_cmdset_creation(self):
-        look = default_cmds.CmdLook()
-        look.help_category = 'free instant actions'
-        self.add(look)
-
-        say = default_cmds.CmdSay()
-        say.help_category = 'free instant actions'
-        self.add(say)
-
         inv = CmdInventory()
         inv.help_category = 'free instant actions'
         self.add(inv)
 
-        self.add(CmdEmote())
-        self.add(CmdPose())
+        say = CmdSay()
+        say.help_category = 'free instant actions'
+        self.add(say)
+
+        emote = CmdEmote()
+        emote.help_category = 'free instant actions'
+        self.add(emote)
+
+        pose = CmdPose()
+        pose.help_category = 'free instant actions'
+        self.add(pose)
+
         self.add(CmdCombatLook())
         self.add(default_cmds.CmdHelp())
+
+        # admin/builder commands
+        self.add(default_cmds.CmdScripts())
+        self.add(default_cmds.CmdPy())
 
 
 class CombatCmdSet(CmdSet):
@@ -551,7 +557,7 @@ class CmdEquip(default_cmds.MuxCommand):
     This is a half-turn combat action.
     """
     key = 'equip'
-    aliases = ['wear', 'wield']
+    aliases = ['eq', 'wear', 'wield']
     locks = 'cmd:in_combat() and attr(position, STANDING)'
     help_category = 'half turn actions'
 

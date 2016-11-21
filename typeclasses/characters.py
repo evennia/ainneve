@@ -8,7 +8,7 @@ creation commands.
 
 """
 from evennia.contrib.rpsystem import ContribRPCharacter
-from evennia.utils import lazy_property
+from evennia.utils import lazy_property, utils
 from world.equip import EquipHandler
 from world.traits import TraitHandler
 from world.skills import apply_skills
@@ -85,6 +85,8 @@ class NPC(Character):
     def at_object_creation(self):
         super(NPC, self).at_object_creation()
 
+        self.db.emote_aggressive = "stares about angrily"
+
         self.db.slots = {'wield': None,
                          'armor': None}
 
@@ -98,3 +100,28 @@ class NPC(Character):
     def at_death(self):
         """Hook called when an NPC dies."""
         self.scripts.add(NPCDeathHandler)
+
+    def at_turn_start(self):
+        """Hook called at the start of each combat turn."""
+        super(NPC, self).at_turn_start()
+
+        if "aggressive" in self.tags.all() and self.nattributes.has('combat_handler'):
+
+            ch = self.ndb.combat_handler
+            opponent = ch.db.characters[[cid for cid in ch.db.characters.keys()
+                                    if cid != self.id][0]]
+
+            if ch.get_range(opponent, self) != 'melee':
+                ch.add_action('advance', self, opponent, 1)
+            else:
+                ch.add_action('attack', self, opponent, 1)
+
+            ch.add_action('attack', self, opponent, 1)
+
+    def at_turn_end(self):
+        """Hook called at the end of each combat turn."""
+        super(NPC, self).at_turn_end()
+
+        if "aggressive" in self.tags.all() and self.nattributes.has('combat_handler'):
+            if self.attributes.has('emote_aggressive'):
+                self.execute_cmd("emote {}".format(self.db.emote_aggressive))

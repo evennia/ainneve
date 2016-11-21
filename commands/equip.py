@@ -60,7 +60,7 @@ class CmdInventory(MuxCommand):
                     stat += "(|yToughness: {:>2d}|n)".format(item.db.toughness)
                 if item.attributes.has('range'):
                     stat += "(|G{}|n) ".format(item.db.range.capitalize())
-                data[2].append(stat)
+                data[2].append(stat.strip())
             table = EvTable(header=False, table=data, border=None, valign='t')
             string = "|YYou are carrying:|n\n{}".format(table)
         self.caller.msg(string)
