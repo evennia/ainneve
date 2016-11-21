@@ -30,7 +30,8 @@
 
  Range is the distance between characters in combat. In Ainneve, there are three
  possible ranges. The farthest being |Granged|n, moving closer brings a character
- to |Greach|n range, and for close combat, |Gmelee|n range.
+ to |Greach|n range, and for close combat, |Gmelee|n range. See the help for the
+ '|wadvance|n' and '|wretreat|n' commands for more about range.
 
  All weapons are effective at one or more ranges. Melee weapons tend to be the
  strongest but only allow attack from melee range. Reach weapons can be used
