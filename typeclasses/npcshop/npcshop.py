@@ -11,62 +11,76 @@ from world.economy import transfer_funds, InsufficientFunds, value_to_coin
 from evennia.utils.create import create_object
 
 def get_wares(caller):
-    wares = caller.location.db.storeroom.contents
-    # Only descendants of the Item typeclass are eligible for sale
-    return [ware for ware in wares if Item in inspect.getmro(ware.__class__) and ware.db.value]
+    """
+    Gets items located in the designated storeroom of the caller's location with a price assigned
+    Only descendants of the Item typeclass are eligible for sale
+    """
+    return [ware for ware in caller.location.db.storeroom.contents if Item in inspect.getmro(ware.__class__) and ware.db.value]
 
 def menunode_shopfront(caller):
     "This is the top-menu screen."
 
     shopname = caller.location.key
-    wares = get_wares(caller)
+    caller.npc_shop_wares = get_wares(caller)
 
     text = "*** Welcome to %s! ***\n" % shopname
-    if wares:
+    if caller.npc_shop_wares:
         text += "   Things for sale (choose 1-%i to inspect);" \
-                " quit to exit:" % len(wares)
+                " quit to exit:" % len(caller.npc_shop_wares)
     else:
         text += "   There is nothing for sale; quit to exit."
 
     options = []
-    for ware in wares:
+    for ware in caller.npc_shop_wares:
         # add an option for every ware in store
         options.append({"desc": "%s (%s)" %
-                                (ware.key, as_price(ware.db.value) or 1),
+                                (ware.key, as_price(ware.db.value)),
                         "goto": "menunode_inspect_and_buy"})
     return text, options
 
 
 def menunode_inspect_and_buy(caller, raw_input):
-    "Sets up the buy menu screen."
+    """
+    Sets up the buy menu screen,
+    or informs the player that the ware is no longer available
+    """
 
-    wares = get_wares(caller)
     iware = int(raw_input) - 1
-    ware = wares[iware]
-    text = "You inspect %s:\n\n%s" % (ware.key, ware.db.desc)
+    ware = caller.npc_shop_wares[iware]
 
     def purchase_item(caller):
             """Process item purchase."""
             try:
-                # this will raise exception if caller doesn't
-                # have enough funds in their `db.wallet`
-                transfer_funds(caller, None, ware.db.value)
-                ware.move_to(caller, quiet=True)
-                ware.at_get(caller)
-                rtext = "You pay {} and purchase {}".format(
-                            as_price(ware.db.value),
-                            ware.key
-                         )
+                # this will raise exception if
+                # caller doesn't have enough funds
+                if ware.location == caller.location.db.storeroom and ware.db.value:
+                    transfer_funds(caller, None, ware.db.value)
+                    ware.move_to(caller, quiet=True)
+                    ware.at_get(caller)
+                    rtext = "You pay {} and purchase {}".format(
+                                as_price(ware.db.value),
+                                ware.key
+                             )
+                else:
+                    rtext = "{} is no longer available.".format(
+                            ware.key.capitalize())
             except InsufficientFunds:
                 rtext = "You do not have enough money to buy {}.".format(
                             ware.key)
             caller.msg(rtext)
 
-    options = ({"desc": "Buy %s for %s" % \
+    if ware.location == caller.location.db.storeroom and ware.db.value:
+        # If the item's still in stock and has not been removed from sale
+        text = "You inspect %s:\n\n%s" % (ware.key, ware.db.desc)
+        options = ({"desc": "Buy %s for %s" % \
                         (ware.key, as_price(ware.db.value) or 1),
                 "goto": "menunode_shopfront",
                 "exec": purchase_item},
                {"desc": "Look for something else",
+                "goto": "menunode_shopfront"})
+    else:
+        text = "{} is no longer available".format(ware.key.capitalize())
+        options = ({"desc": "Look for something else",
                 "goto": "menunode_shopfront"})
 
     return text, options
@@ -194,20 +208,19 @@ class CmdPrice(Command):
     help_category = "StoreRoom"
 
     def func(self):
-        print self.args.split()
         try:
-            item, value = self.args.split()
+            item_name, value = self.args.split()
         except:
             self.caller.msg("I'm afraid I don't understand. Please check your syntax.")
             return
-        item = self.caller.search(item,
-                             location=self.caller.location,
-                             typeclass='typeclasses.items.Item')
+        item = self.caller.search(item_name,
+                                  location=self.caller.location,
+                                  typeclass='typeclasses.items.Item',
+                                  quiet=True)
         if not item:
-            self.caller.msg("I can't find that here.")
-            return
-        elif Item not in inspect.getmro(item.__class__):
-            self.caller.msg("That's not valid for sale. Only wares deriving from the Item typeclass may be sold.")
+            self.caller.msg("I can't find a sellable Item called '{}' here.".format(
+                item_name
+            ))
             return
         else:
             try:
@@ -222,10 +235,12 @@ class CmdPrice(Command):
             ))
 
 class StoreRoomCmdSet(CmdSet):
+    "Commands available from within a shop storeroom"
     def at_cmdset_creation(self):
         self.add(CmdPrice())
 
 class StoreRoom(Room):
+    "Every shop has a designated storeroom which holds the inventory and provides commands for inventory management"
 
     def at_object_creation(self):
         super(StoreRoom, self).at_object_creation()
