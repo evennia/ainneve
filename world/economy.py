@@ -71,8 +71,7 @@ def transfer_funds(src, dst, value_or_coin):
     if src is not None:
         src.db.wallet = value_to_coin(src_val - xfr_val)
 
-    if dst is not None:
-        dst.db.wallet = value_to_coin((dst_val or 0) + xfr_val)
+    dst.db.wallet = value_to_coin((dst_val or 0) + xfr_val)
 
 
 def format_coin(value_or_coin):

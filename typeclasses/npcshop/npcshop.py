@@ -9,13 +9,14 @@ from typeclasses.items import Item
 from world.economy import format_coin as as_price
 from world.economy import transfer_funds, InsufficientFunds, value_to_coin
 from evennia.utils.create import create_object
+from evennia.utils.utils import inherits_from
 
 def get_wares(caller):
     """
     Gets items located in the designated storeroom of the caller's location with a price assigned
     Only descendants of the Item typeclass are eligible for sale
     """
-    return [ware for ware in caller.location.db.storeroom.contents if Item in inspect.getmro(ware.__class__) and ware.db.value]
+    return [ware for ware in caller.location.db.storeroom.contents if inherits_from(ware, Item) and ware.db.value]
 
 def menunode_shopfront(caller):
     "This is the top-menu screen."
@@ -103,8 +104,6 @@ class CmdBuy(Command):
 
     def func(self):
         "Starts the shop EvMenu instance"
-        print type(self.caller)
-        print type(self.caller.db.wallet)
         evmenu.EvMenu(self.caller,
                       "typeclasses.npcshop.npcshop",
                       startnode="menunode_shopfront")
