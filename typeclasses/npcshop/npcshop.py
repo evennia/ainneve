@@ -3,6 +3,7 @@ from evennia.utils import evmenu
 from evennia import Command
 from evennia import CmdSet
 from evennia import DefaultObject
+from evennia.commands.default.building import ObjManipCommand
 from typeclasses.rooms import Room
 from typeclasses.exits import Exit
 from typeclasses.items import Item
@@ -22,17 +23,17 @@ def menunode_shopfront(caller):
     "This is the top-menu screen."
 
     shopname = caller.location.key
-    caller.npc_shop_wares = get_wares(caller)
+    caller.ndb._menutree.npc_shop_wares = get_wares(caller)
 
     text = "*** Welcome to %s! ***\n" % shopname
-    if caller.npc_shop_wares:
+    if caller.ndb._menutree.npc_shop_wares:
         text += "   Things for sale (choose 1-%i to inspect);" \
-                " quit to exit:" % len(caller.npc_shop_wares)
+                " quit to exit:" % len(caller.ndb._menutree.npc_shop_wares)
     else:
         text += "   There is nothing for sale; quit to exit."
 
     options = []
-    for ware in caller.npc_shop_wares:
+    for ware in caller.ndb._menutree.npc_shop_wares:
         # add an option for every ware in store
         options.append({"desc": "%s (%s)" %
                                 (ware.key, as_price(ware.db.value)),
@@ -47,7 +48,7 @@ def menunode_inspect_and_buy(caller, raw_input):
     """
 
     iware = int(raw_input) - 1
-    ware = caller.npc_shop_wares[iware]
+    ware = caller.ndb._menutree.npc_shop_wares[iware]
 
     def purchase_item(caller):
             """Process item purchase."""
@@ -125,16 +126,20 @@ class NPCShop(Room):
 
 # command to build a complete shop (the Command base class
 # should already have been imported earlier in this file)
-class CmdBuildShop(Command):
+class CmdBuildShop(ObjManipCommand):
     """
     Build a new shop
 
     Usage:
-        @buildshop shopname
+        @buildshop shopname[;alias;alias...], shopname...
 
-    This will create a new NPCshop room as well as a linked store room (named simply <storename>-storage) for the
-    wares on sale and exits linking the builder's current room to the shop.
-    The store room will be accessed through a locked door in the shop.
+    This will create new NPCshop rooms as well as linked store rooms
+    (named simply <storename>-storage) for the wares on sale and exits
+    linking the builder's current room to the shops. The store room will
+    be accessed through a locked door in the shop.
+
+    You can build many shops by comma-separating their names, and assign
+    aliases with semicolons as you would with @create.
     """
     key = "@buildshop"
     locks = "cmd:perm(Builders)"
@@ -146,52 +151,58 @@ class CmdBuildShop(Command):
             self.msg("Usage: @buildshop <storename>")
             return
         # create the shop and storeroom
-        shopname = self.args.strip()
-        shop = create_object(NPCShop,
-                             key=shopname,
-                             location=None,
-                             nohome=True)
-        shop.at_object_creation()
+        super(CmdBuildShop, self).parse()
+        for objdef in self.lhs_objs:
+            shopname = objdef['name']
+            aliases = objdef['aliases']
+            shop = create_object(NPCShop,
+                                 key=shopname,
+                                 location=None,
+                                 nohome=True)
+            shop.at_object_creation()
 
-        storeroom = create_object(StoreRoom,
-                                  key="%s-storage" % shopname,
-                                  location=None,
-                                  nohome=True)
-        storeroom.at_object_creation()
-        shop.db.storeroom = storeroom
-        # create a door between the two
-        storeroom_entrance = create_object(Exit,
-                                  key="back door",
-                                  aliases=["storage", "store room"],
-                                  location=shop,
-                                  destination=storeroom,
-                                  home=shop)
-        storeroom_exit = create_object(Exit,
-                                       key="door",
-                                       location=storeroom,
-                                       destination=shop,
-                                       home=storeroom)
-        shop_entrance = create_object(Exit,
-                                      key=shopname,
-                                      location=self.caller.location,
-                                      destination=shop,
-                                      home=self.caller.location)
-        shop_exit = create_object(Exit,
-                                  key="front door",
-                                  location=shop,
-                                  destination=self.caller.location,
-                                  home=shop)
-        # make a key for accessing the store room
-        storeroom_key_name = "%s-storekey" % shopname
-        storeroom_key = create_object(DefaultObject,
-                                      key=storeroom_key_name,
-                                      location=self.caller,
-                                      home=self.caller)
-        # only allow chars with this key to enter the store room
-        storeroom_entrance.locks.add("traverse:holds(%s)" % storeroom_key_name)
+            storeroom = create_object(StoreRoom,
+                                      key="%s-storage" % shopname,
+                                      location=None,
+                                      nohome=True)
+            storeroom.at_object_creation()
+            shop.db.storeroom = storeroom
+            # create a door between the two
+            storeroom_entrance = create_object(Exit,
+                                               key="back door",
+                                               aliases=["storage", "store room", "storeroom"],
+                                               location=shop,
+                                               destination=storeroom,
+                                               home=shop)
+            storeroom_exit = create_object(Exit,
+                                           key="shop",
+                                           aliases=["exit", "back", "out", "door", "o"],
+                                           location=storeroom,
+                                           destination=shop,
+                                           home=storeroom)
+            shop_entrance = create_object(Exit,
+                                          key=shopname,
+                                          location=self.caller.location,
+                                          destination=shop,
+                                          aliases=aliases,
+                                          home=self.caller.location)
+            shop_exit = create_object(Exit,
+                                      key="front door",
+                                      aliases=["front", "exit", "out", "o"],
+                                      location=shop,
+                                      destination=self.caller.location,
+                                      home=shop)
+            # make a key for accessing the store room
+            storeroom_key_name = "%s-storekey" % shopname
+            storeroom_key = create_object(DefaultObject,
+                                          key=storeroom_key_name,
+                                          location=self.caller,
+                                          home=self.caller)
+            # only allow chars with this key to enter the store room
+            storeroom_entrance.locks.add("traverse:holds(%s)" % storeroom_key_name)
 
-        # inform the builder about progress
-        self.caller.msg("The shop %s was created!" % shop)
+            # inform the builder about progress
+            self.caller.msg("The shop %s was created!" % shop)
 
 class CmdPrice(Command):
     """
