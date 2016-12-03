@@ -8,7 +8,7 @@ from typeclasses.rooms import Room
 from typeclasses.exits import Exit
 from typeclasses.items import Item
 from world.economy import format_coin as as_price
-from world.economy import transfer_funds, InsufficientFunds, value_to_coin
+from world.economy import transfer_funds, InsufficientFunds, value_to_coin, format_coin
 from evennia.utils.create import create_object
 from evennia.utils.utils import inherits_from
 
@@ -170,7 +170,7 @@ class CmdBuildShop(ObjManipCommand):
             # create a door between the two
             storeroom_entrance = create_object(Exit,
                                                key="back door",
-                                               aliases=["storage", "store room", "storeroom"],
+                                               aliases=["storage", "store room", "storeroom", "back"],
                                                location=shop,
                                                destination=storeroom,
                                                home=shop)
@@ -197,6 +197,7 @@ class CmdBuildShop(ObjManipCommand):
             storeroom_key = create_object(DefaultObject,
                                           key=storeroom_key_name,
                                           location=self.caller,
+                                          aliases=["key"],
                                           home=self.caller)
             # only allow chars with this key to enter the store room
             storeroom_entrance.locks.add("traverse:holds(%s)" % storeroom_key_name)
@@ -213,6 +214,7 @@ class CmdPrice(Command):
 
     This will set the price of an item while inside a storeroom.
     Value is counted in CC.
+    Items must be descendants of the Item typeclass.
     """
     key = "price"
     help_category = "StoreRoom"
@@ -221,18 +223,15 @@ class CmdPrice(Command):
         try:
             item_name, value = self.args.split()
         except:
-            self.caller.msg("I'm afraid I don't understand. Please check your syntax.")
+            self.caller.msg("Syntax: price <item> <value>")
             return
-        item = self.caller.search(item_name,
-                                  location=self.caller.location,
-                                  typeclass='typeclasses.items.Item',
-                                  quiet=True)
-        if not item:
-            self.caller.msg("I can't find a sellable Item called '{}' here.".format(
-                item_name
-            ))
+        sellable_items = [ware for ware in self.caller.location.contents if inherits_from(ware, Item)]
+        item = self.caller.search(item_name, location=self.caller.location, candidates=sellable_items, quiet=True)
+        if len(item) > 1:
+            self.caller.msg("Which '{}' did you mean?".format(item_name))
             return
-        else:
+        elif len(item):
+            item = item[0]
             try:
                 value = int(value)
             except:
@@ -243,6 +242,8 @@ class CmdPrice(Command):
                 item,
                 as_price(value)
             ))
+        else:
+            self.caller.msg("There is no '{}' available here to sell.".format(item_name))
 
 class StoreRoomCmdSet(CmdSet):
     "Commands available from within a shop storeroom"
@@ -257,13 +258,16 @@ class StoreRoom(Room):
         self.cmdset.add_default(StoreRoomCmdSet)
 
     def return_appearance(self, caller):
-        wares = []
-        for item in self.contents:
-            if item.db.value:
-                wares.append(item.key)
+        wares = [item for item in self.contents if item.db.value]
         desc = super(StoreRoom, self).return_appearance(caller)
         for line in desc.split("\n"):
-            if line.strip().split("(")[0] in wares:
-                line = "|y" + line
+            if any(line.find(ware.key) > -1 for ware in wares):
+                try:
+                    line = "|y{line} |n({price})".format(
+                        line=line,
+                        price=format_coin(wares.pop(0).db.value)
+                    )
+                except:
+                    pass
             caller.msg(line)
         # caller.msg(desc)

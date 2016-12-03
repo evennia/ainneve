@@ -95,7 +95,7 @@ class EquipHandler(object):
         self.obj = obj
 
         if not self.obj.db.slots:
-            raise EquipException('`EquipHandler` requires `db.slots` attribute on `obj`.')
+            raise EquipException('`EquipHandler` requires `db.slots` attribute on `{}`.'.format(obj))
 
         if obj.db.limbs and len(obj.db.limbs) > 0:
             self.limbs = {limb: slots for limb, slots in obj.db.limbs}

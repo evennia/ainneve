@@ -39,6 +39,8 @@ SECRET_KEY = '5(r:%@Gmg-?}NU3d[/ul8+t.SJ$",c`|qxsDo"Z='
 # Allow multiple sessions per player; one character per session
 MULTISESSION_MODE = 2
 MAX_NR_CHARACTERS = 5
+IRC_ENABLED = True
+DEFAULT_HOME = "#2"
 
 # Other defaults
 PROTOTYPE_MODULES = ('world.content.prototypes_armor',
@@ -48,4 +50,3 @@ PROTOTYPE_MODULES = ('world.content.prototypes_armor',
                      'world.content.prototypes_weapons'
                      )
 BASE_BATCHPROCESS_PATHS = ['world.content']
-
