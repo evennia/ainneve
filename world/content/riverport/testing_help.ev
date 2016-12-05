@@ -26,14 +26,12 @@
  action is entered after a half-turn, the action is completed over the course of
  the two turns.
 
- |wStatus|n
-
+ |cStatus|n
  The |wlook|n command in combat gives you detailed information about the combat
  situation. Use it to determine your |Grange|n from opponents, what |Yactions|n
  you have entered, and how long before the |yturn timer|n ends.
 
- |wRange|n
-
+ |cRange|n
  Range is the distance between characters in combat. In Ainneve, there are three
  possible ranges. The farthest being |Granged|n, moving closer brings a character
  to |Greach|n range, and for close combat, |Gmelee|n range. See the help for the
@@ -47,8 +45,7 @@
  Be sure to |wequip|n your weapons and armor before entering combat. You can still
  equip them during the battle, but it is a half-turn action. Best to come prepared.
 
- |wAttacking|n
-
+ |cAttacking|n
  The '|wattack|n' command is only available when a weapon is equipped. If you are
  unarmed, only the unarmed attacks '|wkick|n' and '|wstrike|n' are available.
  Both of these are melee attacks.
