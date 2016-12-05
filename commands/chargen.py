@@ -154,7 +154,7 @@ class CmdCharCreate(MuxPlayerCommand):
                 ("puppet:id({}) or pid({}) "
                  "or perm(Immortals) or pperm(Immortals)").format(
                     new_character.id, player.id
-            ))
+                ))
             player.db._playable_characters.append(new_character)
 
         else:

@@ -9,4 +9,4 @@ install:
 script:
   - evennia migrate
   - evennia test evennia
-  - evennia test
+  - evennia --settings settings.py test $TRAVIS_BUILD_DIR

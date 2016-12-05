@@ -26,7 +26,7 @@ class ChargenTestCase(EvenniaTest):
         self.session.execute_cmd('@charcreate TestChar')
         self.assertIsInstance(self.session.ndb._menutree, EvMenu)
         msg = self.session.msg.mock_calls[0][1][0]
-        self.assertIn('|wWelcome to |mAinneve|w, the example game for |yEvennia|w.|n',
+        self.assertIn(u'|n|wWelcome to |mAinneve|w, the example game for |yEvennia|w.|n',
                       msg.split('\n'))
 
     def test_launch_existing_start(self):
@@ -34,7 +34,7 @@ class ChargenTestCase(EvenniaTest):
         self.session.execute_cmd('@charcreate Char')
         self.assertIsInstance(self.session.ndb._menutree, EvMenu)
         msg = self.session.msg.mock_calls[0][1][0]
-        self.assertIn('|wWelcome to |mAinneve|w, the example game for |yEvennia|w.|n',
+        self.assertIn(u'|n|wWelcome to |mAinneve|w, the example game for |yEvennia|w.|n',
                       msg.split('\n'))
 
     def test_launch_existing_archetype(self):
@@ -42,7 +42,7 @@ class ChargenTestCase(EvenniaTest):
         archetypes.apply_archetype(self.char1, 'warrior')
         self.session.execute_cmd('@charcreate Char')
         msg = self.session.msg.mock_calls[0][1][0]
-        self.assertIn("Your character's traits influence combat abilities and skills.",
+        self.assertIn(u"|nYour character's traits influence combat abilities and skills.",
                       msg.split('\n'))
 
     def test_launch_existing_traits(self):
@@ -51,7 +51,7 @@ class ChargenTestCase(EvenniaTest):
         self.char1.traits.INT.base += 8
         self.session.execute_cmd('@charcreate Char')
         msg = self.session.msg.mock_calls[0][1][0]
-        self.assertIn("Next, select a race for your character:",
+        self.assertIn(u"|nNext, select a race for your character:|n",
                       msg.split('\n'))
 
     def test_launch_existing_race_magic(self):
@@ -61,7 +61,7 @@ class ChargenTestCase(EvenniaTest):
         races.apply_race(self.char1, 'human', 'agility')
         self.session.execute_cmd('@charcreate Char')
         msg = self.session.msg.mock_calls[0][1][0]
-        self.assertIn("Your |CMagic|n trait is |w8|n.",
+        self.assertIn(u"|nYour |CMagic|n trait is |w8|n.",
                       msg.split('\n'))
 
     def test_launch_existing_race_nomagic(self):
@@ -71,7 +71,7 @@ class ChargenTestCase(EvenniaTest):
         races.apply_race(self.char1, 'human', 'agility')
         self.session.execute_cmd('@charcreate Char')
         msg = self.session.msg.mock_calls[0][1][0]
-        self.assertIn("Your ability to perform actions in Ainneve is",
+        self.assertIn(u"|nYour ability to perform actions in Ainneve is",
                       msg.split('\n'))
 
     def test_launch_existing_unallocated_skills(self):
@@ -82,7 +82,7 @@ class ChargenTestCase(EvenniaTest):
         skills.apply_skills(self.char1)
         self.session.execute_cmd('@charcreate Char')
         msg = self.session.msg.mock_calls[0][1][0]
-        self.assertIn("Your ability to perform actions in Ainneve is",
+        self.assertIn(u"|nYour ability to perform actions in Ainneve is",
                       msg.split('\n'))
 
     def test_launch_existing_skills_allocated(self):
@@ -96,7 +96,7 @@ class ChargenTestCase(EvenniaTest):
         # this menu node returns the chars inventory then menu text
         # so we use mock_calls[1] instead of 0
         msg = self.session.msg.mock_calls[0][1][0]
-        self.assertIn("Select a category of equipment to view:",
+        self.assertIn(u"Select a category of equipment to view:|n",
                       msg.split('\n'))
 
     def test_ic_character(self):

@@ -183,7 +183,7 @@ class EquipTestCase(CommandTest):
         self.call(CmdInventory(), "", "You are not carrying anything.")
         # can see an object when picked up
         self.char1.execute_cmd('get Obj')
-        self.call(CmdInventory(), "", "You are carrying:\n Obj  Test Obj   (Damage:  1)")
+        self.call(CmdInventory(), "", "You are carrying:\n Obj  Test Obj  (Damage:  1)")
         # but not when equipped
         self.char1.execute_cmd('wield Obj')
         self.call(CmdInventory(), "", "You are not carrying anything.")
@@ -203,27 +203,9 @@ class CharTraitsTestCase(CommandTest):
 
     def test_sheet(self):
         """test character sheet display"""
-        sheet_output = (
-"==============[ Character Info ]===============\n" + (77 * " ") + "\n"
-"  Name:                         Char     XP:     0 /       500   Level:   0  \n"
-"  Archetype:                 Warrior                                         \n"
-+ (39 * " ") + "\n"
-"     HP   |   SP   |   BM   |   WM     Primary Traits   Strength    :   9  \n"
-"  ~~~~~~~~+~~~~~~~~+~~~~~~~~+~~~~~~~~  ~~~~~~~~~~~~~~   Perception  :   2  \n"
-"    9 / 9 |  9 / 9 |  0 / 0 |  0 / 0                    Intelligence:   1  \n"
-"                                                        Dexterity   :   5  \n"
-"  Race:                         None                    Charisma    :   4  \n"
-"  Focus:                        None                    Vitality    :   9  \n"
-"  Description                                           Magic       :   0  \n"
-"  ~~~~~~~~~~~                          |\n"
-"  None                                 Save Rolls       Fortitude   :   9  \n"
-"                                       ~~~~~~~~~~       Reflex      :   3  \n"
-"                                                        Will        :   1  \n"
-"  Encumbrance                          |\n"
-"  ~~~~~~~~~~~                          Combat Stats     Melee       :   9  \n"
-"  Carry Weight:             0 /  180   ~~~~~~~~~~~~     Ranged      :   2  \n"
-"  Encumbrance Penalty:             0   Power Point      Unarmed     :   5  \n"
-"  Movement Points:                 5   Bonus:    +2     Defense     :   5")
+        sheet_output = """==============[ Character Info ]===============o
+                                                                               Name:                         Char     XP:     0 /       500   Level:   0    Archetype:                 Warrior                                                                                     HP   |   SP   |   BM   |   WM     Primary Traits  Strength    :    9    ~~~~~~~~+~~~~~~~~+~~~~~~~~+~~~~~~~~  ~~~~~~~~~~~~~~  Perception  :    2      9 / 9 |  9 / 9 |  0 / 0 |  0 / 0                   Intelligence:    1                                                         Dexterity   :    5    Race:                         None                   Charisma    :    4    Focus:                        None                   Vitality    :    9    Description                                          Magic       :    0    ~~~~~~~~~~~                          |  None                                 Save Rolls      Fortitude   :    9                                         ~~~~~~~~~~      Reflex      :    3                                                         Will        :    1    Encumbrance                          |  ~~~~~~~~~~~                          Combat Stats    Melee       :    9    Carry Weight:            0 /   180   ~~~~~~~~~~~~    Ranged      :    2    Encumbrance Penalty:             0   Power Point     Unarmed     :    5    Movement Points:                 5   Bonus:    +2    Defense     :    5                                         +"""
+
         self.call(CmdSheet(), "", sheet_output)
 
     def test_traits(self):
