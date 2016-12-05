@@ -232,15 +232,15 @@ riverport
 #
 @py w=me.search("wolf"); w.sdesc.add("Ol' Scurvy")
 #
-@desc Ol' Scurvy = Wretched and fearsome-looking, the wolf growls as the fur on its back bristles at the sight of hapless travelers.
+@desc Ol' Scurvy = Wretched and fearsome-looking, the wolf growls as the fur on its back|/bristles at the sight of hapless travelers.
 #
 # give him a weapon
 #
-@create/drop his jaws;teeth:typeclasses.weapons.TwoHandedWeapon
+@create/drop a vicious bite;jaws:typeclasses.weapons.TwoHandedWeapon
 #
-@set teeth/slots = ['wield']
+@set jaws/slots = ['wield']
 #
-@py t=me.search('teeth');w=me.search("Ol' Scurvy");t.move_to(w, quiet=True);me.msg(w.equip.add(t))
+@py t=me.search('jaws');w=me.search("Ol' Scurvy");t.move_to(w, quiet=True);me.msg(w.equip.add(t))
 
 #
 # open additional exits

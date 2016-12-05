@@ -26,6 +26,12 @@
  action is entered after a half-turn, the action is completed over the course of
  the two turns.
 
+ |wStatus|n
+
+ The |wlook|n command in combat gives you detailed information about the combat
+ situation. Use it to determine your |Grange|n from opponents, what |Yactions|n
+ you have entered, and how long before the |yturn timer|n ends.
+
  |wRange|n
 
  Range is the distance between characters in combat. In Ainneve, there are three
