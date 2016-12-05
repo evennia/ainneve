@@ -149,11 +149,13 @@ class CmdInitiateAttack(default_cmds.MuxCommand):
             chandler = create_script("typeclasses.combat_handler.CombatHandler")
             chandler.add_character(caller)
             chandler.add_character(target)
-            caller.msg("You attack {}! You are in combat.".format(
+            caller.msg("You attack {}!".format(
                 target.get_display_name(caller)))
-            target.msg("{} attacks you! You are in combat.".format(
+            target.msg("{} attacks you!".format(
                 caller.get_display_name(target)))
-            chandler.msg_all("Next turn begins. Declare your actions!")
+            for char in chandler.db.characters.values():
+                char.execute_cmd("look")
+            chandler.msg_all("The turn begins. Declare your actions!")
 
 
 class CmdDropItem(default_cmds.MuxCommand):

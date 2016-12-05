@@ -120,17 +120,9 @@ class AinneveCombatHandlerTestCase(AinneveCombatTest):
 
         self.assertIn(frozenset((self.char1.id, self.obj1.id)), ch.db.distances)
 
-        # remove the NPC
+        # remove the NPC; this ends the combat
         ch.remove_character(self.obj1)
-
-        self.assertEqual(len(ch.db.characters), 1)
-        self.assertEqual(len(ch.db.action_count), 1)
-        self.assertEqual(len(ch.db.turn_actions), 1)
-        self.assertEqual(len(ch.db.distances), 0)
-
-        self.assertNotIn(self.obj1.id, ch.db.characters)
-        self.assertNotIn(self.obj1.id, ch.db.action_count)
-        self.assertNotIn(self.obj1.id, ch.db.turn_actions)
+        self.assertFalse(ch.is_valid())
 
     def test_actions(self):
         """test adding and removing combat actions"""
