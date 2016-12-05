@@ -99,7 +99,7 @@ class CmdCapacity(MuxCommand):
         except ValueError:
             capacity = -1
 
-        if capacity < 0:
+        if capacity <= 0:
             self.caller.msg("Invalid capacity specified.")
             return
 
