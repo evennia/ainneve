@@ -128,8 +128,8 @@ class CombatHandler(Script):
         if character.id in self.db.characters:
             self._cleanup_character(character)
 
-        if not self.db.characters:
-            # if we have no more characters in battle, kill this handler
+        if len(self.db.characters) <= 1:
+            # if we have no more than one character in battle, kill this handler
             self.stop()
  
     def msg_all(self, message, exclude=()):

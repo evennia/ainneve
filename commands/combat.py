@@ -132,7 +132,7 @@ class CmdInitiateAttack(default_cmds.MuxCommand):
             ))
             return
 
-        if 'no_attack' in caller.location.tags.all(category='flags'):
+        if caller.location.tags.get('no_attack', None, category='flags'):
             caller.msg("Combat is not allowed in this location.")
             return
 

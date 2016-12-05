@@ -78,6 +78,12 @@ class Character(ContribRPCharacter):
         """Hook called when a character dies."""
         self.scripts.add(CharDeathHandler)
 
+    def at_pre_unpuppet(self):
+        """Called just before beginning to un-connect a puppeting from
+        this Player."""
+        if self.nattributes.has('combat_handler'):
+            self.ndb.combat_handler.remove_character(self)
+
 
 class NPC(Character):
     """Base character typeclass for NPCs and enemies.
