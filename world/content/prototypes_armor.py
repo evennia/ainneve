@@ -46,7 +46,7 @@ CHAIN_MAIL = {
     "desc": "The fine mesh of this chain mail suit is highly resistant to "
             "slicing damage.",
     "weight": 18,
-    "value": 15*SC,
+    "value": 5*SC,
     "toughness": 2,
 }
 
@@ -57,7 +57,7 @@ PLATED_MAIL = {
     "desc": "This armor has an underlayer of chain mail, reinforced with "
             "metal plating in the arms, shoulders, and torso.",
     "weight": 18,
-    "value": 5*SC,
+    "value": 15*SC,
     "toughness": 3,
 }
 

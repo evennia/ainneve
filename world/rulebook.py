@@ -357,8 +357,9 @@ def _do_attack(st_remaining, character, target, args):
 
     if not weapon:
         ch.combat_msg(
-            "{actor} does not have an appropriate weapon to attack.",
-            actor=character)
+            "{actor} does not have a weapon that can attack|/opponents at |G{range}|n distance.",
+            actor=character,
+            range=attack_range)
         return 0
 
     # check whether the target is dodging

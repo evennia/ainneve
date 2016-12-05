@@ -816,12 +816,12 @@ class AinneveCombatAttackTestCase(AinneveCombatTest):
 
         # confirm messaging and stats prompt
         msg, prompt = self.parse_msg_mock(self.char1)
-        self.assertEqual(msg, "> Char(#6) does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, "> Char(#6) does not have a weapon that can attack\r\nopponents at ranged distance.")
         msg, prompt = self.parse_msg_mock(self.char2)
-        self.assertEqual(msg, ".. Char does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, ".. Char does not have a weapon that can attack\r\nopponents at ranged distance.")
         self.assertEqual(prompt, "[ HP: 10 | WM: 0 | BM: 0 | SP: 8 ]")
         msg, prompt = self.parse_msg_mock(self.obj1)
-        self.assertEqual(msg, ".. Char does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, ".. Char does not have a weapon that can attack\r\nopponents at ranged distance.")
 
         ####
         # attack with melee weapon fails at ranged distance
@@ -832,12 +832,12 @@ class AinneveCombatAttackTestCase(AinneveCombatTest):
 
         # confirm messaging and stats prompt
         msg, prompt = self.parse_msg_mock(self.char1)
-        self.assertEqual(msg, "> Char(#6) does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, "> Char(#6) does not have a weapon that can attack\r\nopponents at ranged distance.")
         msg, prompt = self.parse_msg_mock(self.char2)
-        self.assertEqual(msg, ".. Char does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, ".. Char does not have a weapon that can attack\r\nopponents at ranged distance.")
         self.assertEqual(prompt, "[ HP: 10 | WM: 0 | BM: 0 | SP: 8 ]")
         msg, prompt = self.parse_msg_mock(self.obj1)
-        self.assertEqual(msg, ".. Char does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, ".. Char does not have a weapon that can attack\r\nopponents at ranged distance.")
 
         # cleanup
         _unequip_item(self.char1, self.melee)
@@ -852,12 +852,12 @@ class AinneveCombatAttackTestCase(AinneveCombatTest):
 
         # confirm messaging and stats prompt
         msg, prompt = self.parse_msg_mock(self.char1)
-        self.assertEqual(msg, "> Char(#6) does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, "> Char(#6) does not have a weapon that can attack\r\nopponents at ranged distance.")
         msg, prompt = self.parse_msg_mock(self.char2)
-        self.assertEqual(msg, ".. Char does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, ".. Char does not have a weapon that can attack\r\nopponents at ranged distance.")
         self.assertEqual(prompt, "[ HP: 10 | WM: 0 | BM: 0 | SP: 8 ]")
         msg, prompt = self.parse_msg_mock(self.obj1)
-        self.assertEqual(msg, ".. Char does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, ".. Char does not have a weapon that can attack\r\nopponents at ranged distance.")
 
         # cleanup
         _unequip_item(self.char1, self.reach)
@@ -905,12 +905,12 @@ class AinneveCombatAttackTestCase(AinneveCombatTest):
 
         # confirm messaging and stats prompt
         msg, prompt = self.parse_msg_mock(self.char1)
-        self.assertEqual(msg, "> Char(#6) does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, "> Char(#6) does not have a weapon that can attack\r\nopponents at melee distance.")
         msg, prompt = self.parse_msg_mock(self.char2)
-        self.assertEqual(msg, ".. Char does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, ".. Char does not have a weapon that can attack\r\nopponents at melee distance.")
         self.assertEqual(prompt, "[ HP: 10 | WM: 0 | BM: 0 | SP: 8 ]")
         msg, prompt = self.parse_msg_mock(self.obj1)
-        self.assertEqual(msg, ".. Char does not have an appropriate weapon to attack.")
+        self.assertEqual(msg, ".. Char does not have a weapon that can attack\r\nopponents at melee distance.")
 
         # cleanup
         _unequip_item(self.char1, self.ranged)

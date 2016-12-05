@@ -61,6 +61,7 @@ class CombatCmdSet(CmdSet):
 
     def at_cmdset_creation(self):
         """Populate CmdSet"""
+        self.add(CmdActionList())
         self.add(CmdCancelAction())
         self.add(CmdDropItem())
         self.add(CmdGetItem())
@@ -862,3 +863,50 @@ class CmdCancelAction(default_cmds.MuxCommand):
                 ))
             else:
                 caller.msg('You have not yet entered any actions this turn.')
+
+
+class CmdActionList(default_cmds.MuxCommand):
+    """
+    list combat actions
+
+    Usage:
+      actions
+
+    Displays a brief list of available actions.
+    """
+    key = 'actions'
+    aliases = ['act list', 'actionlist']
+    locks = 'cmd:in_combat()'
+    help_category = 'help'
+
+    def func(self):
+        caller = self.caller
+
+        output = """
+|wCombat Actions
+|C~~~~~~~~~~~~~~|n
+  |cGeneral|n
+  * |wlook|n          [|Yinstant|n]   |x-|n display opponents, their ranges, entered
+                                actions, and time remaining in turn
+  * |wflee|n          [|Yfull-turn|n] |x-|n attempt to escape from combat
+
+  |cItem / Equipment|n
+  * |wget <item>|n    [|Yhalf-turn|n] |x-|n get an item from the room
+  * |wdrop <item>|n   [|Yfree|n]      |x-|n drop an item from equipment or inventory
+  * |wequip <item>|n  [|Yhalf-turn|n] |x-|n equip an item from inventory
+  * |wremove <item>|n [|Yhalf-turn|n] |x-|n remove an equipped item
+
+  |cRange / Movement|n
+  * |wadvance|n       [|Yhalf-turn|n] |x-|n advance toward an opponent
+  * |wretreat|n       [|Yhalf-turn|n] |x-|n retreat from opponents
+
+  |cAttacking|n
+  * |wattack|n        [|Yhalf-turn|n] |x-|n attack with equipped melee or ranged weapon
+  * |wkick|n          [|Yfull-turn|n] |x-|n powerful unarmed kicking attack
+  * |wstrike|n        [|Yhalf-turn|n] |x-|n unarmed punching attack with free hand(s)
+
+  |cDefending|n
+  * |wdodge|n         [|Yhalf-turn|n] |x-|n attempt to dodge an opponent's attack
+
+"""
+        caller.msg(output)
