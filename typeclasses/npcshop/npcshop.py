@@ -257,17 +257,46 @@ class StoreRoom(Room):
         super(StoreRoom, self).at_object_creation()
         self.cmdset.add_default(StoreRoomCmdSet)
 
-    def return_appearance(self, caller):
-        wares = [item for item in self.contents if item.db.value]
-        desc = super(StoreRoom, self).return_appearance(caller)
-        for line in desc.split("\n"):
-            if any(line.find(ware.key) > -1 for ware in wares):
-                try:
-                    line = "|y{line} |n({price})".format(
-                        line=line,
-                        price=format_coin(wares.pop(0).db.value)
-                    )
-                except:
-                    pass
-            caller.msg(line)
-        # caller.msg(desc)
+    def return_appearance(self, looker):
+        """
+        This formats a description. It is the hook a 'look' command
+        should call.
+
+        Args:
+            looker (Object): Object doing the looking.
+        """
+        if not looker:
+            return
+        # get and identify all objects
+        visible = (con for con in self.contents if con != looker and
+                                                    con.access(looker, "view"))
+        # identify wares that have been assigned a value
+        exits, users, things, wares = [], [], [], []
+        for con in visible:
+            key = con.get_display_name(looker, pose=True)
+            if con.destination:
+                exits.append(key)
+            elif con.has_player:
+                users.append(key)
+            elif con.db.value:
+                wares.append(con)
+            else:
+                things.append(key)
+        # get description, build string
+        string = "{c%s{n\n" % self.get_display_name(looker, pose=True)
+        desc = self.db.desc
+        if desc:
+            string += "%s" % desc
+        if exits:
+            string += "\n{wExits:{n " + ", ".join(exits)
+        if users:
+            string += "\n" + "\n".join(users)
+        for ware in wares:
+                string += "\n|y{thing} |n({price})".format(
+                    thing=ware.get_display_name(looker, pose=True),
+                    price=format_coin(ware.db.value)
+                )
+        if things:
+            string += "\n" + "\n".join(things)
+
+        return string
