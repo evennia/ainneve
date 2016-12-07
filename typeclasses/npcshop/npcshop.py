@@ -283,17 +283,17 @@ class StoreRoom(Room):
             else:
                 things.append(key)
         # get description, build string
-        string = "{c%s{n\n" % self.get_display_name(looker, pose=True)
+        string = "|c%s|n\n" % self.get_display_name(looker, pose=True)
         desc = self.db.desc
         if desc:
             string += "%s" % desc
         if exits:
-            string += "\n{wExits:{n " + ", ".join(exits)
+            string += "\n|wExits:|n " + ", ".join(exits)
         if users:
             string += "\n" + "\n".join(users)
         for ware in wares:
                 string += "\n|y{thing} |n({price})".format(
-                    thing=ware.get_display_name(looker, pose=True),
+                    thing=ware.get_display_name(looker),
                     price=format_coin(ware.db.value)
                 )
         if things:
