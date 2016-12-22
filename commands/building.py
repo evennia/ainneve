@@ -10,11 +10,12 @@ from evennia.utils.utils import inherits_from
 from evennia.commands.default.building import _convert_from_string
 from world.archetypes import ALL_TRAITS
 from world.skills import ALL_SKILLS
+from typeclasses.npcshop.npcshop import CmdBuildShop
 
 
 class AinneveBuildingCmdSet(CmdSet):
     """
-    Implements Ainneve-specific buliding commands.
+    Implements Ainneve-specific building commands.
     """
     key = "AinneveBuilding"
     priority = 0
@@ -24,6 +25,7 @@ class AinneveBuildingCmdSet(CmdSet):
         self.add(CmdSpawn())
         self.add(CmdSetTraits())
         self.add(CmdSetSkills())
+        self.add(CmdBuildShop())
 
 #
 # To use the prototypes with the @spawn function set

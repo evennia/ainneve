@@ -42,6 +42,7 @@ SECRET_KEY = '5(r:%@Gmg-?}NU3d[/ul8+t.SJ$",c`|qxsDo"Z='
 # Allow multiple sessions per player; one character per session
 MULTISESSION_MODE = 2
 MAX_NR_CHARACTERS = 5
+IRC_ENABLED = True
 
 # Other defaults
 PROTOTYPE_MODULES = ('world.content.prototypes_armor',
@@ -50,6 +51,7 @@ PROTOTYPE_MODULES = ('world.content.prototypes_armor',
                      'world.content.prototypes_mobs',
                      'world.content.prototypes_weapons'
                      )
+
 BASE_BATCHPROCESS_PATHS = ['world.content']
 
 # Evennia game index settings
@@ -70,8 +72,8 @@ GAME_INDEX_LISTING = {
     ),
     'listing_contact': 'fened78@gmail.com',
     # At minimum, specify this or the web_client_url options. Both is fine, too.
-    'telnet_hostname': '35.162.133.57',
+    'telnet_hostname': 'ainneve.evennia.com',
     'telnet_port': 4000,
     # At minimum, specify this or the telnet_* options. Both is fine, too.
-    'web_client_url': 'http://35.162.133.57:8000/webclient',
+    'web_client_url': 'http://ainneve.evennia.com:8000/webclient',
 }

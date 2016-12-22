@@ -373,17 +373,17 @@ def menunode_equipment_cats(caller, raw_string):
                  "Silver Coins (SC), and Gold Coins (GC), with a conversion"
                  "rate of 100 CC = 1 SC and 100 SC = 1 GC")
 
-    def show_inventory(s):
+    def show_inventory(session):
         """display the character's inventory
 
         We achieve this by "monkey patching" the session's `msg` method
         onto the new char to catch the output of the 'inventory' command.
         """
-        s.msg('\n')
-        old_msg = s.new_char.msg
-        s.new_char.msg = s.msg
-        s.new_char.execute_cmd('inventory')
-        s.new_char.msg = old_msg
+        session.msg('\n')
+        old_msg = session.new_char.msg
+        session.new_char.msg = session.msg
+        session.new_char.execute_cmd('inventory')
+        session.new_char.msg = old_msg
 
     options = [{"desc": cat, "goto": "menunode_equipment_list"}
                for cat in _CATEGORY_LIST]
@@ -444,7 +444,7 @@ def menunode_examine_and_buy(caller, raw_string):
                 )
         help = "Choose carefully. Purchases are final."
 
-        def purchase_item(s):
+        def purchase_item(session):
             """Process item purchase."""
             try:
                 # this will raise exception if caller doesn't
@@ -460,7 +460,7 @@ def menunode_examine_and_buy(caller, raw_string):
             except InsufficientFunds:
                 rtext = "You do not have enough money to buy {}.".format(
                             item['key'])
-            s.msg(rtext)
+            session.msg(rtext)
 
         options = ({"key": ("Yes", "ye", "y"),
                     "desc": "Purchase {} for {}".format(
