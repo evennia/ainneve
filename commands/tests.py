@@ -5,12 +5,11 @@ from evennia.utils.test_resources import EvenniaTest
 from evennia.commands.default.tests import CommandTest
 from commands.equip import *
 from commands.chartraits import CmdSheet, CmdTraits
-from commands.room_exit import CmdRangeField, CmdTerrain
+from commands.room_exit import CmdCapacity, CmdTerrain
 from commands.building import CmdSpawn, CmdSetTraits, CmdSetSkills
 from typeclasses.characters import Character, NPC
 from typeclasses.weapons import Weapon
 from typeclasses.rooms import Room
-from world.races import apply_race
 from world.archetypes import apply_archetype, calculate_secondary_traits
 from utils.utils import sample_char
 
@@ -79,14 +78,14 @@ class EquipTestCase(CommandTest):
         self.call(CmdWield(), 'Obj', "You don't have 'Obj' in your inventory.")
         # pick it up to wield the weapon
         self.char1.execute_cmd('get Obj')
-        self.call(CmdWield(), 'Obj', "You wield Obj.")
+        self.call(CmdWield(), 'Obj', "You wield Obj(#4).")
         # test the at_equip hooks
         self.assertEqual(self.char1.traits.ATKM.actual, 8)
         self.assertEqual(self.char1.equip.get('wield1'), self.obj1)
         self.assertIs(self.char1.equip.get('wield2'), None)
         # can't wield armor
         self.char1.execute_cmd('get Obj2')
-        self.call(CmdWield(), 'Obj2', "You can't wield Obj2.")
+        self.call(CmdWield(), 'Obj2', "You can't wield Obj2(#5).")
 
     def test_wield_2h_weapon(self):
         """test wield command for 2H weapons"""
@@ -141,12 +140,12 @@ class EquipTestCase(CommandTest):
         self.call(CmdWear(), 'Obj2', "You don't have 'Obj2' in your inventory.")
         # pick it up to wear armor
         self.char1.execute_cmd('get Obj2')
-        self.call(CmdWear(), 'Obj2', "You wear Obj2.")
+        self.call(CmdWear(), 'Obj2', "You wear Obj2(#5).")
         # check at_equip hooks ran
         self.assertEqual(self.char1.equip.get('armor'), self.obj2)
         # cannot wear a weapon
         self.char1.execute_cmd('get Obj')
-        self.call(CmdWear(), 'Obj', "You can't wear Obj.")
+        self.call(CmdWear(), 'Obj', "You can't wear Obj(#4).")
 
     def test_equip_list(self):
         """test the equip command"""
@@ -157,7 +156,7 @@ class EquipTestCase(CommandTest):
         self.char1.execute_cmd('wear Obj2')
         output = (
 "Your equipment:\n"
-"   Wield1: Obj                   (Damage:  1)    \n"
+"   Wield1: Obj                   (Damage:  1) (Melee)  \n"
 "    Armor: Obj2                  (Toughness:  1)")
         self.call(CmdEquip(), "", output)
         self.char1.execute_cmd('drop Obj')
@@ -167,15 +166,15 @@ class EquipTestCase(CommandTest):
         """test equipping items with equip"""
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('get Obj2')
-        self.call(CmdEquip(), "Obj", "You wield Obj.")
-        self.call(CmdEquip(), "Obj2", "You wear Obj2.")
+        self.call(CmdEquip(), "Obj", "You wield Obj(#4).")
+        self.call(CmdEquip(), "Obj2", "You wear Obj2(#5).")
 
     def test_remove(self):
         """test the remove command"""
         self.call(CmdRemove(), "Obj", "You do not have 'Obj' equipped.")
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('wield Obj')
-        self.call(CmdRemove(), "Obj", "You remove Obj.")
+        self.call(CmdRemove(), "Obj", "You remove Obj(#4).")
 
     def test_inventory(self):
         """test the inventory command"""
@@ -183,7 +182,7 @@ class EquipTestCase(CommandTest):
         self.call(CmdInventory(), "", "You are not carrying anything.")
         # can see an object when picked up
         self.char1.execute_cmd('get Obj')
-        self.call(CmdInventory(), "", "You are carrying:\n Obj  Test Obj  (Damage:  1)")
+        self.call(CmdInventory(), "", "You are carrying:\n Obj  Test Obj  (Damage:  1) (Melee)")
         # but not when equipped
         self.char1.execute_cmd('wield Obj')
         self.call(CmdInventory(), "", "You are not carrying anything.")
@@ -264,25 +263,21 @@ class BuildingTestCase(CommandTest):
     def test_rangefield_cmd(self):
         """test @rangefield command"""
         # no args
-        self.call(CmdRangeField(), "", "Usage: @rangefield [<room>] = (<length>, <width>)")
+        self.call(CmdCapacity(), "", "Usage: @capacity [<room>] = <maxchars>")
         # equal sign only
-        self.call(CmdRangeField(), "=", "Usage: @rangefield [<room>] = (<length>, <width>)")
-        # setting range field on current room
-        self.call(CmdRangeField(), "= (5, 4)", "Range field set on Room.")
-        self.assertEqual(self.room1.range_field, (5, 4))
-        # parentheses are optional and whitespace allowed
-        self.call(CmdRangeField(), "= 3 , 3", "Range field set on Room.")
-        self.assertEqual(self.room1.range_field, (3, 3))
-        # invalid variations
-        self.call(CmdRangeField(), "= 5", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= (3, 4", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= 3, 4)", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= (3, 4, 5)", "Invalid range field specified.")
-        self.call(CmdRangeField(), "= 3, 4, 5", "Invalid range field specified.")
-        self.assertEqual(self.room1.range_field, (3, 3))
+        self.call(CmdCapacity(), "=", "Usage: @capacity [<room>] = <maxchars>")
+        # nonnumeric
+        self.call(CmdCapacity(), "= X", "Invalid capacity specified.")
+        # negative
+        self.call(CmdCapacity(), "= -23", "Invalid capacity specified.")
+        # zero
+        self.call(CmdCapacity(), "= 0", "Invalid capacity specified.")
+        # success
+        self.call(CmdCapacity(), "= 5", "Capacity set on Room(#1).")
+        self.assertEqual(self.room1.db.max_chars, 5)
         # setting range field on a different room
-        self.call(CmdRangeField(), "Room2 = (10, 3)", "Range field set on Room2.")
-        self.assertEqual(self.room2.range_field, (10, 3))
+        self.call(CmdCapacity(), "Room2 = 10", "Capacity set on Room2(#2).")
+        self.assertEqual(self.room2.db.max_chars, 10)
 
     def test_settraits_cmd(self):
         """test @traits command"""

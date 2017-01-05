@@ -118,6 +118,10 @@ class CmdSpawn(MuxCommand):
         if not "noloc" in self.switches and not "location" in prototype:
             prototype["location"] = self.caller.location
 
+        # set the home of any prototypes to the location they were spawned
+        if not "home" in prototype:
+            prototype["home"] = prototype["location"]
+
         # overridden for Ainneve
         traits = prototype.pop('traits') if 'traits' in prototype else None
         skills = prototype.pop('skills') if 'skills' in prototype else None

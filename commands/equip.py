@@ -56,11 +56,11 @@ class CmdInventory(MuxCommand):
                 stat = " "
                 if item.attributes.has('damage'):
                     stat += "(|rDamage: {:>2d}|n) ".format(item.db.damage)
-                if item.attributes.has('range'):
-                    stat += "(|GRange: {:>2d}|n) ".format(item.db.range)
                 if item.attributes.has('toughness'):
                     stat += "(|yToughness: {:>2d}|n)".format(item.db.toughness)
-                data[2].append(stat)
+                if item.attributes.has('range'):
+                    stat += "(|G{}|n) ".format(item.db.range.capitalize())
+                data[2].append(stat.strip())
             table = EvTable(header=False, table=data, border=None, valign='t')
             string = "|YYou are carrying:|n\n{}".format(table)
         self.caller.msg(string)
@@ -108,16 +108,16 @@ class CmdEquip(MuxCommand):
                     elif isinstance(obj, Armor):
                         action = 'wear'
                     else:
-                        caller.msg("You can't equip {}.".format(obj.name))
+                        caller.msg("You can't equip {}.".format(obj.get_display_name(caller)))
 
                 if not obj.access(caller, 'equip'):
                     caller.msg("You can't {} {}.".format(action,
-                                                         obj.name))
+                                                         obj.get_display_name(caller)))
                     return
 
                 if obj in caller.equip:
                     caller.msg("You're already {}ing {}.".format(action,
-                                                                 obj.name))
+                                                                 obj.get_display_name(caller)))
                     return
 
                 # check whether slots are occupied
@@ -130,7 +130,7 @@ class CmdEquip(MuxCommand):
                                 caller.equip.remove(item)
                         else:
                             caller.msg("You can't {} {}. ".format(action,
-                                                                  obj.name) +
+                                                                  obj.get_display_name(caller)) +
                                        "You already have something there.")
                             return
                 else:
@@ -138,8 +138,9 @@ class CmdEquip(MuxCommand):
                         if swap:
                             caller.equip.remove(occupied_slots[0])
                         else:
-                            caller.msg("You can't {} {}. ".format(action,
-                                                                  obj.name) +
+                            caller.msg("You can't {} {}. ".format(
+                                            action,
+                                            obj.get_display_name(caller)) +
                                        "You have no open {} slot{}.".format(
                                            ", or ".join(obj.db.slots),
                                            "s" if len(obj.db.slots) != 1 else ""
@@ -147,18 +148,21 @@ class CmdEquip(MuxCommand):
                             return
 
                 if not caller.equip.add(obj):
-                    caller.msg("You can't {} {}.".format(action, obj.name))
+                    caller.msg("You can't {} {}.".format(action,
+                                                         obj.get_display_name(caller)))
                     return
 
                 # call hook
                 if hasattr(obj, "at_equip"):
                     obj.at_equip(caller)
 
-                caller.msg("You {} {}.".format(action, obj))
+                caller.msg("You {} {}.".format(action,
+                                               obj.get_display_name(caller)))
                 caller.location.msg_contents(
-                    "{} {}s {}.".format(caller.name.capitalize(),
-                                        action,
-                                        obj.name),
+                    "{actor} {action}s {obj}.",
+                    mapping=dict(actor=caller,
+                                 obj=obj,
+                                 action=action),
                     exclude=caller)
         else:
             # no arguments; display current equip
@@ -170,10 +174,10 @@ class CmdEquip(MuxCommand):
                 stat = " "
                 if item.attributes.has('damage'):
                     stat += "(|rDamage: {:>2d}|n) ".format(item.db.damage)
-                if item.attributes.has('range'):
-                    stat += "(|GRange: {:>2d}|n) ".format(item.db.range)
                 if item.attributes.has('toughness'):
                     stat += "(|yToughness: {:>2d}|n)".format(item.db.toughness)
+                if item.attributes.has('range'):
+                    stat += "(|G{}|n) ".format(item.db.range.capitalize())
 
                 data.append(
                     "  |b{slot:>{swidth}.{swidth}}|n: {item:<20.20} {stat}".format(
@@ -189,7 +193,7 @@ class CmdEquip(MuxCommand):
                 table = EvTable(header=False, border=None, table=[data])
                 output = "|YYour equipment:|n\n{}".format(table)
 
-            self.caller.msg(output)
+            caller.msg(output)
 
 
 class CmdWear(MuxCommand):
@@ -235,7 +239,8 @@ class CmdWear(MuxCommand):
                                action='wear')
 
         else:
-            caller.msg("You can't wear {}.".format(obj.name))
+            caller.msg("You can't wear {}.".format(
+                obj.get_display_name(caller)))
 
 
 class CmdWield(MuxCommand):
@@ -278,7 +283,8 @@ class CmdWield(MuxCommand):
                                item=obj,
                                action='wield')
         else:
-            caller.msg("You can't wield {}.".format(obj.name))
+            caller.msg("You can't wield {}.".format(
+                obj.get_display_name(caller)))
 
 
 class CmdRemove(MuxCommand):
@@ -319,9 +325,10 @@ class CmdRemove(MuxCommand):
         if hasattr(obj, "at_remove"):
             obj.at_remove(caller)
 
-        caller.msg("You remove {}.".format(obj.name))
+        caller.msg("You remove {}.".format(
+            obj.get_display_name(caller)))
         caller.location.msg_contents(
-            "{} removes {}.".format(caller.name.capitalize(),
-                                    obj.name),
+            "{actor} removes {item}.",
+            mapping=dict(actor=caller, item=obj),
             exclude=caller)
 

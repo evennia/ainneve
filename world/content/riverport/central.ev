@@ -27,10 +27,6 @@ riverport
 #
 @terrain = EASY
 #
-# set range field
-#
-@rangefield = (4, 3)
-#
 # next, set its description
 #
 @desc
@@ -83,8 +79,6 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (5, 3)
-#
 @desc
 
  The road stretches on to the east and west. Surrounded by green meadows
@@ -92,7 +86,7 @@ riverport
  well-maintained. In the distance, you hear the sound of burbling water
  coming from the |gRiver Kai|n.
 
- To the north, a grassy meadow extends along the banks of the |rKai|n.
+ To the north, a grassy meadow extends along the banks of the |gKai|n.
 
 ######
 # eastern road segment #2
@@ -102,8 +96,6 @@ riverport
 @tag riverport#03 = riverport : zone
 #
 @terrain = EASY
-#
-@rangefield = (5, 3)
 #
 @desc
 
@@ -120,8 +112,6 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (5, 3)
-#
 @desc
 
  The road stretches on to the east and west. Surrounded by green meadows
@@ -137,8 +127,6 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (6, 6)
-#
 @desc
 
  A carpet of grass spreads out before you, bordered on the south edge by
@@ -152,8 +140,6 @@ riverport
 @tag riverport#06 = riverport : zone
 #
 @terrain = EASY
-#
-@rangefield = (6, 6)
 #
 @desc
 
@@ -175,11 +161,9 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (6, 6)
-#
 @desc
 
- Bordered to the west by the murmuring waters of the |rRiver Kai|n, this sun
+ Bordered to the west by the murmuring waters of the |gRiver Kai|n, this sun
  drenched meadow is carpeted with short grass. Along the river bank, tall
  reeds no doubt hide the homes of river-going critters.
 
@@ -200,11 +184,9 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (6, 6)
-#
 @desc
 
- Bordered to the west by the murmuring waters of the |rRiver Kai|n, this sun
+ Bordered to the west by the murmuring waters of the |gRiver Kai|n, this sun
  drenched meadow is carpeted with short grass. Along the river bank, tall
  reeds no doubt hide the homes of river-going critters.
 
@@ -225,8 +207,6 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (6, 6)
-#
 @desc
 
  A massive broad-leafed tree stands in the middle of a carpet of green grass.
@@ -245,6 +225,24 @@ riverport
  arms around. It is by far the tallest structure in central Riverport.
 
 #
+# add a testing NPC wolf
+@spawn "WOLF"
+#
+# set his sdesc; this is unfortunate
+#
+@py w=me.search("wolf"); w.sdesc.add("Ol' Scurvy")
+#
+@desc Ol' Scurvy = Wretched and fearsome-looking, the wolf growls as the fur on its back|/bristles at the sight of hapless travelers.
+#
+# give him a weapon
+#
+@create/drop a vicious bite;jaws:typeclasses.weapons.TwoHandedWeapon
+#
+@set jaws/slots = ['wield']
+#
+@py t=me.search('jaws');w=me.search("Ol' Scurvy");t.move_to(w, quiet=True);me.msg(w.equip.add(t))
+
+#
 # open additional exits
 #
 @open southwest;sw, northeast;ne = riverport#07
@@ -261,8 +259,6 @@ riverport
 @tag riverport#10 = riverport : zone
 #
 @terrain = EASY
-#
-@rangefield = (6, 6)
 #
 @desc
 
@@ -285,8 +281,6 @@ riverport
 @tag riverport#11 = riverport : zone
 #
 @terrain = EASY
-#
-@rangefield = (6, 6)
 #
 @desc
 
@@ -312,7 +306,10 @@ riverport
 #
 @terrain = VEGETATION
 #
-@rangefield = (4, 4)
+# this is tight quarters, limit the number of characters
+# that can be present
+#
+@capacity = 7
 #
 @desc
 
@@ -336,8 +333,6 @@ riverport
 #
 @terrain = EASY
 #
-@rangefield = (6, 6)
-#
 @desc
 
  Bordered to the west by the murmuring waters of the |gRiver Kai|n, this sun
@@ -350,4 +345,68 @@ riverport
 #
 @open southeast;se, northwest;nw = riverport#08
 
+######
+# path to respawning shrine
 #
+# Shrine path
+#
+@tel riverport#02
+#
+@tunnel/tel s = A Dirt Path;riverport#14
+#
+@tag riverport#14 = riverport : zone
+#
+@terrain = EASY
+#
+@desc
+
+ A dirt |wpath|n leads through a grassy feald.
+
+ To the west, reeds rise along the shores of the |gKai|n. To the southeast, a
+ grove of trees that look as though they were positioned intentionally shrouds
+ a small, ancient building in the distance.
+
+#
+@detail path =
+
+ The path is simply a stretch of meadow grass worn thin, tamped down by the feet
+ of pilgrims and mourners for the fallen on the way to the |gShrine of Grass|n.
+
+######
+# Shrine of Grass - Entrance
+#
+@tunnel/tel se = The Grassy Knoll ;riverport#15
+#
+@tag riverport#15 = riverport : zone
+#
+@tag riverport#15 = no_attack : flags
+#
+@terrain = EASY
+#
+@desc
+
+ You enter a circle of trees and come upon a small stone structure. You
+ can see a large, open |warchway|n on one side of the shrine. There is
+ no caretaker to be seen, but the area is well-kept, and you can see wisps
+ of smoke rising to the sky above the clearing.
+
+######
+# Shrine of Grass
+#
+@dig/tel Shrine of Grass;riverport#16 = archway;arch;shrine;door,archway;arch;out
+#
+@tag riverport#16 = riverport : zone
+#
+@tag riverport#16 = no_attack : flags
+#
+@terrain = EASY
+#
+@desc
+
+ The smooth stones of the shrine's floor and walls surround you, and you feel
+ energy surging within them. You see trees looming before an open sky through
+ the tall, open |warchway|n at the front of the shrine. A fire burning at the
+ center of what appears to be a shallow pool of shimmering purple liquid is
+ opposite the archway.
+
+

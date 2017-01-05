@@ -566,13 +566,14 @@ def _format_trait_opts(trait, color='|C'):
     return "{}{:<15.15}|n : |x[|n{:>4}|x]|n".format(
                 color, trait.name, trait.actual)
 
+
 def _format_skill_opts(skill):
     """Return a trait : value : counters triad formatted as a menu option"""
     return "|M{:<15.15}|n: |w{:>4}|n (|m{:>+2}|n)".format(
                 skill.name,
                 skill.actual + skill.plus - skill.minus,
-                skill.plus - skill.minus
-           )
+                skill.plus - skill.minus)
+
 
 def _format_menuitem_desc(item):
     """Returns a piece of equipment formatted as a one-line menu item."""
@@ -623,7 +624,8 @@ def _format_item_details(item):
 
     if item['typeclass'] in ("typeclasses.weapons.RangedWeapon",
                              "typeclasses.weapons.TwoHandedRanged"):
-        col2.append("          |CRange|n: |G{}|n".format(item['range']))
+        col2.append("          |CRange|n: |G{}|n".format(
+            ", ".join([r.capitalize() for r in item['range']])))
 
     if item['typeclass'] in ("typeclasses.armors.Armor",
                              "typeclasses.armors.Shield"):

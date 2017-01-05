@@ -15,7 +15,8 @@ own cmdsets by inheriting from them or directly from `evennia.CmdSet`.
 """
 
 from evennia import default_cmds
-from commands import equip, chartraits, room_exit, chargen, building, skills
+from commands import equip, chartraits, room_exit, chargen, \
+                        building, skills, combat
 
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
@@ -39,6 +40,8 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(room_exit.AinneveRoomExitsCmdSet())
         self.add(building.AinneveBuildingCmdSet())
         self.add(skills.SkillCmdSet())
+        self.add(combat.InitCombatCmdSet())
+        
 
 class PlayerCmdSet(default_cmds.PlayerCmdSet):
     """

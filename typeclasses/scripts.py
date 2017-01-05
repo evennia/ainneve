@@ -11,7 +11,7 @@ Rather, each script tends to inherit from the base Script class and
 just overloads its hooks to have it perform its function.
 
 """
-
+import evennia
 from evennia import DefaultScript
 
 
@@ -89,4 +89,3 @@ class Script(DefaultScript):
 
     """
     pass
-
