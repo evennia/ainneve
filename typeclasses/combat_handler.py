@@ -186,7 +186,7 @@ class CombatHandler(Script):
 
         # send messaging to others in the same room but not in combat
         actor.location.msg_contents(
-            message=message,
+            text=message,
             mapping=kwargs,
             exclude=exclude + self.db.characters.values()
         )
