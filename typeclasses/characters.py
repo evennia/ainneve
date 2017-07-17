@@ -141,6 +141,9 @@ class Character(ContribRPCharacter):
                 string += "They seem to be in pretty bad shape.\n"
             else:
                 string += "They're dead.\n"
+        # if we don't know their health, then just show a default message
+        else:
+            string += "They seem to be in good health.\n"
 
         if knows_stamina and self.traits.HP.actual > 0: # we check HP.actual,
                                                         # in case they're dead
