@@ -103,20 +103,20 @@ class Character(ContribRPCharacter):
         # These each do a skill check, but they always pass
         # if you're looking at yourself
         knows_race = skill_check(per) or looker == self
-        knows_archetype = skill_check(per, 6) or looker == self
-        knows_health = skill_check(per, 7) or looker == self
-        knows_stamina = skill_check(per, 7) or looker == self
+        knows_archetype = skill_check(per) or looker == self
+        knows_health = skill_check(per) or looker == self
+        knows_stamina = skill_check(per) or looker == self
 
         # this is the base name format - it just colors the name cyan
         string = "|c%s|n" % name
 
         # if we're adding race or archetype, add "the" after the name
-        if knows_race or knows_archetype:
+        if (knows_race and self.db.archetype) or (knows_archetype and self.db.archetype):
             string += " the"
 
-        if knows_race:
+        if knows_race and self.db.race:
             string += " {}".format(self.db.race)
-        if knows_archetype:
+        if knows_archetype and self.db.archetype:
             string += " {}".format(self.db.archetype)
 
         # There may be a more efficient way to do this,
