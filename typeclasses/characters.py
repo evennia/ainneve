@@ -15,6 +15,8 @@ from world.skills import apply_skills
 from world.archetypes import Archetype
 from world.death import CharDeathHandler, NPCDeathHandler
 
+from world.rulebook import skill_check
+
 
 class Character(ContribRPCharacter):
     """Base character typeclass for Ainneve.
@@ -84,6 +86,98 @@ class Character(ContribRPCharacter):
         if self.nattributes.has('combat_handler'):
             self.ndb.combat_handler.remove_character(self)
 
+    def return_appearance(self, looker):
+        """
+        This formats a description. It is the hook a 'look' command
+        should call.
+        Args:
+            looker (Object): Object doing the looking.
+        """
+        if not looker:
+            return ""
+
+        # get description, build string
+        name = self.get_display_name(looker)
+        per  = self.traits.PER
+
+        # These each do a skill check, but they always pass
+        # if you're looking at yourself
+        knows_race = skill_check(per) or looker == self
+        knows_archetype = skill_check(per, 6) or looker == self
+        knows_health = skill_check(per, 7) or looker == self
+        knows_stamina = skill_check(per, 7) or looker == self
+
+        # this is the base name format - it just colors the name cyan
+        string = "|c%s|n" % name
+
+        # if we're adding race or archetype, add "the" after the name
+        if knows_race or knows_archetype:
+            string += " the"
+
+        if knows_race:
+            string += " {}".format(self.db.race)
+        if knows_archetype:
+            string += " {}".format(self.db.archetype)
+
+        # There may be a more efficient way to do this,
+        # but we just want to add a period and a newline
+        # after the name.
+        string += ".\n"
+
+        if knows_health:
+            # traits.percent returns a string with a percent symbol
+            # this is probably a silly idea, so maybe we should do a
+            # PR in the future, but for now, we strip the symbol
+            # and convert to a float
+            health_percent = float(self.traits.HP.percent().strip('%'))
+            if health_percent > .8:
+                string += "They seem to be in good health.\n"
+            elif health_percent > .5:
+                string += "They seem a little roughed up.\n"
+            # If we've not passed either previous condition, they could
+            # have 0 health. Since we're converting to a float, it's possible
+            # we won't get a float of zero, so we check HP.actual instead
+            elif self.traits.HP.actual > 0:
+                string += "They seem to be in pretty bad shape.\n"
+            else:
+                string += "They're dead.\n"
+
+        if knows_stamina and self.traits.HP.actual > 0: # we check HP.actual,
+                                                        # in case they're dead
+            stamina_percent = float(self.traits.SP.percent().strip('%'))
+            if stamina_percent > .8:
+                string += "They seem full of energy.\n"
+            elif stamina_percent > .5:
+                string += "They look a bit tired.\n"
+            else:
+                string += "They look ready to fall over.\n"
+
+        desc = self.db.desc
+        if desc:
+            string += "%s\n\n" % desc
+
+        # self.equip.limbs is a dictionary of limbs and slots
+        # the slots are things like armor and weild_1, while
+        # the limbs are readable, like left arm and right arm
+        limbs = self.equip.limbs
+
+        # remember, when you do this with a dictionary, you're looping over
+        # the keys in the dict.
+        for limb in limbs:
+            slots = limbs[limb] # since we just have a key to the dict, we use
+                                # it to get the slot.
+
+            for slot in slots:  # It's possible that a limb could have multiple slots
+                item = self.equip.get(slot) # this returns None if there's no
+                                            # item equipped
+                if item:
+                    key = item.get_display_name(looker)
+                else:
+                    key = 'Nothing'
+
+                string += "|y{limb}|n: |w{name}|n\n".format(limb=limb, name=key)
+
+        return string
 
 class NPC(Character):
     """Base character typeclass for NPCs and enemies.
