@@ -5,6 +5,7 @@ from evennia import CmdSet
 from evennia.commands.default.muxcommand import MuxCommand
 from evennia.contrib.extended_room import *
 
+from typeclasses import maps
 
 class AinneveRoomExitsCmdSet(CmdSet):
     """Command set containing ExtendedRoom commands."""
@@ -16,6 +17,7 @@ class AinneveRoomExitsCmdSet(CmdSet):
 
         # Ainneve room builder commands
         self.add(CmdTerrain())
+        self.add(CmdMapTile())
         self.add(CmdCapacity())
 
         # exit commands
@@ -65,6 +67,64 @@ class CmdTerrain(MuxCommand):
                                                                   target.key))
         else:
             self.caller.msg('Cannot set terrain on {}.'.format(target.key))
+
+
+class CmdMapTile(MuxCommand):
+    """
+    sets the map tile from a room
+
+    Usage:
+      @map_tile [<room>] = <map_tile>
+
+    Notes:
+      If <room> is omitted, defaults to your current location.
+
+      map_tile is a three-character string that represents this room on the map.
+
+      Many rooms, such as roads, will generate their own tiles as needed.
+      Some terrain types have default map tiles, too.
+    """
+    key = "@map_tile"
+    locks = "cmd:perm(Builders)"
+    help_category = 'Building'
+
+    def func(self):
+        """Set the property here."""
+        if not self.rhs:
+            self.caller.msg("Usage: @map_tile [<room>] = <map_tile>")
+            return
+
+        map_tile = self.rhs.strip()
+        lhs = self.lhs.strip()
+        if lhs != '':
+            target = self.caller.search(lhs, global_search=True)
+        else:
+            target = self.caller.location
+
+        if not target:
+            self.caller.msg("Room not found.")
+            return
+
+        # this allows tiles like ' x '
+        if len(map_tile) == 5 and map_tile[0] in '\'"' and map_tile[-1] in '\'"':
+            map_tile = map_tile[1:-1] # drop the quotes
+
+        if len(map_tile) != maps.CELL_WIDTH:
+            self.caller.msg("Map tile '{}' must be {} characters long".format(
+                map_tile,
+                maps.CELL_WIDTH
+            ))
+
+        if target.is_typeclass('typeclasses.rooms.Room'):
+            try:
+                target.db.map_tile = map_tile
+            except ValueError as e:
+                self.caller.msg(e.message)
+            else:
+                self.caller.msg("Map tile '{}' set on {}.".format(map_tile,
+                                                                  target.key))
+        else:
+            self.caller.msg('Cannot set map tile on {}.'.format(target.key))
 
 
 class CmdCapacity(MuxCommand):

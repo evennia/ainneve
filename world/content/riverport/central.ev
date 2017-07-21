@@ -205,6 +205,8 @@ riverport
 #
 @terrain = GRASS
 #
+@map_tile = '.↟.'
+#
 @desc
 
  A massive broad-leafed tree stands in the middle of a carpet of green grass.
@@ -356,6 +358,8 @@ riverport
 #
 @terrain = EASY
 #
+@map_tile = ' \ '
+#
 @desc
 
  A dirt |wpath|n leads through a grassy feald.
@@ -380,6 +384,8 @@ riverport
 @tag riverport#15 = no_attack : flags
 #
 @terrain = EASY
+#
+@map_tile = '\^_'
 #
 @desc
 
