@@ -194,8 +194,6 @@ riverport
 
 # open additional exits
 #
-@open south;s, north;n = riverport#05
-#
 @open southeast;se, northwest;nw = riverport#06
 
 ######
