@@ -71,7 +71,7 @@ class CmdTerrain(MuxCommand):
 
 class CmdMapTile(MuxCommand):
     """
-    sets the map tile from a room
+    sets the map tile for a room
 
     Usage:
       @map_tile [<room>] = <map_tile>
