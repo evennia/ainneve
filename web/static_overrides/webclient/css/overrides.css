@@ -1,0 +1,4 @@
+body {
+  /* Make the box drawing lines connect */
+  line-height: 1.5em;
+}
