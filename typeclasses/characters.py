@@ -98,62 +98,92 @@ class Character(ContribRPCharacter):
 
         # get description, build string
         name = self.get_display_name(looker)
-        per  = self.traits.PER
+        race = self.db.race
+        arch = self.db.archetype
+
+        med = looker.skills.medicine.actual
+        per = looker.traits.PER.actual
 
         # These each do a skill check, but they always pass
         # if you're looking at yourself
-        knows_race = skill_check(per) or looker == self
-        knows_archetype = skill_check(per) or looker == self
-        knows_health = skill_check(per) or looker == self
-        knows_stamina = skill_check(per) or looker == self
+        knows_race = race and (skill_check(per, 3) or looker == self)
+        knows_archetype = arch and (skill_check(per, 5) or looker == self)
+
+        # these values may need to be tweaked - how difficult should each one be?
+        knows_health_vague = skill_check(per, 4) or looker == self
+        knows_health_exact = skill_check(med, 7) or looker == self
+
+        knows_stamina_vague = skill_check(per, 6) or looker == self
+        knows_stamina_exact = skill_check(med, 8) or looker == self
 
         # this is the base name format - it just colors the name cyan
         string = "|c%s|n" % name
 
         # if we're adding race or archetype, add "the" after the name
-        if (knows_race and self.db.archetype) or (knows_archetype and self.db.archetype):
+        if (knows_race) or (knows_archetype):
             string += " the"
 
-        if knows_race and self.db.race:
-            string += " {}".format(self.db.race)
-        if knows_archetype and self.db.archetype:
-            string += " {}".format(self.db.archetype)
+        if knows_race:
+            string += " {}".format(race)
+        if knows_archetype:
+            string += " {}".format(arch)
 
         # There may be a more efficient way to do this,
         # but we just want to add a period and a newline
         # after the name.
         string += ".\n"
 
-        if knows_health:
+        health_percent = float(self.traits.HP.percent().strip('%'))
+        health_current = str(self.traits.HP.actual)
+        health_max = str(self.traits.HP.max)
+
+        if knows_health_vague or knows_health_exact:
             # traits.percent returns a string with a percent symbol
             # this is probably a silly idea, so maybe we should do a
             # PR in the future, but for now, we strip the symbol
             # and convert to a float
-            health_percent = float(self.traits.HP.percent().strip('%'))
             if health_percent > .8:
-                string += "They seem to be in good health.\n"
+                health_string = "They seem to be in good health."
             elif health_percent > .5:
-                string += "They seem a little roughed up.\n"
+                health_string = "They seem a little roughed up."
             # If we've not passed either previous condition, they could
             # have 0 health. Since we're converting to a float, it's possible
             # we won't get a float of zero, so we check HP.actual instead
             elif self.traits.HP.actual > 0:
-                string += "They seem to be in pretty bad shape.\n"
+                health_string = "They seem to be in pretty bad shape."
             else:
-                string += "They're dead.\n"
+                health_string = "They're dead."
+
+            if knows_health_exact:
+                health_string += " HP {}/{}\n".format( health_current, health_max )
+            else:
+                health_string += "\n"
         # if we don't know their health, then just show a default message
         else:
-            string += "They seem to be in good health.\n"
+            health_string = "They seem to be in good health.\n"
 
-        if knows_stamina and self.traits.HP.actual > 0: # we check HP.actual,
-                                                        # in case they're dead
-            stamina_percent = float(self.traits.SP.percent().strip('%'))
+        string += health_string
+
+        stamina_percent = float(self.traits.SP.percent().strip('%'))
+        stamina_current = str(self.traits.SP.actual)
+        stamina_max = str(self.traits.SP.max)
+        stamina_string = ""
+
+        # we check HP.actual, in case they're dead
+        if health_current > 0 and (knows_stamina_vague or knows_stamina_exact):
             if stamina_percent > .8:
-                string += "They seem full of energy.\n"
+                stamina_string = "They seem full of energy."
             elif stamina_percent > .5:
-                string += "They look a bit tired.\n"
+                stamina_string = "They look a bit tired."
             else:
-                string += "They look ready to fall over.\n"
+                stamina_string = "They look ready to fall over."
+
+            if knows_stamina_exact:
+                stamina_string += " SP {}/{}\n".format(stamina_current, stamina_max)
+            else:
+                stamina_string += "\n"
+
+        string += stamina_string
 
         desc = self.db.desc
         if desc:
