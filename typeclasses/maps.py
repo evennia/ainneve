@@ -245,3 +245,6 @@ class Map(Item):
                 self.at_leave_map()
         else:
             self.at_leave_map()
+
+        character = self.current_character
+        character.msg((self.return_appearance(character), {"type": "map"}))

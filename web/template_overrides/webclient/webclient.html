@@ -1,0 +1,68 @@
+{% extends "webclient/base.html" %}
+
+<!-- Django-template blocks available for overloading:
+    - connecting     - custom connect messages
+    - jquery_import  - for changing to a local jquery version
+    - guilib_import  - for using your own gui lib
+-->
+{% load staticfiles %}
+
+{% block jquery_import %}
+  <script src="{% static 'webclient/js/jquery-2.1.1.min.js' %}" type="text/javascript" charset="utf-8"></script>
+{% endblock %}
+
+{% block guilib_import %}
+    <script src={% static "webclient/js/webclient_gui.js" %} language="javascript" type="text/javascript" charset="utf-8"></script>
+    <link rel='stylesheet' type="text/css" media="screen" href={% static "webclient/css/overrides.css" %}>
+{% endblock %}
+
+{% block client %}
+
+<div id="wrapper">
+    <div id="toolbar">
+        <button id="optionsbutton" type="button">&#x2699;</button>
+    </div>
+    <div id="messagewindow" role="log"></div>
+    <div id="inputform">
+        <div id="prompt"></div>
+        <div id="inputcontrol">
+            <textarea id="inputfield" type="text"></textarea>
+            <input id="inputsend" type="button" value="&gt;"/>
+        </div>
+    </div>
+    <div id="inputsizer"></div>
+</div>
+
+<div id="optionsdialog" class="dialog">
+    <div class="dialogtitle">Options<span class="dialogclose">&times;</span></div>
+    <div class="dialogcontentparent">
+        <div class="dialogcontent">
+            <h3>Output display</h3>
+            <label><input type="checkbox" data-setting="gagprompt" value="value">Don't echo prompts to the main text area</label><br />
+            <label><input type="checkbox" data-setting="helppopup" value="value">Open help in popup window</label><br />
+            <label><input type="checkbox" data-setting="mappopup" value="value" checked>Open the map in a popup window</label><br />
+            <hr />
+            <h3>Notifications</h3>
+            <label><input type="checkbox" data-setting="notification_popup" value="value">Popup notification</label><br />
+            <label><input type="checkbox" data-setting="notification_sound" value="value">Play a sound</label><br />
+        </div>
+    </div>
+</div>
+
+<div id="helpdialog" class="dialog">
+    <div class="dialogtitle">Help<span class="dialogclose">&times;</span></div>
+    <div class="dialogcontentparent">
+        <div class="dialogcontent">
+        </div>
+    </div>
+</div>
+
+<div id="mapdialog" class="dialog">
+    <div class="dialogtitle">Map<span class="dialogclose">&times;</span></div>
+    <div class="dialogcontentparent">
+        <div class="dialogcontent">
+        </div>
+    </div>
+</div>
+
+{% endblock %}
