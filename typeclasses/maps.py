@@ -71,7 +71,7 @@ class Map(Item):
         while 1:
             if character is None:
                 return None
-            if character.player is None:
+            if not character.is_typeclass('characters.Character'):
                 character = character.location
             else:
                 break
