@@ -7,6 +7,13 @@ Rooms are simple containers that has no location of their own.
 from evennia.contrib.extended_room import ExtendedRoom
 from evennia.contrib.rpsystem import ContribRPRoom
 
+def merge_terrains(base, child = {}):
+    if isinstance(child, str):
+        child = {'msg': child}
+    result = base.copy()
+    result.update(child)
+    return result
+mt = merge_terrains
 
 class Room(ExtendedRoom, ContribRPRoom):
     """Base Ainneve Room typeclass.
@@ -21,17 +28,22 @@ class Room(ExtendedRoom, ContribRPRoom):
             allowed to occupy the room. one char per square unit
     """
     # Define terrain constants
+    _EASY_TERRAIN = {'cost': 1, 'delay': 0}
+    _MODERATE_TERRAIN = {'cost': 2, 'delay': 1}
+    _DIFFICULT_TERRAIN = {'cost': 3, 'delay': 2}
+    _EXTREME_TERRAIN = {'cost': 4, 'delay': 3}
     _TERRAINS = {
-        'EASY': {'cost': 1, 'delay': 0},
-        'MODERATE': {'cost': 2, 'delay': 1},
-        'DIFFICULT': {'cost': 3, 'delay': 2},
-        'MUD': {'cost': 3, 'delay': 2, 'msg': "You begin slogging {exit} through the mud. It is slow going."},
-        'ICE': {'cost': 3, 'delay': 2, 'msg': "You carefully make your way {exit} over the icy path."},
+        # the strings here (without quotes) are acceptable parameters for @terrain
+        'EASY': mt(_EASY_TERRAIN),
+        'MODERATE': mt(_MODERATE_TERRAIN),
+        'DIFFICULT': mt(_DIFFICULT_TERRAIN),
+        'MUD': mt(_DIFFICULT_TERRAIN, "You begin slogging {exit} through the mud. It is slow going."),
+        'ICE': mt(_DIFFICULT_TERRAIN, "You carefully make your way {exit} over the icy path."),
         'QUICKSAND': {'cost': 5, 'delay': 4, 'msg': "Drawing on all your strength, you wade {exit} into the quicksand."},
-        'SNOW': {'cost': 4, 'delay': 3, 'msg': "Your feet sinking with each step, you trudge {exit} into the snow."},
-        'VEGETATION': {'cost': 2, 'delay': 1, 'msg': "You begin cutting your way {exit} through the thick vegetation."},
-        'THICKET': {'cost': 2, 'delay': 1, 'msg': "You are greeted with the sting of bramble scratches as you make your way {exit} into the thicket."},
-        'DEEPWATER': {'cost': 3, 'delay': 3, 'msg': "You begin swimming {exit}."}
+        'SNOW': mt(_EXTREME_TERRAIN, "Your feet sinking with each step, you trudge {exit} into the snow."),
+        'VEGETATION': mt(_MODERATE_TERRAIN, "You begin cutting your way {exit} through the thick vegetation."),
+        'THICKET': mt(_MODERATE_TERRAIN, "You are greeted with the sting of bramble scratches as you make your way {exit} into the thicket."),
+        'DEEPWATER': mt(_EXTREME_TERRAIN, {'cost': 3, 'msg': "You begin swimming {exit}."})
     }
 
     def at_object_creation(self):
@@ -55,7 +67,7 @@ class Room(ExtendedRoom, ContribRPRoom):
     @property
     def terrain(self):
         return self.db.terrain
-    
+
     @terrain.setter
     def terrain(self,value):
         if value in self._TERRAINS:
