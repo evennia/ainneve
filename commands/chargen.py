@@ -195,6 +195,9 @@ class CmdCharCreate(MuxPlayerCommand):
             char = session.new_char
             if char.db.chargen_complete:
                 char.location = start_location
+                create.create_object('typeclasses.maps.Map',
+                                     home=start_location,
+                                     location=char)
                 player.puppet_object(session, char)
                 char.execute_cmd("help getting started")
 
@@ -202,4 +205,3 @@ class CmdCharCreate(MuxPlayerCommand):
                "world.chargen",
                startnode=startnode,
                cmd_on_exit=finish_char_callback)
-
