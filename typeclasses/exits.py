@@ -8,8 +8,6 @@ for allowing Characters to traverse the exit to its destination.
 """
 from evennia import DefaultExit, utils
 
-from maps import Map
-
 class Exit(DefaultExit):
     """In Ainneve, Exits implement OA movement cost rules.
 
@@ -54,11 +52,6 @@ class Exit(DefaultExit):
                 if (hasattr(traversing_object, 'traits') and
                         'MV' in traversing_object.traits.all):
                     traversing_object.traits.MV.current -= move_cost
-
-                # tell any maps to update
-                for held_object in traversing_object.contents:
-                    if isinstance(held_object, Map):
-                        held_object.parent_did_move_from(source_location, self)
 
                 self.at_after_traverse(traversing_object, source_location)
             else:

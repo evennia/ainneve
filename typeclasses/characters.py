@@ -84,6 +84,16 @@ class Character(ContribRPCharacter):
         if self.nattributes.has('combat_handler'):
             self.ndb.combat_handler.remove_character(self)
 
+    def at_after_move(self, source_location):
+        theExit = None
+        for exit in source_location.exits:
+            if exit.destination == self.location:
+                theExit = exit
+                break
+        for held_object in self.contents:
+            if held_object.is_typeclass('maps.Map'):
+                held_object.parent_did_move_from(source_location, theExit)
+
 
 class NPC(Character):
     """Base character typeclass for NPCs and enemies.
