@@ -35,6 +35,7 @@ class Map(Item):
         super(Map, self).at_object_creation()
         self.db.map_data = {}
         self.db.x = self.db.y = 0
+        self.db.off_map = False
         self.map_current_room()
 
     @property
@@ -124,7 +125,7 @@ class Map(Item):
         for room, room_info in self.db.map_data.items():
             map_grid[room_info['y'] - min_y][room_info['x'] - min_x] = self.tile_for_room(room)
 
-        if show_player:
+        if show_player and not self.db.off_map:
             x = self.db.x - min_x
             y = self.db.y - min_y
             try:
@@ -192,6 +193,7 @@ class Map(Item):
         Add the room the map is currently in to the map,
         including any rooms directly visible through the exits.
         '''
+        if self.db.off_map: self.at_enter_map()
         self.map_room(self.room, self.db.x, self.db.y)
         for dest, (dx, dy) in utils.get_directed_exits(self.room).items():
             self.map_room(dest, self.db.x + dx, self.db.y + dy)
@@ -207,6 +209,14 @@ class Map(Item):
             'y': y,
         })
 
+    def at_enter_map(self):
+        self.current_character.msg('You’re back on the map.')
+        self.db.off_map = False
+
+    def at_leave_map(self):
+        self.current_character.msg('Can’t fit this into the map.')
+        self.db.off_map = True
+
     def parent_did_move_from(self, source_location, exit=None):
         '''
         Called immediately after the holding object moves to a new room.
@@ -215,24 +225,23 @@ class Map(Item):
         `exit` is the exit if any that the holder just traversed.
 
         Note: If the exit is not a recognized direction,
-              the map will not be updated. This means you should
-              avoid using directional exits inside buildings at this point.
+              the map will not update until the user returns
+              to an already-mapped room.
         '''
         new_room = self.room
         if new_room in self.db.map_data:
             info = self.db.map_data[new_room]
             self.db.x = info['x']
             self.db.y = info['y']
+            self.map_current_room()
         elif exit is not None:
             offset = utils.offset_for_exit(exit)
-            if offset:
+            if offset and not self.db.off_map:
                 dx, dy = offset
                 self.db.x += dx
                 self.db.y += dy
                 self.map_current_room()
+            else:
+                self.at_leave_map()
         else:
-            raise TypeError(('Destination room {} is not in the map {},' + \
-                             ' and an exit was not provided').format(
-                                new_room,
-                                self
-                           ))
+            self.at_leave_map()
