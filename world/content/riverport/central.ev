@@ -358,6 +358,8 @@ riverport
 #
 @terrain = EASY
 #
+@set here/connects_to_roads = True
+#
 @map_tile = ' \ '
 #
 @desc
