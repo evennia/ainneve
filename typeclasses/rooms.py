@@ -121,7 +121,8 @@ class Road(Room):
     def map_tile(self, _map, centers=CENTERS, sides=SIDES):
         directions = set()
         for room, delta in get_directed_exits(self).items():
-            if isinstance(room, Road):
+            connects_to_roads = room.db.connects_to_roads or Room._TERRAINS[room.terrain].get('connects_to_roads', False)
+            if room.is_typeclass(Road) or connects_to_roads:
                 direction = REVERSE_EXIT_OFFSETS.get(delta)
                 if len(direction) == 1:
                     directions.add(direction)
