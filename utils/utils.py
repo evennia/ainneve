@@ -79,7 +79,6 @@ def get_directed_exits(room):
     directed_exits = {}
     for exit in room.exits:
         offset = offset_for_exit(exit)
-        print room.dbref, exit.name, exit.destination.dbref, offset
         if offset:
             directed_exits[exit.destination] = offset
     return directed_exits
