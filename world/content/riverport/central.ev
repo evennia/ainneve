@@ -8,7 +8,7 @@
 ######
 # create the first room
 #
-@dig Kai River Bridge;riverport#01 = riverport
+@dig Kai River Bridge;riverport#01:typeclasses.rooms.Bridge = riverport
 #
 # describe the entrance into the game from limbo
 #
@@ -73,7 +73,7 @@ riverport
 ######
 # eastern road segment #1
 #
-@tunnel/tel e = Along the Road;riverport#02
+@tunnel/tel e = Along the Road;riverport#02:typeclasses.rooms.Road
 #
 @tag riverport#02 = riverport : zone
 #
@@ -91,7 +91,7 @@ riverport
 ######
 # eastern road segment #2
 #
-@tunnel/tel e = Along the Road;riverport#03
+@tunnel/tel e = Along the Road;riverport#03:typeclasses.rooms.Road
 #
 @tag riverport#03 = riverport : zone
 #
@@ -106,7 +106,7 @@ riverport
 ######
 # eastern road segment #3
 #
-@tunnel/tel e = Along the Road;riverport#04
+@tunnel/tel e = Along the Road;riverport#04:typeclasses.rooms.Road
 #
 @tag riverport#04 = riverport : zone
 #

@@ -1,3 +1,5 @@
+# -*- encoding: utf-8 -*-
+
 """
 Room
 
@@ -6,6 +8,8 @@ Rooms are simple containers that has no location of their own.
 """
 from evennia.contrib.extended_room import ExtendedRoom
 from evennia.contrib.rpsystem import ContribRPRoom
+
+from utils.utils import get_directed_exits, EXIT_OFFSETS
 
 def merge_terrains(base, child = {}):
     if isinstance(child, str):
@@ -88,4 +92,64 @@ class Room(ExtendedRoom, ContribRPRoom):
         """Returns the movement delay for this room."""
         return self._TERRAINS[self.terrain]['delay']
 
+# https://stackoverflow.com/a/3221487/5244995
+REVERSE_EXIT_OFFSETS = dict((v,k) for k,v in EXIT_OFFSETS.iteritems())
+# TODO: diagonals (box-drawing only supports ╱, ╲, and ╳)
+CENTERS = {
+        'n': u'╷',
+        'e': u'╶',
+        's': u'╵',
+        'w': u'╴',
+      'e n': u'└',
+      'n s': u'│',
+      'n w': u'┘',
+      'e s': u'┌',
+      'e w': u'─',
+      's w': u'┐',
+    'e n w': u'┴',
+    'e s w': u'┬',
+    'n s w': u'┤',
+    'e n s': u'├',
+  'e n s w': u'┼'
+}
+SIDES = u'─'
+class Road(Room):
+    def at_object_creation(self):
+        super(Room, self).at_object_creation()
+        self.db.terrain = 'ROAD'
 
+    def map_tile(self, _map, centers=CENTERS, sides=SIDES):
+        directions = set()
+        for room, delta in get_directed_exits(self).items():
+            if isinstance(room, Road):
+                direction = REVERSE_EXIT_OFFSETS.get(delta)
+                if len(direction) == 1:
+                    directions.add(direction)
+        key = u' '.join(sorted(directions))
+        left = sides if 'w' in directions else u' '
+        right = sides if 'e' in directions else u' '
+        return left + centers.get(key, '?') + right
+
+BRIDGE_CENTERS = {
+    # there’s no proper box drawing characters
+    # for the plain directions
+        'n': u'║',
+        'e': u'═',
+        's': u'║',
+        'w': u'═',
+      'e n': u'╚',
+      'n s': u'║',
+      'n w': u'╝',
+      'e s': u'╔',
+      'e w': u'═',
+      's w': u'╗',
+    'e n w': u'╩',
+    'e s w': u'╦',
+    'n s w': u'╣',
+    'e n s': u'╠',
+  'e n s w': u'╬'
+}
+BRIDGE_SIDES = u'═'
+class Bridge(Road):
+    def map_tile(self, _map, centers=BRIDGE_CENTERS, sides=BRIDGE_SIDES):
+        return super(Bridge, self).map_tile(_map, centers, sides)
