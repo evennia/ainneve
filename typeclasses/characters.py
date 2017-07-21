@@ -85,6 +85,7 @@ class Character(ContribRPCharacter):
             self.ndb.combat_handler.remove_character(self)
 
     def at_after_move(self, source_location):
+        super(Character, self).at_after_move(source_location)
         theExit = None
         for exit in source_location.exits:
             if exit.destination == self.location:
