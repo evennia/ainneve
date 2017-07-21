@@ -5,8 +5,8 @@ Building commands
 """
 
 from .command import MuxCommand
-from evennia import utils, CmdSet
-from evennia.utils.evtable import EvTable
+from evennia import CmdSet
+from evennia.utils.evmenu import get_input
 
 
 class MapCmdSet(CmdSet):
@@ -22,10 +22,11 @@ class MapCmdSet(CmdSet):
 
 class CmdMap(MuxCommand):
     """
-    view a held map
+    View a held map
 
     Usage
-      map
+      map - view the map
+      map/reset - erase the contents of the map and start over with a blank map
     """
 
     key = "map"
@@ -39,4 +40,20 @@ class CmdMap(MuxCommand):
             caller.msg('You don’t have any maps :(')
             return
         theMap = maps[0]
-        caller.msg((theMap.return_appearance(self.caller), {"type": "map"}))
+        if 'reset' in self.switches:
+            get_input(caller, 'Are you sure you want to wipe this map?', really_wipe_map, None, theMap)
+        else:
+            caller.msg((theMap.return_appearance(self.caller), {"type": "map"}))
+
+def really_wipe_map(caller, prompt, result, theMap):
+    if result.lower() in ("y", "yes"):
+        theMap.db.map_data = {}
+        theMap.db.x = theMap.db.y = 0
+        theMap.map_current_room()
+    if result.lower() in ("n", "no"):
+        return # don’t wipe the map
+    else:
+        # the answer is not on the right yes/no form
+        caller.msg("Please answer Yes or No. \n%s" % prompt)
+        # returning True will make sure the prompt state is not exited
+        return True
