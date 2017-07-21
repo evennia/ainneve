@@ -25,7 +25,7 @@ riverport
 #
 # set terrain
 #
-@terrain = EASY
+@terrain = ROAD
 #
 # next, set its description
 #
@@ -77,7 +77,7 @@ riverport
 #
 @tag riverport#02 = riverport : zone
 #
-@terrain = EASY
+@terrain = ROAD
 #
 @desc
 
@@ -95,7 +95,7 @@ riverport
 #
 @tag riverport#03 = riverport : zone
 #
-@terrain = EASY
+@terrain = ROAD
 #
 @desc
 
@@ -110,7 +110,7 @@ riverport
 #
 @tag riverport#04 = riverport : zone
 #
-@terrain = EASY
+@terrain = ROAD
 #
 @desc
 
@@ -125,7 +125,7 @@ riverport
 #
 @tag riverport#05 = riverport : zone
 #
-@terrain = EASY
+@terrain = GRASS
 #
 @desc
 
@@ -139,7 +139,7 @@ riverport
 #
 @tag riverport#06 = riverport : zone
 #
-@terrain = EASY
+@terrain = GRASS
 #
 @desc
 
@@ -159,7 +159,7 @@ riverport
 #
 @tag riverport#07 = riverport : zone
 #
-@terrain = EASY
+@terrain = GRASS
 #
 @desc
 
@@ -182,7 +182,7 @@ riverport
 #
 @tag riverport#08 = riverport : zone
 #
-@terrain = EASY
+@terrain = GRASS
 #
 @desc
 
@@ -203,7 +203,7 @@ riverport
 #
 @tag riverport#09 = riverport : zone
 #
-@terrain = EASY
+@terrain = GRASS
 #
 @desc
 
@@ -256,7 +256,7 @@ riverport
 #
 @tag riverport#10 = riverport : zone
 #
-@terrain = EASY
+@terrain = GRASS
 #
 @desc
 
@@ -278,7 +278,7 @@ riverport
 #
 @tag riverport#11 = riverport : zone
 #
-@terrain = EASY
+@terrain = GRASS
 #
 @desc
 
@@ -329,7 +329,7 @@ riverport
 #
 @tag riverport#13 = riverport : zone
 #
-@terrain = EASY
+@terrain = GRASS
 #
 @desc
 
@@ -406,5 +406,3 @@ riverport
  the tall, open |warchway|n at the front of the shrine. A fire burning at the
  center of what appears to be a shallow pool of shimmering purple liquid is
  opposite the archway.
-
-

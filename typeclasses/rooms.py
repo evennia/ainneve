@@ -37,6 +37,8 @@ class Room(ExtendedRoom, ContribRPRoom):
         'EASY': mt(_EASY_TERRAIN),
         'MODERATE': mt(_MODERATE_TERRAIN),
         'DIFFICULT': mt(_DIFFICULT_TERRAIN),
+        'GRASS': mt(_EASY_TERRAIN),
+        'ROAD': mt(_EASY_TERRAIN, {'cost': 0}),
         'MUD': mt(_DIFFICULT_TERRAIN, "You begin slogging {exit} through the mud. It is slow going."),
         'ICE': mt(_DIFFICULT_TERRAIN, "You carefully make your way {exit} over the icy path."),
         'QUICKSAND': {'cost': 5, 'delay': 4, 'msg': "Drawing on all your strength, you wade {exit} into the quicksand."},
