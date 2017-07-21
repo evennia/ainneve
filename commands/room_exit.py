@@ -32,8 +32,7 @@ class CmdTerrain(MuxCommand):
     Notes:
       If <room> is omitted, defaults to your current location.
 
-      Acceptable values for <terrain> are EASY, MODERATE, DIFFICULT,
-      MUD, ICE, QUICKSAND, SNOW, VEGETATION, THICKET, or DEEPWATER.
+      Acceptable values for <terrain> can be found in typeclasses/rooms.py.
     """
     key = "@terrain"
     locks = "cmd:perm(Builders)"
