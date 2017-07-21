@@ -210,12 +210,14 @@ class Map(Item):
         })
 
     def at_enter_map(self):
-        self.current_character.msg('You’re back on the map.')
-        self.db.off_map = False
+        if self.db.off_map:
+            self.current_character.msg('You’re back on the map.')
+            self.db.off_map = False
 
     def at_leave_map(self):
-        self.current_character.msg('Can’t fit this into the map.')
-        self.db.off_map = True
+        if not self.db.off_map:
+            self.current_character.msg('Can’t fit this into the map.')
+            self.db.off_map = True
 
     def parent_did_move_from(self, source_location, exit=None):
         '''
