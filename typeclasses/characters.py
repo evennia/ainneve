@@ -120,7 +120,7 @@ class Character(ContribRPCharacter):
         string = "|c%s|n" % name
 
         # if we're adding race or archetype, add "the" after the name
-        if (knows_race) or (knows_archetype):
+        if knows_race or knows_archetype:
             string += " the"
 
         if knows_race:
