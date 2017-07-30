@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from items import Item
-from utils import utils
+from utils.directed_exits import get_directed_exits, offset_for_exit
 from utils.search_parents import find_room, find_character
 
 TILES = {
@@ -179,7 +179,7 @@ class Map(Item):
         '''
         if self.db.off_map: self.at_enter_map()
         self.map_room(self.room, self.db.x, self.db.y)
-        for dest, (dx, dy) in utils.get_directed_exits(self.room).items():
+        for dest, (dx, dy) in get_directed_exits(self.room).items():
             self.map_room(dest, self.db.x + dx, self.db.y + dy)
 
     def map_room(self, room, x, y):
@@ -221,7 +221,7 @@ class Map(Item):
             self.db.y = info['y']
             self.map_current_room()
         elif exit is not None:
-            offset = utils.offset_for_exit(exit)
+            offset = offset_for_exit(exit)
             if offset and not self.db.off_map:
                 dx, dy = offset
                 self.db.x += dx
