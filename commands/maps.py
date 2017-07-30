@@ -41,11 +41,23 @@ class CmdMap(MuxCommand):
             return
         theMap = maps[0]
         if 'reset' in self.switches:
-            get_input(caller, 'Are you sure you want to wipe this map?', really_wipe_map, None, theMap)
+            # `caller` is who is being asked the question
+            # `prompt` is what to ask
+            # `callback` is the function to call after the user decides
+            # `map` is passed to the callback.
+            get_input(caller=caller, prompt='Are you sure you want to wipe this map?', callback=really_wipe_map, map=theMap)
         else:
             caller.msg((theMap.return_appearance(self.caller), {"type": "map"}))
 
-def really_wipe_map(caller, prompt, result, theMap):
+def really_wipe_map(caller, prompt, result, map):
+    '''
+    This gets called by CmdMap.
+
+    caller: the player who decided to wipe the map
+    prompt: (ignored)
+    result: what the caller responded with
+    map: the map to wipe
+    '''
     if result.lower() in ("y", "yes"):
         theMap.db.map_data = {}
         theMap.db.x = theMap.db.y = 0
