@@ -18,14 +18,22 @@ def find_parent(obj, condition):
         tc = condition
         condition = lambda loc: loc.is_typeclass(tc)
 
+    seen = set()
 
     done = False
     while 1:
+        if loc in seen:
+            # if the loop already looked at this location
+            # and disqualified it, the parent chain is circular,
+            # and there is nothing in the parent chain
+            # that satisfies the condition.
+            return None
         if loc is None:
             return None
         if condition(lock):
             break
         else:
+            seen.add(loc)
             loc = loc.location
     return loc
 
