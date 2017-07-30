@@ -98,10 +98,15 @@ class Map(Item):
         for room_info in self.db.map_data.values():
             x = room_info['x']
             y = room_info['y']
-            if x < min_x: min_x = x
-            if y < min_y: min_y = y
-            if x > max_x: max_x = x
-            if y > max_y: max_y = y
+            if x < min_x:
+                min_x = x
+            if y < min_y:
+                min_y = y
+
+            if x > max_x:
+                max_x = x
+            if y > max_y:
+                max_y = y
 
         max_x += 1
         max_y += 1
