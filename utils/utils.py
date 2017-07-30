@@ -35,3 +35,22 @@ def sample_char(char, archetype, race, focus=None):
 def call_immediate(delay, callback, *args, **kwargs):
     """utility function to be patched in place of ...utils.delay for testing"""
     callback(*args, **kwargs)
+
+def doc(docstring):
+    """
+    Decorator to set a docstring using an arbitrary expression.
+
+    Usage:
+
+    >>> @doc('new docstring')
+    >>> def foo():
+    ...     '''
+    ...     This docstring gets overwritten
+    ...     '''
+    >>> foo.__doc__
+    new docstring
+    """
+    def _inner(fun):
+        fun.__doc__ = docstring
+        return fun
+    return _inner

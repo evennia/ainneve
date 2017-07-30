@@ -5,7 +5,9 @@ from evennia import CmdSet
 from evennia.commands.default.muxcommand import MuxCommand
 from evennia.contrib.extended_room import *
 
-from typeclasses import maps
+from utils.utils import doc
+
+from typeclasses import maps, rooms
 
 class AinneveRoomExitsCmdSet(CmdSet):
     """Command set containing ExtendedRoom commands."""
@@ -24,18 +26,20 @@ class AinneveRoomExitsCmdSet(CmdSet):
         self.add(CmdStop())
 
 
+terrain_types = sorted(rooms.Room._TERRAINS.keys())
+@doc("""
+sets room terrain type
+
+Usage:
+  @terrain [<room>] = <terrain>
+
+Notes:
+  If <room> is omitted, defaults to your current location.
+
+  Acceptable values for <terrain> are:
+   - {}
+""".format('\n   - '.join(terrain_types)))
 class CmdTerrain(MuxCommand):
-    """
-    sets room terrain type
-
-    Usage:
-      @terrain [<room>] = <terrain>
-
-    Notes:
-      If <room> is omitted, defaults to your current location.
-
-      Acceptable values for <terrain> can be found in typeclasses/rooms.py.
-    """
     key = "@terrain"
     locks = "cmd:perm(Builders)"
     help_category = 'Building'
