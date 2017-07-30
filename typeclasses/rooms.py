@@ -9,7 +9,7 @@ Rooms are simple containers that has no location of their own.
 from evennia.contrib.extended_room import ExtendedRoom
 from evennia.contrib.rpsystem import ContribRPRoom
 
-from utils.utils import get_directed_exits, EXIT_OFFSETS
+from utils.directed_exits import get_directed_exits, EXIT_OFFSETS
 
 def merge_terrains(base, child = {}):
     if isinstance(child, str):
