@@ -34,7 +34,8 @@ class Map(Item):
     def at_object_creation(self):
         super(Map, self).at_object_creation()
         self.db.map_data = {}
-        self.db.x = self.db.y = 0
+        self.db.x = 0
+        self.db.y = 0
         self.db.off_map = False
         self.map_current_room()
 
@@ -90,8 +91,10 @@ class Map(Item):
         player = self.current_character.player
         is_builder = player.locks.check_lockstring(player, 'dummy:perm(Builders)')
 
-        min_x = max_x = 0
-        min_y = max_y = 0
+        min_x = 0
+        max_x = 0
+        min_y = 0
+        max_y = 0
         for room_info in self.db.map_data.values():
             x = room_info['x']
             y = room_info['y']

@@ -60,7 +60,8 @@ def really_wipe_map(caller, prompt, result, map):
     '''
     if result.lower() in ("y", "yes"):
         theMap.db.map_data = {}
-        theMap.db.x = theMap.db.y = 0
+        theMap.db.x = 0
+        theMap.db.y = 0
         theMap.map_current_room()
     if result.lower() in ("n", "no"):
         return # don’t wipe the map
