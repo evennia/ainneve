@@ -2,6 +2,7 @@
 
 from items import Item
 from utils import utils
+from utils.search_parents import find_room, find_character
 
 TILES = {
     'WATER': u'≈≈≈',
@@ -46,17 +47,7 @@ class Map(Item):
         or None if it isn’t in a room.
         This still works if the map is inside one or more nested objects.
         '''
-        loc = self.location
-        if loc is None:
-            return loc
-
-        done = False
-        while 1:
-            if loc.location is not None:
-                loc = loc.location
-            else:
-                break
-        return loc
+        return find_room(self)
 
     @property
     def current_character(self):
@@ -64,19 +55,7 @@ class Map(Item):
         This returns the character carrying the map,
         or None if the map isn’t currently being carried by a character.
         '''
-        character = self.location
-        if character is None:
-            return character
-
-        done = False
-        while 1:
-            if character is None:
-                return None
-            if not character.is_typeclass('characters.Character'):
-                character = character.location
-            else:
-                break
-        return character
+        return find_character(self)
 
     def draw_map(self, show_player = True):
         '''
