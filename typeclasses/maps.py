@@ -179,17 +179,14 @@ class Map(Item):
         width = CELL_WIDTH * len(map_grid[0]) + PADDING * 2
 
         map_page = []
-        title_line = title = u' MAP '
-        # str.center is dumb. Work around that.
-        spacer = u'─'
-        i = 0
-        while len(title_line) < width:
-            if i % 2:
-                title_line += spacer
-            else:
-                title_line = spacer + title_line
-            i += 1
-        map_page.append(u'┌' + title_line + u'┐')
+
+        # str.center doesn’t handle Unicodes spacers properly.
+        # by using an ASCII character (#), it’s possible to
+        # get the correct behavior, then replace the `#` with
+        # the right character.
+        title = u' MAP '.center(width, '#')
+        title.replace('#', u'─')
+        map_page.append(u'┌' + title + u'┐')
         padding = ' ' * PADDING
         for line in map_grid:
             map_page.append(u'│' + padding + ''.join(line) + padding + u'│')
