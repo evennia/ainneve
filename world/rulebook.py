@@ -921,8 +921,8 @@ def resolve_combat(combat_handler):
             return y[2] - x[2]
         else:
             # second tiebreaker: PCs before NPCs
-            x_plyr, y_plyr = combatants[x[0]].has_player, \
-                             combatants[y[0]].has_player
+            x_plyr, y_plyr = combatants[x[0]].has_account, \
+                             combatants[y[0]].has_account
             if x_plyr and not y_plyr:
                 return 1
             elif y_plyr and not x_plyr:
