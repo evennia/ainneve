@@ -8,6 +8,45 @@ from typeclasses.characters import Character
 from utils.utils import sample_char
 from mock import Mock
 
+class AnyStringWith(str):
+    def __eq__(self, other):
+        return self in other
+
+class DescriptionTestCase(EvenniaTest):
+    """Test case for at_return_appearance hook"""
+    character_typeclass = Character
+    exit_typeclass = Exit
+    room_typeclass = Room
+
+    def setUp(self):
+        super(DescriptionTestCase, self).setUp()
+        sample_char(self.char1, 'warrior', 'human', 'cunning')
+        sample_char(self.char2, 'arcanist', 'elf', 'alertness')
+        self.char1.msg = Mock()
+        self.char2.msg = Mock()
+
+    def test_look_at_self(self):
+        self.char1.execute_cmd('look self')
+        self.char1.msg.assert_called_once_with(AnyStringWith('the Human Warrior'))
+
+    def test_race_and_arch_with_low_perception(self):
+        self.char1.traits.PER.base = 0
+        appearance = self.char2.return_appearance(self.char1)
+        self.assertFalse('the Elf Arcanist' in appearance, 'Saw race and archetype with too low perception')
+
+    def test_race_and_arch_with_high_perception(self):
+        self.char1.traits.PER.base = 1000
+        appearance = self.char2.return_appearance(self.char1)
+        self.assertTrue('the Elf Arcanist' in appearance, 'Did not see race and archetype with very high perception')
+
+    def test_health_and_stamina_with_low_perception(self):
+        self.char1.traits.PER.base = 0
+        self.char2.traits.HP.base = 10
+        self.char2.traits.HP.current = 3
+
+        appearance = self.char2.return_appearance(self.char1)
+        self.assertTrue('They seem to be in good health.' in appearance, 'Saw correct health with low perception')
+        self.assertFalse('They seem full of energy.' in appearance, 'Saw correct stamina with low perception')
 
 class MovementTestCase(EvenniaTest):
     """Test case for movement rules."""
