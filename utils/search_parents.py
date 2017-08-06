@@ -16,7 +16,7 @@ def find_parent(obj, condition):
 
     if isinstance(condition, (str, unicode)):
         tc = condition
-        condition = lambda loc: loc.is_typeclass(tc)
+        condition = lambda loc: loc.is_typeclass(tc, False)
 
     seen = set()
 
@@ -30,7 +30,7 @@ def find_parent(obj, condition):
             return None
         if loc is None:
             return None
-        if condition(lock):
+        if condition(loc):
             break
         else:
             seen.add(loc)
