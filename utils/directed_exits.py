@@ -22,6 +22,7 @@ def shorten_name(name):
     return name
 
 def offset_for_exit(exit):
+    if exit is None: return False
     names = []
     exit.at_cmdset_get() # load the exit command if needed
     for command in exit.cmdset.current:
@@ -39,6 +40,7 @@ def offset_for_exit(exit):
 
 def get_directed_exits(room):
     directed_exits = {}
+    if room is None: return directed_exits
     for exit in room.exits:
         offset = offset_for_exit(exit)
         if offset:
