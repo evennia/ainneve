@@ -164,7 +164,7 @@ class Map(Item):
         # get the correct behavior, then replace the `#` with
         # the right character.
         title = u' MAP '.center(width, '#')
-        title.replace('#', u'─')
+        title = title.replace('#', u'─')
         map_page.append(u'┌' + title + u'┐')
         padding = ' ' * PADDING
         for line in map_grid:
@@ -186,6 +186,7 @@ class Map(Item):
         '''
         Add only the provided room (at coordinates (x, y)) to the map.
         '''
+        if room is None: return
         if room not in self.db.map_data:
             self.db.map_data[room] = {}
         self.db.map_data[room].update({
