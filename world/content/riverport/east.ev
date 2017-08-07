@@ -16,8 +16,6 @@
 riverport
 # set zone tag
 @tag riverport#01 = riverport : zone
-# set terrain
-@terrain = ROAD
 # next, set its description
 @desc
 
@@ -77,7 +75,6 @@ riverport
 #
 @tunnel/tel e = Along the Road;riverport#02:typeclasses.rooms.Road
 @tag riverport#02 = riverport : zone
-@terrain = ROAD
 @desc
 
  The road stretches on to the east and west. Surrounded by green meadows
@@ -92,7 +89,6 @@ riverport
 #
 @tunnel/tel e = Along the Road;riverport#03:typeclasses.rooms.Road
 @tag riverport#03 = riverport : zone
-@terrain = ROAD
 @desc
 
  The road stretches on to the east and west. Surrounded by green meadows
@@ -104,7 +100,6 @@ riverport
 #
 @tunnel/tel e = Along the Road;riverport#04:typeclasses.rooms.Road
 @tag riverport#04 = riverport : zone
-@terrain = ROAD
 @desc
 
  The road stretches on to the east and west. Surrounded by green meadows
@@ -116,6 +111,7 @@ riverport
 #
 @tunnel/tel n = Grassy Meadow;riverport#05
 @tag riverport#05 = riverport : zone
+# set terrain
 @terrain = GRASS
 @desc
 
@@ -283,7 +279,6 @@ riverport
 @tel riverport#02
 @tunnel/tel s = A Dirt Path;riverport#14
 @tag riverport#14 = riverport : zone
-@terrain = EASY
 @map_tile = ' \ '
 @desc
 
@@ -304,7 +299,6 @@ riverport
 @tunnel/tel se = The Grassy Knoll ;riverport#15
 @tag riverport#15 = riverport : zone
 @tag riverport#15 = no_attack : flags
-@terrain = EASY
 @map_tile = '\^_'
 @desc
 
@@ -319,7 +313,6 @@ riverport
 @dig/tel Shrine of Grass;riverport#16 = archway;arch;shrine;door,archway;arch;out
 @tag riverport#16 = riverport : zone
 @tag riverport#16 = no_attack : flags
-@terrain = EASY
 @desc
 
  The smooth stones of the shrine’s floor and walls surround you, and you feel

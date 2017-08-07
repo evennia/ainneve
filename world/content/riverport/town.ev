@@ -6,7 +6,6 @@
 @tunnel/tel w = East Gate of Riverport;riverport#17: typeclasses.rooms.Gate
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = ROAD
 @desc
 
  The eastern bridge meets the western gatehouse here, the heavy wooden gate
@@ -27,7 +26,6 @@
 @tunnel/tel w = Main Road;riverport#18: typeclasses.rooms.Road
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = ROAD
 @desc
 
  Placeholder Description of the Main Road
@@ -40,7 +38,6 @@
 @tunnel/tel w = Market Square;riverport#19: typeclasses.rooms.Road
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @map_tile = ─◙─
 @desc
 
@@ -52,7 +49,6 @@
 @tunnel/tel w = Main Road;riverport#20: typeclasses.rooms.Road
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = ROAD
 @desc
 
  Placeholder Description of the Main Road
@@ -71,7 +67,6 @@ drop key
 @map_tile = ARM
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @desc
 
  Placeholder Description of the Armory
@@ -84,7 +79,6 @@ leave
 @tunnel/tel w = West Gate of Riverport;riverport#22: typeclasses.rooms.Gate
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @desc
 
  Placeholder Description of the West Gate
@@ -98,7 +92,6 @@ leave
 @open south;s,north;n = riverport#19
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = ROAD
 @desc
 
  Placeholder Description of the North Road
@@ -109,7 +102,6 @@ leave
 @tunnel/tel n = North Road Near the Temple;riverport#24: typeclasses.rooms.Road
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = ROAD
 @desc
 Placeholder Description of the North Road
 
@@ -119,7 +111,6 @@ Placeholder Description of the North Road
 @tunnel/tel n = Before the Castle Gates;riverport#25: typeclasses.rooms.Road
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @desc
 Placeholder Description of the Castle Gate Entrance.
 Note that this location is not going to be enterable.
@@ -132,7 +123,6 @@ Note that this location is not going to be enterable.
 @tunnel/tel e = Temple of Riverport;riverport#26
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @map_tile = /‾\
 @desc
 Placeholder Description of the Temple.
@@ -155,7 +145,6 @@ drop key
 @map_tile = GEN
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @desc
 
  Placeholder Description for Edric’s General Goods
@@ -170,7 +159,6 @@ leave
 @tunnel/tel s = South Road Passing Shops;riverport#28: typeclasses.rooms.Road
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = ROAD
 @desc
 
  Placeholder Description for the South Road
@@ -181,7 +169,6 @@ leave
 @tunnel/tel s = South Road Before a Dark Alley;riverport#29: typeclasses.rooms.Road
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = ROAD
 @desc
 
  Placeholder Description for the South Road
@@ -191,7 +178,6 @@ leave
 #
 @tunnel/tel e = Dark and Narrow Alley;riverport#30: typeclasses.rooms.Alley
 @tag here = riverport : zone
-@terrain = ROAD
 @desc
 
  Placeholder Description for the Alley
@@ -202,7 +188,6 @@ leave
 #
 @tunnel/tel e = Seedy Warehouses Along the River;riverport#31: typeclasses.rooms.Alley
 @tag here = riverport : zone
-@terrain = ROAD
 @desc
 
  Placeholder Description for the Warehouses
@@ -213,7 +198,6 @@ leave
 #
 @tunnel/tel s = Broken Down Docks Along the River;riverport#32: typeclasses.rooms.Alley
 @tag here = riverport : zone
-@terrain = ROAD
 @desc
 
  Placeholder Description for the Warehouses
@@ -224,7 +208,6 @@ leave
 #
 @tunnel/tel s = Within a Water-Logged Warehouse;riverport#33
 @tag here = riverport : zone
-@terrain = EASY
 @map_tile = [ ]
 @desc
 
@@ -236,7 +219,6 @@ leave
 #
 @tunnel/tel w =  Black Tooth Hideout;riverport#34
 @tag here = riverport : zone
-@terrain = EASY
 @map_tile = ▛▀▜
 @desc
 
@@ -262,7 +244,6 @@ drop key
 @map_tile = MAI
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @desc
 
  Placeholder Description for the shady store
@@ -277,7 +258,6 @@ leave
 @tunnel/tel s = South Road Nearing the Docks;riverport#36: typeclasses.rooms.Road
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = ROAD
 @desc
 
  Placeholder Description for the South Road
@@ -288,7 +268,6 @@ leave
 @tunnel/tel s = Riverport Docks;riverport#37
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @map_tile = ┌┴┐
 @desc
 
@@ -311,7 +290,6 @@ drop key
 @map_tile = CUR
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @desc
 
  Placeholder Description for the Magic Shop
@@ -334,7 +312,6 @@ drop key
 @map_tile = AXE
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @desc
 
  Placeholder Description for the Weapon Shop
@@ -358,7 +335,6 @@ drop key
 @map_tile = TAV
 @tag here = riverport : zone
 @tag here = no_attack : flags
-@terrain = EASY
 @desc
 
  Placeholder Description for the Dancing Dragon Tavern
