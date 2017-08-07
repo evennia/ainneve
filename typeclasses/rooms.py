@@ -156,3 +156,11 @@ BRIDGE_SIDES = u'═'
 class Bridge(Road):
     def map_tile(self, _map, centers=BRIDGE_CENTERS, default_center=DEFAULT_CENTER, sides=BRIDGE_SIDES):
         return super(Bridge, self).map_tile(_map, centers, default_center, sides)
+
+class Gate(Road):
+    def map_tile(self, _map, sides=SIDES):
+        return super(Gate, self).map_tile(_map, centers={}, default_center='#', sides=sides)
+
+class Alley(Road):
+    def map_tile(self, _map, centers=CENTERS, default_center=DEFAULT_CENTER, sides=' '):
+        return super(Alley, self).map_tile(_map, centers, default_center, sides)

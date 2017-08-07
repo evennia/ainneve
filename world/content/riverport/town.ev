@@ -1,0 +1,366 @@
+######
+# Riverport East Gate - vnum 17
+#
+# Reset to starting location
+@tel riverport#01
+@tunnel/tel w = East Gate of Riverport;riverport#17: typeclasses.rooms.Gate
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = ROAD
+@desc
+
+ The eastern bridge meets the western gatehouse here, the heavy wooden gate
+ set into an ancient stone archway. The gates are swung open at most times,
+ and beyond can be seen the bustling town of Riverport, carts and merchants
+ moving both east and west frequently. Standing beside the gate is a wooden
+ |gBoard|n where fliers and notices are regularly posted.
+
+# TODO:
+# @desc board =
+#
+# ...
+#
+
+######
+# Riverport Main Road - vnum 18
+#
+@tunnel/tel w = Main Road;riverport#18: typeclasses.rooms.Road
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = ROAD
+@desc
+
+ Placeholder Description of the Main Road
+
+#######
+
+######
+# Riverport Market Square - vnum 19
+#
+@tunnel/tel w = Market Square;riverport#19: typeclasses.rooms.Road
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@map_tile = ─◙─
+@desc
+
+ Placeholder Description of the Market Square
+
+######
+# Riverport Main Road - vnum 20
+#
+@tunnel/tel w = Main Road;riverport#20: typeclasses.rooms.Road
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = ROAD
+@desc
+
+ Placeholder Description of the Main Road
+
+######
+# Riverport Armory Shop - vnum 21
+#
+@buildshop Garlakh’s Armory;armory;n
+@rename armory = north
+@alias armory = Garlakh’s Armory
+north
+@alias here = riverport#21
+drop key
+@rename exit = south
+@alias south = exit, leave, s
+@map_tile = ARM
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@desc
+
+ Placeholder Description of the Armory
+
+leave
+
+######
+# Riverport West Gate - vnum 22
+#
+@tunnel/tel w = West Gate of Riverport;riverport#22: typeclasses.rooms.Gate
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@desc
+
+ Placeholder Description of the West Gate
+
+######
+# Riverport North Road - vnum 23
+#
+# Reset to starting location
+@tel riverport#21
+@tunnel/tel e = North Road;riverport#23: typeclasses.rooms.Road
+@open south;s,north;n = riverport#19
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = ROAD
+@desc
+
+ Placeholder Description of the North Road
+
+######
+# Riverport North Road - vnum 24
+#
+@tunnel/tel n = North Road Near the Temple;riverport#24: typeclasses.rooms.Road
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = ROAD
+@desc
+Placeholder Description of the North Road
+
+######
+# Riverport Castle Gate - vnum 25
+#
+@tunnel/tel n = Before the Castle Gates;riverport#25: typeclasses.rooms.Road
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@desc
+Placeholder Description of the Castle Gate Entrance.
+Note that this location is not going to be enterable.
+
+######
+# Riverport Temple - vnum 26
+#
+# Go back to the road
+@tel riverport#24
+@tunnel/tel e = Temple of Riverport;riverport#26
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@map_tile = /‾\
+@desc
+Placeholder Description of the Temple.
+Figure this could be a large pantheon of a number of
+different gods and figures. Think 9 divines?
+
+######
+# Riverport General Store - vnum 27
+#
+@tel riverport#23
+@buildshop Edric’s General Goods;goods;general;e
+@rename goods = east
+@alias goods = Edric’s General Goods
+east
+@alias here = riverport#27
+drop key
+@rename exit = west
+@alias west = exit, leave, w
+@open south;s, north;n = riverport#18
+@map_tile = GEN
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@desc
+
+ Placeholder Description for Edric’s General Goods
+
+leave
+
+######
+# Riverport South Road - vnum 28
+#
+# Reset to square
+@tel riverport#19
+@tunnel/tel s = South Road Passing Shops;riverport#28: typeclasses.rooms.Road
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = ROAD
+@desc
+
+ Placeholder Description for the South Road
+
+######
+# Riverport South Road - vnum 29
+#
+@tunnel/tel s = South Road Before a Dark Alley;riverport#29: typeclasses.rooms.Road
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = ROAD
+@desc
+
+ Placeholder Description for the South Road
+
+######
+# Riverport Alley - vnum 30
+#
+@tunnel/tel e = Dark and Narrow Alley;riverport#30: typeclasses.rooms.Alley
+@tag here = riverport : zone
+@terrain = ROAD
+@desc
+
+ Placeholder Description for the Alley
+ Note, this area should become dangerous at some point
+
+######
+# Riverport Alley - vnum 31
+#
+@tunnel/tel e = Seedy Warehouses Along the River;riverport#31: typeclasses.rooms.Alley
+@tag here = riverport : zone
+@terrain = ROAD
+@desc
+
+ Placeholder Description for the Warehouses
+ Note, this area should become dangerous at some point
+
+######
+# Riverport Alley - vnum 32
+#
+@tunnel/tel s = Broken Down Docks Along the River;riverport#32: typeclasses.rooms.Alley
+@tag here = riverport : zone
+@terrain = ROAD
+@desc
+
+ Placeholder Description for the Warehouses
+ Note, this area should become dangerous at some point
+
+######
+# Riverport Alley - vnum 33
+#
+@tunnel/tel s = Within a Water-Logged Warehouse;riverport#33
+@tag here = riverport : zone
+@terrain = EASY
+@map_tile = [ ]
+@desc
+
+ Placeholder Description for the Warehouses
+ Note, this area should become dangerous at some point
+
+######
+# Riverport Gang Hideout - vnum 34
+#
+@tunnel/tel w =  Black Tooth Hideout;riverport#34
+@tag here = riverport : zone
+@terrain = EASY
+@map_tile = ▛▀▜
+@desc
+
+ Placeholder Description for the Gang Hideout
+ Note, should have a door where some asks for a password
+ The password should be, "Bubbles"
+ Also, they are black tooth because they chew a
+ mild narcotic that stains the teeth
+
+######
+# Riverport Seedy Store - vnum 35
+#
+# Return to the broken docks
+@tel riverport#32
+@buildshop Faithful Maiden’s Goods;goods;maiden;faithful;w
+@rename goods = west
+@alias goods = Faithful Maiden’s Goods
+west
+@alias here = riverport#35
+drop key
+@rename exit = east
+@alias east = exit, leave, e
+@map_tile = MAI
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@desc
+
+ Placeholder Description for the shady store
+
+leave
+
+######
+# Riverport South Road - vnum 36
+#
+# Return to road outside alley
+@tel riverport#29
+@tunnel/tel s = South Road Nearing the Docks;riverport#36: typeclasses.rooms.Road
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = ROAD
+@desc
+
+ Placeholder Description for the South Road
+
+######
+# Riverport Docks - vnum 37
+#
+@tunnel/tel s = Riverport Docks;riverport#37
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@map_tile = ┌┴┐
+@desc
+
+ Placeholder Description for the Docks
+
+######
+# Riverport Magic Shop - vnum 38
+#
+# Go to the road south of the square
+@tel riverport#28
+@buildshop Igor & Sons Quality Dooms & Curses;dooms;curses;igor;w
+@rename curses = west
+@alias curses = Igor & Sons Quality Dooms & Curses
+west
+@alias here = riverport#38
+drop key
+@rename exit = east
+@alias east = exit, leave, e
+@open north;n, south;s = riverport#20
+@map_tile = CUR
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@desc
+
+ Placeholder Description for the Magic Shop
+
+leave
+
+######
+# Riverport Weapons Shop - vnum 39
+#
+# Go to the road south of the square
+@tel riverport#29
+@buildshop The Bearded Axe;bearded;axe;bearded axe;w
+@rename axe = west
+@alias axe = The Bearded Axe
+west
+@alias here = riverport#39
+drop key
+@rename exit = east
+@alias east = exit, leave, e
+@map_tile = AXE
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@desc
+
+ Placeholder Description for the Weapon Shop
+
+leave
+
+######
+# Riverport Tavern - vnum 40
+#
+# Reset to the main road east of the square
+@tel riverport#18
+@buildshop Dancing Dragon Tavern;bearded;axe;bearded axe;s
+@rename axe = south
+@alias axe = Dancing Dragon Tavern
+south
+@alias here = riverport#40
+drop key
+@rename exit = north
+@alias north = exit, leave, n
+@open west;w, east;e = riverport#28
+@map_tile = TAV
+@tag here = riverport : zone
+@tag here = no_attack : flags
+@terrain = EASY
+@desc
+
+ Placeholder Description for the Dancing Dragon Tavern
+
+leave

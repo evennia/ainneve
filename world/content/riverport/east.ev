@@ -1,5 +1,5 @@
 #
-# Central area of Riverport
+# Eastern edge of Riverport
 #
 # start in "Limbo"
 #
@@ -9,46 +9,50 @@
 # create the first room
 #
 @dig Kai River Bridge;riverport#01:typeclasses.rooms.Bridge = riverport
-#
 # describe the entrance into the game from limbo
-#
 @desc riverport =
  This is the entrance to the |mAinneve|n game world.
-#
 # move to the room
-#
 riverport
-#
 # set zone tag
-#
 @tag riverport#01 = riverport : zone
-#
 # set terrain
-#
 @terrain = ROAD
-#
 # next, set its description
-#
 @desc
 
  You stand in the middle of an ancient |wbridge|n spanning the |gKai River|n.
 
  The |wriver|n runs from the north to the south, and a well-traveled |wroad|n
- runs east and west.
+ runs east and west. To the west is the eastern gate of Riverport.
 
-#
 # add a description for the bridge
-#
 @detail bridge =
 
- The heavy timbers of the bridge appear sturdy enough to allow a merchant's
- cart to cross. The wood is carved ornately and is covered in undulating
- patterns of texture.
+ Large oaken beams have been cut, fastened and tied together to form
+ a wide bridge running west and east, over a wide, swift-running river.
+ The bridge, about 10 meters in length, has been pioneered with two large logs
+ reaching from end to end of the river bank, with a series of smaller spars laid
+ cross-wise from either edge of the logs. A series of boards made of
+ the same wood run in opposite direction of the beams, and have two holes
+ on each end for lashing to cross-tie to the spars below, forming a flat,
+ sturdy bridge. Knee-high railings have been erected on either side of the
+ bridge running its length.
 
-#
 # add river detail
-#
 @detail river =
+
+ Next to the bridge is a small sign that reads ‘River Kai’.
+
+ The river is about 8 meters in width with a deep, curved belly.
+ Stones of various sizes and colors line the bottom and offer ample hiding nooks
+ for the multitude of minnows darting about the swift waters.
+
+ Looking up the river presents a remarkable vista of trees of different types
+ towering over the banks. The waters sparkle to the rustling of the trees above.
+ Various bushes, plants and thickets line the steep rocky banks.
+ The stream curves in a serpentine form and seem to be a central point
+ for various birds, wildlife and amphibious creatures.
 
  Looking north, you see the river as it winds its way through the town
  of Riverport. A small island dotted with trees appears to your left
@@ -58,9 +62,7 @@ riverport
  Looking south, the |gKai|n heads toward its destination, the placid
  |gAiiro Lake|n.
 
-#
 # add road detail
-#
 @detail road =
 
  To the |weast|n, the town's main road stretches out before you, leading
@@ -74,11 +76,8 @@ riverport
 # eastern road segment #1
 #
 @tunnel/tel e = Along the Road;riverport#02:typeclasses.rooms.Road
-#
 @tag riverport#02 = riverport : zone
-#
 @terrain = ROAD
-#
 @desc
 
  The road stretches on to the east and west. Surrounded by green meadows
@@ -92,11 +91,8 @@ riverport
 # eastern road segment #2
 #
 @tunnel/tel e = Along the Road;riverport#03:typeclasses.rooms.Road
-#
 @tag riverport#03 = riverport : zone
-#
 @terrain = ROAD
-#
 @desc
 
  The road stretches on to the east and west. Surrounded by green meadows
@@ -107,11 +103,8 @@ riverport
 # eastern road segment #3
 #
 @tunnel/tel e = Along the Road;riverport#04:typeclasses.rooms.Road
-#
 @tag riverport#04 = riverport : zone
-#
 @terrain = ROAD
-#
 @desc
 
  The road stretches on to the east and west. Surrounded by green meadows
@@ -122,11 +115,8 @@ riverport
 # meadow room #1
 #
 @tunnel/tel n = Grassy Meadow;riverport#05
-#
 @tag riverport#05 = riverport : zone
-#
 @terrain = GRASS
-#
 @desc
 
  A carpet of grass spreads out before you, bordered on the south edge by
@@ -136,31 +126,23 @@ riverport
 # meadow room #2
 #
 @tunnel/tel w = Grassy Meadow;riverport#06
-#
 @tag riverport#06 = riverport : zone
-#
 @terrain = GRASS
-#
 @desc
 
  A carpet of grass spreads out before you, bordered on the south edge by
  the main road of Riverport. To the north, you see a large tree in the
  distance.
 
-#
 # open additional connecting exits
-#
 @open south;s, north;n = riverport#03
 
 ######
 # meadow room #3
 #
 @tunnel/tel w = Grassy Meadow;riverport#07
-#
 @tag riverport#07 = riverport : zone
-#
 @terrain = GRASS
-#
 @desc
 
  Bordered to the west by the murmuring waters of the |gRiver Kai|n, this sun
@@ -170,20 +152,14 @@ riverport
  To the south, you see the main road that passes through the center of
  Riverport.
 
-#
-# open additional exits
-#
 @open south;s, north;n = riverport#02
 
 ######
 # meadow room #4
 #
 @tunnel/tel n = Grassy Meadow;riverport#08
-#
 @tag riverport#08 = riverport : zone
-#
 @terrain = GRASS
-#
 @desc
 
  Bordered to the west by the murmuring waters of the |gRiver Kai|n, this sun
@@ -192,21 +168,16 @@ riverport
 
  To the north stands a dense grove of trees.
 
-# open additional exits
-#
 @open southeast;se, northwest;nw = riverport#06
 
 ######
 # meadow room #5
 #
 @tunnel/tel e = Meadow Oak;riverport#09
-#
 @tag riverport#09 = riverport : zone
-#
 @terrain = GRASS
-#
+# Set the map tile for this room
 @map_tile = '.↟.'
-#
 @desc
 
  A massive broad-leafed tree stands in the middle of a carpet of green grass.
@@ -216,12 +187,9 @@ riverport
  The steady presence of this tree fills you with a sense of serenity despite
  a dark and shady-looking grove of trees to the northwest.
 
-#
-# add tree detail
-#
 @detail tree =
 
- The tree's huge trunk is far too big for a normal-sized human to reach their
+ The tree’s huge trunk is far too big for a normal-sized human to reach their
  arms around. It is by far the tallest structure in central Riverport.
 
 #
@@ -231,57 +199,37 @@ riverport
 # set his sdesc; this is unfortunate
 #
 @py w=me.search("wolf"); w.sdesc.add("Ol' Scurvy")
-#
-@desc Ol' Scurvy = Wretched and fearsome-looking, the wolf growls as the fur on its back|/bristles at the sight of hapless travelers.
-#
+@desc Ol’ Scurvy = Wretched and fearsome-looking, the wolf growls as the fur on its back|/bristles at the sight of hapless travelers.
 # give him a weapon
-#
 @create/drop a vicious bite;jaws:typeclasses.weapons.TwoHandedWeapon
-#
 @set jaws/slots = ['wield']
-#
 @py t=me.search('jaws');w=me.search("Ol' Scurvy");t.move_to(w, quiet=True);me.msg(w.equip.add(t))
 
-#
-# open additional exits
-#
 @open southwest;sw, northeast;ne = riverport#07
-#
 @open south;s, north;n = riverport#06
-#
 @open southeast;se, northwest;nw = riverport#05
 
 ######
 # meadow room #6
 #
 @tunnel/tel e = Grassy Meadow;riverport#10
-#
 @tag riverport#10 = riverport : zone
-#
 @terrain = GRASS
-#
 @desc
 
  A carpet of grass spreads out before you, bordered on the east edge by
  the ring road of Riverport. To the west, you see a large tree in the
  distance.
 
-#
-# open additional exits
-#
 @open southwest;sw, northeast;ne = riverport#06
-#
 @open south;s, north;n = riverport#05
 
 ######
 # meadow room #7
 #
 @tunnel/tel nw = Grassy Meadow;riverport#11
-#
 @tag riverport#11 = riverport : zone
-#
 @terrain = GRASS
-#
 @desc
 
  A carpet of grass spreads out before you. To the east you see buildings
@@ -289,50 +237,35 @@ riverport
  meadow. To the west looms a dark, dense grove of trees that looks like
  it would be difficult to travel through.
 
-#
-# open additional exits
-#
 @open south;s, north;n = riverport#09
-#
 @open southwest;sw, northeast;ne = riverport#08
-#
 
 ######
 # meadow/forest room #8
 #
 @tunnel/tel w = Shadowy Grove;riverport#12
-#
 @tag riverport#12 = riverport : zone
-#
 @terrain = VEGETATION
 #
 # this is tight quarters, limit the number of characters
 # that can be present
 #
 @capacity = 7
-#
 @desc
 
  As you squeeze between the densely-packed vegetation, you notice that most of
  the sunlight is blocked by the thick canopy of trees in this grove. You hear
  the sound of something moving in the underbrush and prepare for the worst...
 
-#
-# open additional exits
-#
 @open south;s, north;n = riverport#08
-#
 @open southeast;se, northwest;nw = riverport#09
 
 ######
 # meadow room #9
 #
 @tunnel/tel w = Grassy Meadow;riverport#13
-#
 @tag riverport#13 = riverport : zone
-#
 @terrain = GRASS
-#
 @desc
 
  Bordered to the west by the murmuring waters of the |gRiver Kai|n, this sun
@@ -340,9 +273,6 @@ riverport
  reeds rise higher, and beyond them, you see a small island, dotted with trees,
  standing in the middle of the rushing waters.
 
-#
-# open additional exits
-#
 @open southeast;se, northwest;nw = riverport#08
 
 ######
@@ -351,17 +281,10 @@ riverport
 # Shrine path
 #
 @tel riverport#02
-#
 @tunnel/tel s = A Dirt Path;riverport#14
-#
 @tag riverport#14 = riverport : zone
-#
 @terrain = EASY
-#
-@set here/connects_to_roads = True
-#
 @map_tile = ' \ '
-#
 @desc
 
  A dirt |wpath|n leads through a grassy feald.
@@ -370,7 +293,6 @@ riverport
  grove of trees that look as though they were positioned intentionally shrouds
  a small, ancient building in the distance.
 
-#
 @detail path =
 
  The path is simply a stretch of meadow grass worn thin, tamped down by the feet
@@ -380,15 +302,10 @@ riverport
 # Shrine of Grass - Entrance
 #
 @tunnel/tel se = The Grassy Knoll ;riverport#15
-#
 @tag riverport#15 = riverport : zone
-#
 @tag riverport#15 = no_attack : flags
-#
 @terrain = EASY
-#
 @map_tile = '\^_'
-#
 @desc
 
  You enter a circle of trees and come upon a small stone structure. You
@@ -400,16 +317,12 @@ riverport
 # Shrine of Grass
 #
 @dig/tel Shrine of Grass;riverport#16 = archway;arch;shrine;door,archway;arch;out
-#
 @tag riverport#16 = riverport : zone
-#
 @tag riverport#16 = no_attack : flags
-#
 @terrain = EASY
-#
 @desc
 
- The smooth stones of the shrine's floor and walls surround you, and you feel
+ The smooth stones of the shrine’s floor and walls surround you, and you feel
  energy surging within them. You see trees looming before an open sky through
  the tall, open |warchway|n at the front of the shrine. A fire burning at the
  center of what appears to be a shallow pool of shimmering purple liquid is
