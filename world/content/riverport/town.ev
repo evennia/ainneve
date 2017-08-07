@@ -111,6 +111,7 @@ Placeholder Description of the North Road
 @tunnel/tel n = Before the Castle Gates;riverport#25: typeclasses.rooms.Road
 @zone = riverport
 @tag here = no_attack : flags
+@map_tile = ' ☖ '
 @desc
 Placeholder Description of the Castle Gate Entrance.
 Note that this location is not going to be enterable.
