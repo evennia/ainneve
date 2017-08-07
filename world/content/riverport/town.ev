@@ -1,7 +1,7 @@
 ######
 # Riverport East Gate - vnum 17
 #
-# Reset to starting location
+# Return to the bridge
 @tel riverport#01
 @tunnel/tel w = East Gate of Riverport;riverport#17: typeclasses.rooms.Gate
 @tag here = riverport : zone
