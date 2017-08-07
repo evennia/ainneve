@@ -18,6 +18,7 @@ class AinneveRoomExitsCmdSet(CmdSet):
         self.add(CmdGameTime())
 
         # Ainneve room builder commands
+        self.add(CmdZone())
         self.add(CmdTerrain())
         self.add(CmdMapTile())
         self.add(CmdCapacity())
@@ -130,6 +131,50 @@ class CmdMapTile(MuxCommand):
         else:
             self.caller.msg('Cannot set map tile on {}.'.format(target.key))
 
+class CmdMapTile(MuxCommand):
+    """
+    sets the zone for a room
+
+    Usage:
+      @zone [<room>] = <zone>
+
+    Notes:
+      If <room> is omitted, defaults to your current location.
+
+      zone is a string that represents the zone that the room is inside.
+    """
+    key = "@zone"
+    locks = "cmd:perm(tag) or perm(Builders)"
+    help_category = 'Building'
+
+    def func(self):
+        """Set the property here."""
+        if not self.rhs:
+            self.caller.msg("Usage: @zone [<room>] = <zone>")
+            return
+
+        zone = self.rhs.strip()
+        lhs = self.lhs.strip()
+        if lhs != '':
+            target = self.caller.search(lhs, global_search=True)
+        else:
+            target = self.caller.location
+
+        if not target:
+            self.caller.msg("Room not found.")
+            return
+
+        if target.is_typeclass('typeclasses.rooms.Room', False):
+            try:
+                target.tags.clear(category="zone")
+                target.tags.add(zone, category="zone")
+            except ValueError as e:
+                self.caller.msg(e.message)
+            else:
+                self.caller.msg("Map tile '{}' set on {}.".format(map_tile,
+                                                                  target.key))
+        else:
+            self.caller.msg('Cannot set map tile on {}.'.format(target.key))
 
 class CmdCapacity(MuxCommand):
     """
