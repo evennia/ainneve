@@ -68,7 +68,7 @@ class Map(Item):
         is currently in will have its middle character replaced with a `*`.
         '''
         player = self.current_character.player
-        is_builder = player.locks.check_lockstring(player, 'dummy:perm(Builders)')
+        is_builder = player.locks.check_lockstring(self.current_character, 'dummy:perm(Builders)')
 
         min_x = 0
         max_x = 0
