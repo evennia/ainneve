@@ -59,11 +59,11 @@ def really_wipe_map(caller, prompt, result, map):
     map: the map to wipe
     '''
     if result.lower() in ("y", "yes"):
-        theMap.db.map_data = {}
-        theMap.db.x = 0
-        theMap.db.y = 0
-        theMap.map_current_room()
-    if result.lower() in ("n", "no"):
+        map.db.map_data = {}
+        map.db.x = 0
+        map.db.y = 0
+        map.map_current_room()
+    elif result.lower() in ("n", "no"):
         return # don’t wipe the map
     else:
         # the answer is not on the right yes/no form
