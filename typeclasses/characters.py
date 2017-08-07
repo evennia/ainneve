@@ -86,14 +86,15 @@ class Character(ContribRPCharacter):
 
     def at_after_move(self, source_location):
         super(Character, self).at_after_move(source_location)
-        theExit = None
-        for exit in source_location.exits:
-            if exit.destination == self.location:
-                theExit = exit
-                break
-        for held_object in self.contents:
-            if held_object.is_typeclass('maps.Map'):
-                held_object.parent_did_move_from(source_location, theExit)
+        if source_location:
+            theExit = None
+            for exit in source_location.exits:
+                if exit.destination == self.location:
+                    theExit = exit
+                    break
+            for held_object in self.contents:
+                if held_object.is_typeclass('maps.Map'):
+                    held_object.parent_did_move_from(source_location, theExit)
 
 
 class NPC(Character):
