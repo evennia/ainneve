@@ -27,6 +27,48 @@ class AinneveRoomExitsCmdSet(CmdSet):
         self.add(CmdStop())
 
 
+class ModifyRoomCommand(MuxCommand):
+    locks = "cmd:perm(Builders)"
+    help_category = 'Building'
+    success_msg = "rhs: {}, target.key: {}"
+    failure_msg = "target.key: {}"
+
+    def func(self):
+        if not self.rhs:
+            arg_name = self.key.replace('@', '', 1).replace('_', ' ')
+            self.caller.msg("Usage: {} [<room>] = <{}>".format(self.key, arg_name))
+            return
+
+        lhs = self.lhs.strip()
+        if lhs != '':
+            target = self.caller.search(lhs, global_search=True)
+        else:
+            target = self.caller.location
+
+        if not target:
+            self.caller.msg("Room not found.")
+            return
+
+        if target.is_typeclass('typeclasses.rooms.Room', False):
+            try:
+                success = self.modify(target)
+                if success == False: # None is falsy
+                    # modify() should display errors as needed
+                    return
+            except ValueError as e:
+                self.caller.msg(e.message)
+            else:
+                self.caller.msg(self.success_msg.format(self.rhs,
+                                                        target.key))
+        else:
+            self.caller.msg(self.failure_msg.format(target.key))
+
+    def modify(self, target):
+        """
+        Modify the target as needed, using self.rhs for reference.
+        """
+        raise NotImplementedError()
+
 terrain_types = sorted(rooms.Room._TERRAINS.keys())
 @doc("""
 sets room terrain type
@@ -40,46 +82,23 @@ Notes:
   Acceptable values for <terrain> are:
    - {}
 """.format('\n   - '.join(terrain_types)))
-class CmdTerrain(MuxCommand):
+class CmdTerrain(ModifyRoomCommand):
     key = "@terrain"
-    locks = "cmd:perm(Builders)"
-    help_category = 'Building'
+    success_msg = "Terrain type '{}' set on {}."
+    failure_msg = "Cannot set terrain on {}."
 
-    def func(self):
+    def modify(self, target):
         """Set the property here."""
-        if not self.rhs:
-            self.caller.msg("Usage: @terrain [<room>] = <terrain>")
-            return
-
-        terrain = self.rhs.strip().upper()
-        lhs = self.lhs.strip()
-        if lhs != '':
-            target = self.caller.search(lhs, global_search=True)
-        else:
-            target = self.caller.location
-
-        if not target:
-            self.caller.msg("Room not found.")
-            return
-
-        if target.is_typeclass('typeclasses.rooms.Room', False):
-            try:
-                target.terrain = terrain
-            except ValueError as e:
-                self.caller.msg(e.message)
-            else:
-                self.caller.msg("Terrain type '{}' set on {}.".format(terrain,
-                                                                  target.key))
-        else:
-            self.caller.msg('Cannot set terrain on {}.'.format(target.key))
+        self.rhs = self.rhs.strip().upper()
+        target.terrain = self.rhs
 
 
-class CmdMapTile(MuxCommand):
+class CmdMapTile(ModifyRoomCommand):
     """
     sets the map tile for a room
 
     Usage:
-      @map_tile [<room>] = <map_tile>
+      @map_tile [<room>] = <map tile>
 
     Notes:
       If <room> is omitted, defaults to your current location.
@@ -90,48 +109,27 @@ class CmdMapTile(MuxCommand):
       Some terrain types have default map tiles, too.
     """
     key = "@map_tile"
-    locks = "cmd:perm(Builders)"
-    help_category = 'Building'
+    success_msg = "Map tile '{}' set on {}."
+    failure_msg = "Cannot set map tile on {}."
 
-    def func(self):
+    def modify(self, target):
         """Set the property here."""
-        if not self.rhs:
-            self.caller.msg("Usage: @map_tile [<room>] = <map_tile>")
-            return
-
-        map_tile = self.rhs.strip()
-        lhs = self.lhs.strip()
-        if lhs != '':
-            target = self.caller.search(lhs, global_search=True)
-        else:
-            target = self.caller.location
-
-        if not target:
-            self.caller.msg("Room not found.")
-            return
+        self.rhs = self.rhs.strip()
 
         # this allows tiles like ' x '
-        if len(map_tile) == 5 and map_tile[0] in '\'"' and map_tile[-1] in '\'"':
-            map_tile = map_tile[1:-1] # drop the quotes
+        if len(self.rhs) == 5 and self.rhs[0] in '\'"' and self.rhs[-1] in '\'"':
+            self.rhs = self.rhs[1:-1] # drop the quotes
 
-        if len(map_tile) != maps.CELL_WIDTH:
+        if len(self.rhs) != maps.CELL_WIDTH:
             self.caller.msg("Map tile '{}' must be {} characters long".format(
-                map_tile,
+                self.rhs,
                 maps.CELL_WIDTH
             ))
+            return False
 
-        if target.is_typeclass('typeclasses.rooms.Room', False):
-            try:
-                target.db.map_tile = map_tile
-            except ValueError as e:
-                self.caller.msg(e.message)
-            else:
-                self.caller.msg("Map tile '{}' set on {}.".format(map_tile,
-                                                                  target.key))
-        else:
-            self.caller.msg('Cannot set map tile on {}.'.format(target.key))
+        target.db.map_tile = map_tile
 
-class CmdMapTile(MuxCommand):
+class CmdZone(ModifyRoomCommand):
     """
     sets the zone for a room
 
@@ -141,51 +139,30 @@ class CmdMapTile(MuxCommand):
     Notes:
       If <room> is omitted, defaults to your current location.
 
-      zone is a string that represents the zone that the room is inside.
+      zone is a string that represents the zone of the world map
+      that the room is in.
     """
     key = "@zone"
     locks = "cmd:perm(tag) or perm(Builders)"
-    help_category = 'Building'
+    success_msg = "Zone '{}' set on {}."
+    failure_msg = "Cannot set zone on {}."
 
-    def func(self):
+    def modify(self, target):
         """Set the property here."""
-        if not self.rhs:
-            self.caller.msg("Usage: @zone [<room>] = <zone>")
-            return
+        target.tags.clear(category="zone")
+        target.tags.add(self.rhs.strip(), category="zone")
 
-        zone = self.rhs.strip()
-        lhs = self.lhs.strip()
-        if lhs != '':
-            target = self.caller.search(lhs, global_search=True)
-        else:
-            target = self.caller.location
 
-        if not target:
-            self.caller.msg("Room not found.")
-            return
-
-        if target.is_typeclass('typeclasses.rooms.Room', False):
-            try:
-                target.tags.clear(category="zone")
-                target.tags.add(zone, category="zone")
-            except ValueError as e:
-                self.caller.msg(e.message)
-            else:
-                self.caller.msg("Map tile '{}' set on {}.".format(map_tile,
-                                                                  target.key))
-        else:
-            self.caller.msg('Cannot set map tile on {}.'.format(target.key))
-
-class CmdCapacity(MuxCommand):
+class CmdCapacity(ModifyRoomCommand):
     """
     sets room's maximum capacity
 
     Usage:
-      @capacity [<room>] = <maxchars>
+      @capacity [<room>] = <capacity>
 
     Args:
       room: the room on which to set the capacity
-      maxchars: (positive int) maximum number of characters
+      capacity: (positive int) maximum number of characters
                 allowed in room or zero (0) for unlimited
 
     Notes:
@@ -193,37 +170,21 @@ class CmdCapacity(MuxCommand):
     """
     key = "@capacity"
     aliases = ["@cap"]
-    locks = "cmd:perm(Builders)"
-    help_category = 'Building'
+    success_msg = "Capacity {} set on {}."
+    failure_msg = "Cannot set capacity on {}."
 
-    def func(self):
+    def modify(self, target):
         """Set the property here."""
-        if not self.rhs:
-            self.caller.msg("Usage: @capacity [<room>] = <maxchars>")
-            return
-
         try:
-            capacity = int(self.rhs.strip())
+            self.rhs = int(self.rhs.strip())
         except ValueError:
-            capacity = -1
+            self.rhs = -1
 
-        if capacity <= 0:
+        if self.rhs <= 0:
             self.caller.msg("Invalid capacity specified.")
-            return
+            return False
 
-        lhs = self.lhs.strip()
-        if lhs != '':
-            target = self.caller.search(lhs,
-                                        typeclass='typeclasses.rooms.Room',
-                                        global_search=True)
-        else:
-            target = self.caller.location
-
-        if not target:
-            self.caller.msg("Room not found.")
-            return
-
-        target.db.max_chars = capacity
+        target.db.max_chars = self.rhs
         self.caller.msg("Capacity set on {}.".format(target.get_display_name(self.caller)))
 
 
