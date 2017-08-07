@@ -4,7 +4,7 @@
 # Return to the bridge
 @tel riverport#01
 @tunnel/tel w = East Gate of Riverport;riverport#17: typeclasses.rooms.Gate
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -24,7 +24,7 @@
 # Riverport Main Road - vnum 18
 #
 @tunnel/tel w = Main Road;riverport#18: typeclasses.rooms.Road
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -36,7 +36,7 @@
 # Riverport Market Square - vnum 19
 #
 @tunnel/tel w = Market Square;riverport#19: typeclasses.rooms.Road
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @map_tile = ─◙─
 @desc
@@ -47,7 +47,7 @@
 # Riverport Main Road - vnum 20
 #
 @tunnel/tel w = Main Road;riverport#20: typeclasses.rooms.Road
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -65,7 +65,7 @@ drop key
 @rename exit = south
 @alias south = exit, leave, s
 @map_tile = ARM
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -77,7 +77,7 @@ leave
 # Riverport West Gate - vnum 22
 #
 @tunnel/tel w = West Gate of Riverport;riverport#22: typeclasses.rooms.Gate
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -90,7 +90,7 @@ leave
 @tel riverport#21
 @tunnel/tel e = North Road;riverport#23: typeclasses.rooms.Road
 @open south;s,north;n = riverport#19
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -100,7 +100,7 @@ leave
 # Riverport North Road - vnum 24
 #
 @tunnel/tel n = North Road Near the Temple;riverport#24: typeclasses.rooms.Road
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 Placeholder Description of the North Road
@@ -109,7 +109,7 @@ Placeholder Description of the North Road
 # Riverport Castle Gate - vnum 25
 #
 @tunnel/tel n = Before the Castle Gates;riverport#25: typeclasses.rooms.Road
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 Placeholder Description of the Castle Gate Entrance.
@@ -121,7 +121,7 @@ Note that this location is not going to be enterable.
 # Go back to the road
 @tel riverport#24
 @tunnel/tel e = Temple of Riverport;riverport#26
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @map_tile = /‾\
 @desc
@@ -143,7 +143,7 @@ drop key
 @alias west = exit, leave, w
 @open south;s, north;n = riverport#18
 @map_tile = GEN
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -157,7 +157,7 @@ leave
 # Reset to square
 @tel riverport#19
 @tunnel/tel s = South Road Passing Shops;riverport#28: typeclasses.rooms.Road
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -167,7 +167,7 @@ leave
 # Riverport South Road - vnum 29
 #
 @tunnel/tel s = South Road Before a Dark Alley;riverport#29: typeclasses.rooms.Road
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -177,7 +177,7 @@ leave
 # Riverport Alley - vnum 30
 #
 @tunnel/tel e = Dark and Narrow Alley;riverport#30: typeclasses.rooms.Alley
-@tag here = riverport : zone
+@zone = riverport
 @desc
 
  Placeholder Description for the Alley
@@ -187,7 +187,7 @@ leave
 # Riverport Alley - vnum 31
 #
 @tunnel/tel e = Seedy Warehouses Along the River;riverport#31: typeclasses.rooms.Alley
-@tag here = riverport : zone
+@zone = riverport
 @desc
 
  Placeholder Description for the Warehouses
@@ -197,7 +197,7 @@ leave
 # Riverport Alley - vnum 32
 #
 @tunnel/tel s = Broken Down Docks Along the River;riverport#32: typeclasses.rooms.Alley
-@tag here = riverport : zone
+@zone = riverport
 @desc
 
  Placeholder Description for the Warehouses
@@ -207,7 +207,7 @@ leave
 # Riverport Alley - vnum 33
 #
 @tunnel/tel s = Within a Water-Logged Warehouse;riverport#33
-@tag here = riverport : zone
+@zone = riverport
 @map_tile = [ ]
 @desc
 
@@ -218,7 +218,7 @@ leave
 # Riverport Gang Hideout - vnum 34
 #
 @tunnel/tel w =  Black Tooth Hideout;riverport#34
-@tag here = riverport : zone
+@zone = riverport
 @map_tile = ▛▀▜
 @desc
 
@@ -242,7 +242,7 @@ drop key
 @rename exit = east
 @alias east = exit, leave, e
 @map_tile = MAI
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -256,7 +256,7 @@ leave
 # Return to road outside alley
 @tel riverport#29
 @tunnel/tel s = South Road Nearing the Docks;riverport#36: typeclasses.rooms.Road
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -266,7 +266,7 @@ leave
 # Riverport Docks - vnum 37
 #
 @tunnel/tel s = Riverport Docks;riverport#37
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @map_tile = ┌┴┐
 @desc
@@ -288,7 +288,7 @@ drop key
 @alias east = exit, leave, e
 @open north;n, south;s = riverport#20
 @map_tile = CUR
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -310,7 +310,7 @@ drop key
 @rename exit = east
 @alias east = exit, leave, e
 @map_tile = AXE
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
@@ -333,7 +333,7 @@ drop key
 @alias north = exit, leave, n
 @open west;w, east;e = riverport#28
 @map_tile = TAV
-@tag here = riverport : zone
+@zone = riverport
 @tag here = no_attack : flags
 @desc
 
