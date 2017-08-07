@@ -8,7 +8,7 @@
 ######
 # create the first room - vnum 01
 #
-@dig Kai River Bridge;riverport#01:typeclasses.rooms.Bridge = riverport
+@dig Kai River Bridge;riverport#01: typeclasses.rooms.Bridge = riverport
 # describe the entrance into the game from limbo
 @desc riverport =
  This is the entrance to the |mAinneve|n game world.
@@ -73,7 +73,7 @@ riverport
 ######
 # eastern road segment #1 - vnum 02
 #
-@tunnel/tel e = Along the Road;riverport#02:typeclasses.rooms.Road
+@tunnel/tel e = Along the Road;riverport#02: typeclasses.rooms.Road
 @tag here = riverport : zone
 @desc
 
@@ -87,7 +87,7 @@ riverport
 ######
 # eastern road segment #2 - vnum 03
 #
-@tunnel/tel e = Along the Road;riverport#03:typeclasses.rooms.Road
+@tunnel/tel e = Along the Road;riverport#03: typeclasses.rooms.Road
 @tag here = riverport : zone
 @desc
 
@@ -98,7 +98,7 @@ riverport
 ######
 # eastern road segment #3 - vnum 04
 #
-@tunnel/tel e = Along the Road;riverport#04:typeclasses.rooms.Road
+@tunnel/tel e = Along the Road;riverport#04: typeclasses.rooms.Road
 @tag here = riverport : zone
 @desc
 
