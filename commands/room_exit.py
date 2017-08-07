@@ -127,7 +127,7 @@ class CmdMapTile(ModifyRoomCommand):
             ))
             return False
 
-        target.db.map_tile = map_tile
+        target.db.map_tile = self.rhs
 
 class CmdZone(ModifyRoomCommand):
     """
