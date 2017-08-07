@@ -6,7 +6,7 @@
 @tel Limbo
 
 ######
-# create the first room
+# create the first room - vnum 01
 #
 @dig Kai River Bridge;riverport#01:typeclasses.rooms.Bridge = riverport
 # describe the entrance into the game from limbo
@@ -71,7 +71,7 @@ riverport
  commercial center of Riverport.
 
 ######
-# eastern road segment #1
+# eastern road segment #1 - vnum 02
 #
 @tunnel/tel e = Along the Road;riverport#02:typeclasses.rooms.Road
 @tag riverport#02 = riverport : zone
@@ -85,7 +85,7 @@ riverport
  To the north, a grassy meadow extends along the banks of the |gKai|n.
 
 ######
-# eastern road segment #2
+# eastern road segment #2 - vnum 03
 #
 @tunnel/tel e = Along the Road;riverport#03:typeclasses.rooms.Road
 @tag riverport#03 = riverport : zone
@@ -96,7 +96,7 @@ riverport
  well-maintained.
 
 ######
-# eastern road segment #3
+# eastern road segment #3 - vnum 04
 #
 @tunnel/tel e = Along the Road;riverport#04:typeclasses.rooms.Road
 @tag riverport#04 = riverport : zone
@@ -107,7 +107,7 @@ riverport
  well-maintained.
 
 ######
-# meadow room #1
+# meadow room #1 - vnum 05
 #
 @tunnel/tel n = Grassy Meadow;riverport#05
 @tag riverport#05 = riverport : zone
@@ -119,7 +119,7 @@ riverport
  the main road of Riverport.
 
 ######
-# meadow room #2
+# meadow room #2 - vnum 06
 #
 @tunnel/tel w = Grassy Meadow;riverport#06
 @tag riverport#06 = riverport : zone
@@ -134,7 +134,7 @@ riverport
 @open south;s, north;n = riverport#03
 
 ######
-# meadow room #3
+# meadow room #3 - vnum 07
 #
 @tunnel/tel w = Grassy Meadow;riverport#07
 @tag riverport#07 = riverport : zone
@@ -151,7 +151,7 @@ riverport
 @open south;s, north;n = riverport#02
 
 ######
-# meadow room #4
+# meadow room #4 - vnum 08
 #
 @tunnel/tel n = Grassy Meadow;riverport#08
 @tag riverport#08 = riverport : zone
@@ -167,7 +167,7 @@ riverport
 @open southeast;se, northwest;nw = riverport#06
 
 ######
-# meadow room #5
+# meadow room #5 - vnum 09
 #
 @tunnel/tel e = Meadow Oak;riverport#09
 @tag riverport#09 = riverport : zone
@@ -206,7 +206,7 @@ riverport
 @open southeast;se, northwest;nw = riverport#05
 
 ######
-# meadow room #6
+# meadow room #6 - vnum 10
 #
 @tunnel/tel e = Grassy Meadow;riverport#10
 @tag riverport#10 = riverport : zone
@@ -221,7 +221,7 @@ riverport
 @open south;s, north;n = riverport#05
 
 ######
-# meadow room #7
+# meadow room #7 - vnum 11
 #
 @tunnel/tel nw = Grassy Meadow;riverport#11
 @tag riverport#11 = riverport : zone
@@ -237,7 +237,7 @@ riverport
 @open southwest;sw, northeast;ne = riverport#08
 
 ######
-# meadow/forest room #8
+# meadow/forest room #8 - vnum 12
 #
 @tunnel/tel w = Shadowy Grove;riverport#12
 @tag riverport#12 = riverport : zone
@@ -257,7 +257,7 @@ riverport
 @open southeast;se, northwest;nw = riverport#09
 
 ######
-# meadow room #9
+# meadow room #9 - vnum 13
 #
 @tunnel/tel w = Grassy Meadow;riverport#13
 @tag riverport#13 = riverport : zone
@@ -274,7 +274,7 @@ riverport
 ######
 # path to respawning shrine
 #
-# Shrine path
+# Shrine path - vnum 14
 #
 @tel riverport#02
 @tunnel/tel s = A Dirt Path;riverport#14
@@ -294,7 +294,7 @@ riverport
  of pilgrims and mourners for the fallen on the way to the |gShrine of Grass|n.
 
 ######
-# Shrine of Grass - Entrance
+# Shrine of Grass - Entrance - vnum 15
 #
 @tunnel/tel se = The Grassy Knoll ;riverport#15
 @tag riverport#15 = riverport : zone
@@ -308,7 +308,7 @@ riverport
  of smoke rising to the sky above the clearing.
 
 ######
-# Shrine of Grass
+# Shrine of Grass - vnum 16
 #
 @dig/tel Shrine of Grass;riverport#16 = archway;arch;shrine;door,archway;arch;out
 @tag riverport#16 = riverport : zone
