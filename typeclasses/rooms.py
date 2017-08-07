@@ -112,13 +112,14 @@ CENTERS = {
     'e n s': u'├',
   'e n s w': u'┼'
 }
+DEFAULT_CENTER = u'?'
 SIDES = u'─'
 class Road(Room):
     def at_object_creation(self):
         super(Room, self).at_object_creation()
         self.db.terrain = 'ROAD'
 
-    def map_tile(self, _map, centers=CENTERS, sides=SIDES):
+    def map_tile(self, _map, centers=CENTERS, default_center=DEFAULT_CENTER, sides=SIDES):
         directions = set()
         for room, delta in get_directed_exits(self).items():
             connects_to_roads = room.db.connects_to_roads or Room._TERRAINS[room.terrain].get('connects_to_roads', False)
@@ -129,7 +130,7 @@ class Road(Room):
         key = u' '.join(sorted(directions))
         left = sides if 'w' in directions else u' '
         right = sides if 'e' in directions else u' '
-        return left + centers.get(key, '?') + right
+        return left + centers.get(key, default_center) + right
 
 BRIDGE_CENTERS = {
     # there’s no proper box drawing characters
@@ -152,5 +153,5 @@ BRIDGE_CENTERS = {
 }
 BRIDGE_SIDES = u'═'
 class Bridge(Road):
-    def map_tile(self, _map, centers=BRIDGE_CENTERS, sides=BRIDGE_SIDES):
-        return super(Bridge, self).map_tile(_map, centers, sides)
+    def map_tile(self, _map, centers=BRIDGE_CENTERS, default_center=DEFAULT_CENTER, sides=BRIDGE_SIDES):
+        return super(Bridge, self).map_tile(_map, centers, default_center, sides)
