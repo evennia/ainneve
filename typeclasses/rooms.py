@@ -120,6 +120,7 @@ class Road(Room):
         self.db.terrain = 'ROAD'
 
     def map_tile(self, _map, centers=CENTERS, default_center=DEFAULT_CENTER, sides=SIDES):
+        if self.db.map_tile: return self.db.map_tile
         directions = set()
         for room, delta in get_directed_exits(self).items():
             connects_to_roads = room.db.connects_to_roads or Room._TERRAINS[room.terrain].get('connects_to_roads', False)
