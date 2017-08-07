@@ -59,10 +59,10 @@ class Room(ExtendedRoom, ContribRPRoom):
         self.db.errmsg_capacity = "There isn't enough room there for you."
 
     def at_object_receive(self,  moved_obj, source_location):
-        if moved_obj.is_typeclass('typeclasses.characters.Character'):
+        if moved_obj.is_typeclass('typeclasses.characters.Character', False):
             char_count = sum(
                 1 for c in self.contents
-                if c.is_typeclass('typeclasses.characters.Character'))
+                if c.is_typeclass('typeclasses.characters.Character', False))
 
             if self.db.max_chars > 0 and char_count + 1 > self.db.max_chars:
                 # we're over capacity. send them back where they came
@@ -122,7 +122,7 @@ class Road(Room):
         directions = set()
         for room, delta in get_directed_exits(self).items():
             connects_to_roads = room.db.connects_to_roads or Room._TERRAINS[room.terrain].get('connects_to_roads', False)
-            if room.is_typeclass(Road) or connects_to_roads:
+            if room.is_typeclass(Road, False) or connects_to_roads:
                 direction = REVERSE_EXIT_OFFSETS.get(delta)
                 if len(direction) == 1:
                     directions.add(direction)

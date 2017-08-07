@@ -61,7 +61,7 @@ class CmdTerrain(MuxCommand):
             self.caller.msg("Room not found.")
             return
 
-        if target.is_typeclass('typeclasses.rooms.Room'):
+        if target.is_typeclass('typeclasses.rooms.Room', False):
             try:
                 target.terrain = terrain
             except ValueError as e:
@@ -119,7 +119,7 @@ class CmdMapTile(MuxCommand):
                 maps.CELL_WIDTH
             ))
 
-        if target.is_typeclass('typeclasses.rooms.Room'):
+        if target.is_typeclass('typeclasses.rooms.Room', False):
             try:
                 target.db.map_tile = map_tile
             except ValueError as e:
