@@ -7,10 +7,6 @@
 -->
 {% load staticfiles %}
 
-{% block jquery_import %}
-  <script src="{% static 'webclient/js/jquery-2.1.1.min.js' %}" type="text/javascript" charset="utf-8"></script>
-{% endblock %}
-
 {% block guilib_import %}
     <script src={% static "webclient/js/webclient_gui.js" %} language="javascript" type="text/javascript" charset="utf-8"></script>
     <link rel='stylesheet' type="text/css" media="screen" href={% static "webclient/css/overrides.css" %}>
