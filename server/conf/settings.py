@@ -39,7 +39,7 @@ IDLE_TIMEOUT = 86400
 # may survive.
 SECRET_KEY = '5(r:%@Gmg-?}NU3d[/ul8+t.SJ$",c`|qxsDo"Z='
 
-# Allow multiple sessions per player; one character per session
+# Allow multiple sessions per account; one character per session
 MULTISESSION_MODE = 2
 MAX_NR_CHARACTERS = 5
 IRC_ENABLED = True
