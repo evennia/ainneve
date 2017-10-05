@@ -77,3 +77,10 @@ GAME_INDEX_LISTING = {
     # At minimum, specify this or the telnet_* options. Both is fine, too.
     'web_client_url': 'http://ainneve.evennia.com:8000/webclient',
 }
+######################################################################
+# Settings given in secret_settings.py override those in this file.
+######################################################################
+try:
+    from server.conf.secret_settings import *
+except ImportError:
+    print "secret_settings.py file not found or failed to import."
