@@ -24,6 +24,7 @@ __pycache__
 *.pid
 *.restart
 *.db3
+.DS_Store
 
 # Installation-specific
 #server/conf/settings.py
