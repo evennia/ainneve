@@ -276,7 +276,7 @@ class StoreRoom(Room):
             key = con.get_display_name(looker, pose=True)
             if con.destination:
                 exits.append(key)
-            elif con.has_player:
+            elif con.has_account:
                 users.append(key)
             elif con.db.value:
                 wares.append(con)
