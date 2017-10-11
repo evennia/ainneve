@@ -122,6 +122,11 @@ class CmdInitiateAttack(default_cmds.MuxCommand):
         if not target:
             return
 
+        # for combat against yourself
+        if target.id == caller.id:
+            caller.msg("Combat against yourself is not supported.")
+            return
+
         if not inherits_from(target, 'typeclasses.characters.Character'):
             caller.msg("Combat against {target} is not supported.".format(
                 target=target.get_display_name(caller)))
