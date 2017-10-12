@@ -103,7 +103,7 @@ class CmdCharCreate(MuxAccountCommand):
     character using lower-case letters if you want.
     """
     key = "@charcreate"
-    locks = "cmd:pperm(Accounts)"
+    locks = "cmd:pperm(Player)"
     help_category = "General"
 
     def func(self):
@@ -202,4 +202,3 @@ class CmdCharCreate(MuxAccountCommand):
                "world.chargen",
                startnode=startnode,
                cmd_on_exit=finish_char_callback)
-
