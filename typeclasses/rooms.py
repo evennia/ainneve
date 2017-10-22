@@ -69,7 +69,7 @@ class Room(ExtendedRoom, ContribRPRoom):
                 moved_obj.msg(self.db.errmsg_capacity)
                 moved_obj.move_to(source_location, quiet=True)
 
-    # Terrain property, sets self.db.terrain_type, taken from the constats dict
+    # Terrain property, sets self.db.terrain_type, taken from the constants dict
     @property
     def terrain(self):
         return self.db.terrain

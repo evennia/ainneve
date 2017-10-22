@@ -1,7 +1,7 @@
 """
 Characters
 
-Characters are (by default) Objects setup to be puppeted by Players.
+Characters are (by default) Objects setup to be puppeted by Accounts.
 They are what you "see" in game. The Character class in this module
 is setup to be the "default" character type created by the default
 creation commands.
@@ -20,7 +20,7 @@ class Character(ContribRPCharacter):
     """Base character typeclass for Ainneve.
 
     This base Character typeclass should only contain things that would be
-    common to NPCs, Mobs, Players, or anything else built off of it. Flags
+    common to NPCs, Mobs, Accounts, or anything else built off of it. Flags
     like "Aggro" would go further downstream.
     """
     def at_object_creation(self):
@@ -80,7 +80,7 @@ class Character(ContribRPCharacter):
 
     def at_pre_unpuppet(self):
         """Called just before beginning to un-connect a puppeting from
-        this Player."""
+        this Account."""
         if self.nattributes.has('combat_handler'):
             self.ndb.combat_handler.remove_character(self)
 
