@@ -67,8 +67,8 @@ class Map(Item):
         If the show_player argument is `True`, the room the owning player
         is currently in will have its middle character replaced with a `*`.
         '''
-        player = self.current_character.player
-        is_builder = player.locks.check_lockstring(self.current_character, 'dummy:perm(Builders)')
+        account = self.current_character.account
+        is_builder = account.locks.check_lockstring(self.current_character, 'dummy:perm(Builders)')
 
         min_x = 0
         max_x = 0
