@@ -236,7 +236,7 @@ class Race(object):
         """Returns a comma separated list of items with "or" before the last."""
         if len(items) > 2:
             output = ", ".join(["|b{}|n".format(i.name) for i in items[:-1]])
-            output += ", or {{b{}{{n".format(items[-1].name)
+            output += ", or |b{}|n".format(items[-1].name)
         else:
             output = " or ".join(["|b{}|n".format(i.name) for i in items])
         return output
