@@ -66,7 +66,7 @@ class CmdIC(default_cmds.CmdIC):
     Go in-character (IC) as a given Character.
 
     This will attempt to "become" a different object assuming you have
-    the right to do so. Note that it's the ACCOUNT character that puppets
+    the right to do so. Note that it's the ACCOUNT that puppets
     characters/objects and which needs to have the correct permission!
 
     You cannot become an object that is already controlled by another
