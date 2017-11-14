@@ -1,7 +1,7 @@
 #
 # Set up helpfiles for testing
 #
-@help/add/force Getting Started =
+@sethelp/replace Getting Started =
  |wWelcome to |mAinneve|w!|n
 
  This is a pre-alpha, live instance of the example game for Evennia. It is very much
@@ -16,7 +16,7 @@
 
 #
 #
-@help/add/force Combat =
+@sethelp/replace Combat =
 
  Combat in Ainneve is initiated with the |wattack|n command, and is turn-based.
  The duration of a combat action may be free (zero duration), half-turn, or

@@ -15,11 +15,11 @@ from world.chargen import *
 class ChargenTestCase(EvenniaTest):
     """Test case for the chargen menu process."""
     character_typeclass = Character
-    settings.PROTOTYPE_MODULES = PROTOTYPE_MODULES
 
     def setUp(self):
         super(ChargenTestCase, self).setUp()
         self.session.msg = Mock()
+        settings.PROTOTYPE_MODULES = PROTOTYPE_MODULES
 
     def test_launch_chargen(self):
         """test launching the chargen menu"""
@@ -660,5 +660,3 @@ class ChargenTestCase(EvenniaTest):
         self.session.execute_cmd('test description')
         self.session.execute_cmd('y')
         self.assertTrue(self.char1.db.chargen_complete)
-
-

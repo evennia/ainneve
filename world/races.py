@@ -168,15 +168,15 @@ def _format_bonuses(bonuses):
     traits = bonuses.keys()
     if len(bonuses) > 2:
         output = ", ".join(
-                    "{{w{:+1}{{n to {{C{}{{n".format(bonuses[t],
+                    "|w{:+1}|n to |C{}|n".format(bonuses[t],
                                                      _ARC.traits[t]['name'])
                     for t in traits[:-1])
-        output += ", and {{w{:+1}{{n to {{C{}{{n".format(
+        output += ", and |w{:+1}|n to |C{}|n".format(
                       bonuses[traits[-1]],
                       _ARC.traits[traits[-1]]['name'])
     else:
         output = " and ".join(
-                    "{{w{:+1}{{n to {{C{}{{n".format(bonuses[t],
+                    "|w{:+1}|n to |C{}|n".format(bonuses[t],
                                                      _ARC.traits[t]['name'])
                     for t in traits)
     return output
@@ -236,7 +236,7 @@ class Race(object):
         """Returns a comma separated list of items with "or" before the last."""
         if len(items) > 2:
             output = ", ".join(["|b{}|n".format(i.name) for i in items[:-1]])
-            output += ", or {{b{}{{n".format(items[-1].name)
+            output += ", or |b{}|n".format(items[-1].name)
         else:
             output = " or ".join(["|b{}|n".format(i.name) for i in items])
         return output
