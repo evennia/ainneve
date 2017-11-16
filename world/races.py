@@ -195,8 +195,8 @@ class Race(object):
             'armor': None,
         }
         self.limbs = (
-            ('r_arm', ('wield1',)),
-            ('l_arm', ('wield2',)),
+            ('right arm', ('wield1',)),
+            ('left arm', ('wield2',)),
             ('body', ('armor',)),
         )
         self.foci = []
