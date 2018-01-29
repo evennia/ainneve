@@ -84,6 +84,13 @@ class Character(ContribRPCharacter):
         if self.nattributes.has('combat_handler'):
             self.ndb.combat_handler.remove_character(self)
 
+    def process_sdesc(self, sdesc, obj, **kwargs):
+        """Called to format sdesc and recog before displaying"""
+        if obj.permissions.get('Developer'):
+            return "|r{}|n".format(sdesc)
+        else:
+            return "|G{}|n".format(sdesc)
+
 
 class NPC(Character):
     """Base character typeclass for NPCs and enemies.
