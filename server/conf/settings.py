@@ -41,22 +41,22 @@ SERVERNAME = "Ainneve"
 IRC_ENABLED = True
 IDLE_TIMEOUT = 86400
 # Telnet ports. Visible.
-TELNET_ENABLED = True
-TELNET_PORTS = [4000]
+#TELNET_ENABLED = True
+#TELNET_PORTS = [4000]
 # (proxy, internal). Only proxy should be visible.
-WEBSERVER_ENABLED = True
-WEBSERVER_PORTS = [(4001, 4002)]
+#WEBSERVER_ENABLED = True
+#WEBSERVER_PORTS = [(4001, 4002)]
 # Telnet+SSL ports, for supporting clients. Visible.
-SSL_ENABLED = False
-SSL_PORTS = [4003]
+#SSL_ENABLED = False
+#SSL_PORTS = [4003]
 # SSH client ports. Requires crypto lib. Visible.
-SSH_ENABLED = False
-SSH_PORTS = [4004]
+#SSH_ENABLED = False
+#SSH_PORTS = [4004]
 # Websocket-client port. Visible.
-WEBSOCKET_CLIENT_ENABLED = True
-WEBSOCKET_CLIENT_PORT = 4005
+#WEBSOCKET_CLIENT_ENABLED = True
+#WEBSOCKET_CLIENT_PORT = 4005
 # Internal Server-Portal port. Not visible.
-AMP_PORT = 4006
+#AMP_PORT = 4006
 
 ######################################################################
 # Django web features

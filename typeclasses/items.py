@@ -4,7 +4,7 @@ Generic Item typeclasses
 
 from typeclasses.objects import Object
 from evennia import create_object
-from evennia.utils.spawner import spawn
+from evennia.prototypes.spawner import spawn
 
 
 class Item(Object):

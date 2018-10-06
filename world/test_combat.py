@@ -498,9 +498,9 @@ class AinneveCombatAttackTestCase(AinneveCombatTest):
     """Tests for attack combat actions in Ainneve."""
     def setUp(self):
         super(AinneveCombatAttackTestCase, self).setUp()
-        settings.PROTOTYPE_MODULES = ainneve_settings.PROTOTYPE_MODULES
+        #settings.PROTOTYPE_MODULES = ainneve_settings.PROTOTYPE_MODULES
         # It's possible we don't need to do this - however since we use
-        # evennia.utils.spawner.spawn, we get an error if we don't.
+        # evennia.prototypes.spawner.spawn, we get an error if we don't.
 
     @patch('world.rulebook.std_roll', new=lambda: -3)
     def test_kick_fail(self):

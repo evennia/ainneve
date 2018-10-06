@@ -5,7 +5,7 @@ Building commands
 from .command import MuxCommand
 from evennia import utils, CmdSet
 from evennia.utils.evtable import EvTable
-from evennia.utils.spawner import spawn
+from evennia.prototypes.spawner import spawn
 from evennia.utils.utils import inherits_from
 from evennia.commands.default.building import _convert_from_string
 from world.archetypes import ALL_TRAITS
@@ -22,7 +22,7 @@ class AinneveBuildingCmdSet(CmdSet):
 
     def at_cmdset_creation(self):
         "Populates the cmdset"
-        self.add(CmdSpawn())
+        #self.add(CmdSpawn())
         self.add(CmdSetTraits())
         self.add(CmdSetSkills())
         self.add(CmdBuildShop())
@@ -130,7 +130,7 @@ class CmdSpawn(MuxCommand):
         for obj in spawn(prototype):
             if sdesc and hasattr(obj, 'sdesc'):
                 obj.sdesc.add(sdesc() if callable(sdesc) else sdesc)
-            
+
             if traits and hasattr(obj, 'traits'):
                 for trait, value in traits.iteritems():
                     trait = trait.upper()
