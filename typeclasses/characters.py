@@ -141,8 +141,8 @@ class Character(ContribRPCharacter):
         string += ".\n"
 
         health_percent = float(self.traits.HP.percent().strip('%'))
-        health_current = str(self.traits.HP.actual)
-        health_max = str(self.traits.HP.max)
+        health_current = self.traits.HP.actual
+        health_max = self.traits.HP.max
 
         if knows_health_vague or knows_health_exact:
             # traits.percent returns a string with a percent symbol
