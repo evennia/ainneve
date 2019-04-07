@@ -5,7 +5,7 @@ Prototype module containing mobs.
 from evennia.utils import fill
 from world.rulebook import d_roll
 import random
-from sdesc_vars import *
+from .sdesc_vars import *
 
 ### Notes
 #variable traits: 'traits': {'STR': lambda: d_roll('1d8')}
