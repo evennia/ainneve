@@ -413,11 +413,11 @@ def menunode_equipment_list(caller, raw_string):
                 else '')
 
     help = _CATEGORY_HELP[category]
-    prototypes = spawn(return_prototypes=True)
+    prototypes = spawn(return_parents=True)
     options = []
     for proto in _EQUIPMENT_CATEGORIES[category][1:]:
         options.append({
-            "desc": _format_menuitem_desc(prototypes[proto]),
+            "desc": _format_menuitem_desc(prototypes[proto.lower()]),
             "goto": "menunode_examine_and_buy"
         })
     options.append({
@@ -431,11 +431,11 @@ def menunode_equipment_list(caller, raw_string):
 def menunode_examine_and_buy(caller, raw_string):
     """Examine and buy an item."""
     char = caller.new_char
-    prototypes = spawn(return_prototypes=True)
+    prototypes = spawn(return_parents=True)
     items, item = _EQUIPMENT_CATEGORIES[caller.ndb._menutree.item_category][1:], None
     raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(items):
-        item = prototypes[items[int(raw_string) - 1]]
+        item = prototypes[items[int(raw_string) - 1].lower()]
     if item:
         text = _format_item_details(item)
         text += "You currently have {}. Purchase |w{}|n?".format(
@@ -449,6 +449,7 @@ def menunode_examine_and_buy(caller, raw_string):
             try:
                 # this will raise exception if caller doesn't
                 # have enough funds in their `db.wallet`
+                print(item)
                 transfer_funds(char, None, item['value'])
                 ware = spawn(item).pop()
                 ware.move_to(char, quiet=True)
@@ -600,9 +601,14 @@ def _format_menuitem_desc(item):
 
 
 def _format_item_details(item):
+    print(item)
+    # The hackiest solution in the world
+    # Todo: Evaluate replacing this method
+    value = [i for i in item['attrs'] if i[0] == 'value'][0][1]
+    weight = [i for i in item['attrs'] if i[0] == 'weight'][0][1]
     """Returns a piece of equipment's details and description."""
-    stats = [["          |CPrice|n: {}".format(as_price(item['value'])),
-              "         |CWeight|n: |w{}|n".format(item['weight'])],
+    stats = [["          |CPrice|n: {}".format(as_price(value)),
+              "         |CWeight|n: |w{}|n".format(weight)],
              []]
     col1, col2 = stats
     # this is somewhat awkward because we're using prototype dicts instead
