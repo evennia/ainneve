@@ -328,7 +328,7 @@ class TraitHandler(object):
     @property
     def all(self):
         """Return a list of all trait keys in this TraitHandler."""
-        return self.attr_dict.keys()
+        return list(self.attr_dict.keys())
 
 
 @total_ordering
