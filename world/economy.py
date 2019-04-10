@@ -27,13 +27,13 @@ def value_to_coin(value):
     """Given a base value in CC, return smallest number of coins."""
     if value:
         if isinstance(value, int):
-            gc = value / GC
+            gc = value // GC
             value %= GC
-            sc = value / SC
+            sc = value // SC
             cc = value % SC
             return dict(CC=cc, SC=sc, GC=gc)
         elif isinstance(value, (dict, _SaverDict)):
-            return {c: v for c, v in value.iteritems()
+            return {c: v for c, v in value.items()
                     if c in _WALLET_KEYS}
     return None
 

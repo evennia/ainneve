@@ -57,7 +57,7 @@ class CmdAppraise(default_cmds.MuxCommand):
         reroll_time = 3600 # how much time one has to wait before rerolling
                            # the appraise skill on the same type of item
 
-        if lose.has_key(obj.dbref):
+        if obj.dbref in lose:
             if ct - lose[obj.dbref] <= reroll_time:
                 caller.msg("You have already attempted to appraise " + 
                     obj.name +
@@ -72,7 +72,7 @@ class CmdAppraise(default_cmds.MuxCommand):
 
         win = caller.ndb.appr_win
 
-        if win.has_key(obj.dbref):
+        if obj.dbref in win:
             if ct - win[obj.dbref] <= reroll_time:
                 self.display(obj)
                 return

@@ -1,3 +1,7 @@
+############################################################
+### Ainneve's combat handler is currently non-functional ###
+### As such this test suite isn't currently used.        ###
+############################################################
 """
 Combat handler test module
 """

@@ -15,6 +15,7 @@ from world.economy import format_coin as as_price
 from world.economy import transfer_funds, InsufficientFunds
 
 from math import ceil
+from functools import reduce
 import re
 
 
@@ -59,7 +60,7 @@ _CATEGORY_HELP = {
              'equipment slot.')
 }
 
-_CATEGORY_LIST = sorted(_EQUIPMENT_CATEGORIES.iterkeys(),
+_CATEGORY_LIST = sorted(_EQUIPMENT_CATEGORIES.keys(),
                         key=lambda c: _EQUIPMENT_CATEGORIES[c][0])
 
 
@@ -152,7 +153,7 @@ def menunode_allocate_traits(caller, raw_string):
         return (text, help), options
     else:
         data = []
-        for i in xrange(3):
+        for i in range(3):
             data.append([_format_trait_opts(char.traits[t])
                          for t in archetypes.PRIMARY_TRAITS[i::3]])
         table = EvTable(header=False, table=data)
@@ -342,7 +343,7 @@ def menunode_allocate_skills(caller, raw_string):
     else:
         skills.finalize_skills(char.skills)
         data = []
-        for i in xrange(3):
+        for i in range(3):
             data.append([_format_trait_opts(sk[s], color='|M')
                          for s in skills.ALL_SKILLS[i::3]])
         table = EvTable(header=False, table=data)
@@ -413,11 +414,11 @@ def menunode_equipment_list(caller, raw_string):
                 else '')
 
     help = _CATEGORY_HELP[category]
-    prototypes = spawn(return_prototypes=True)
+    prototypes = spawn(return_parents=True)
     options = []
     for proto in _EQUIPMENT_CATEGORIES[category][1:]:
         options.append({
-            "desc": _format_menuitem_desc(prototypes[proto]),
+            "desc": _format_menuitem_desc(prototypes[proto.lower()]),
             "goto": "menunode_examine_and_buy"
         })
     options.append({
@@ -431,12 +432,13 @@ def menunode_equipment_list(caller, raw_string):
 def menunode_examine_and_buy(caller, raw_string):
     """Examine and buy an item."""
     char = caller.new_char
-    prototypes = spawn(return_prototypes=True)
+    prototypes = spawn(return_parents=True)
     items, item = _EQUIPMENT_CATEGORIES[caller.ndb._menutree.item_category][1:], None
     raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(items):
-        item = prototypes[items[int(raw_string) - 1]]
+        item = prototypes[items[int(raw_string) - 1].lower()]
     if item:
+        attrs = {attr[0]: attr[1] for attr in item['attrs']}
         text = _format_item_details(item)
         text += "You currently have {}. Purchase |w{}|n?".format(
                     as_price(char.db.wallet),
@@ -449,7 +451,7 @@ def menunode_examine_and_buy(caller, raw_string):
             try:
                 # this will raise exception if caller doesn't
                 # have enough funds in their `db.wallet`
-                transfer_funds(char, None, item['value'])
+                transfer_funds(char, None, attrs['value'])
                 ware = spawn(item).pop()
                 ware.move_to(char, quiet=True)
                 ware.at_get(char)
@@ -465,7 +467,7 @@ def menunode_examine_and_buy(caller, raw_string):
         options = ({"key": ("Yes", "ye", "y"),
                     "desc": "Purchase {} for {}".format(
                                item['key'],
-                               as_price(item['value'])
+                               as_price(attrs['value'])
                             ),
                     "exec": purchase_item,
                     "goto": "menunode_equipment_cats"},
@@ -528,7 +530,7 @@ def menunode_confirm(caller, raw_string):
         (char.db.archetype,
          char.db.race,
          char.db.focus,
-         char.db.desc) = [None for _ in xrange(4)]
+         char.db.desc) = [None for _ in range(4)]
 
         char.sdesc.add('a normal person')
         char.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}
@@ -578,6 +580,7 @@ def _format_skill_opts(skill):
 def _format_menuitem_desc(item):
     """Returns a piece of equipment formatted as a one-line menu item."""
     template = "|w{name}|n Cost: ({price}) "
+    attrs = {attr[0]: attr[1] for attr in item['attrs']}
     if item['typeclass'] in ("typeclasses.weapons.Weapon",
                              "typeclasses.weapons.TwoHandedWeapon",
                              "typeclasses.weapons.RangedWeapon",
@@ -592,17 +595,18 @@ def _format_menuitem_desc(item):
 
     return template.format(
         name=article_re.sub('', item['key']).title(),
-        price=as_price(item.get('value', {})),
+        price=as_price(attrs.get('value', {})),
         handed=2 if 'TwoHanded' in item['typeclass'] else 1,
-        damage=item.get('damage', ''),
-        toughness=item.get('toughness', '')
+        damage=attrs.get('damage', ''),
+        toughness=attrs.get('toughness', '')
     )
 
 
 def _format_item_details(item):
+    attrs = {attr[0]: attr[1] for attr in item['attrs']}
     """Returns a piece of equipment's details and description."""
-    stats = [["          |CPrice|n: {}".format(as_price(item['value'])),
-              "         |CWeight|n: |w{}|n".format(item['weight'])],
+    stats = [["          |CPrice|n: {}".format(as_price(attrs['value'])),
+              "         |CWeight|n: |w{}|n".format(attrs['weight'])],
              []]
     col1, col2 = stats
     # this is somewhat awkward because we're using prototype dicts instead
@@ -620,19 +624,19 @@ def _format_item_details(item):
                              "typeclasses.weapons.TwoHandedWeapon",
                              "typeclasses.weapons.RangedWeapon",
                              "typeclasses.weapons.TwoHandedRanged"):
-        col2.append("         |CDamage|n: |r{}|n".format(item['damage']))
+        col2.append("         |CDamage|n: |r{}|n".format(attrs['damage']))
 
     if item['typeclass'] in ("typeclasses.weapons.RangedWeapon",
                              "typeclasses.weapons.TwoHandedRanged"):
         col2.append("          |CRange|n: |G{}|n".format(
-            ", ".join([r.capitalize() for r in item['range']])))
+            ", ".join([r.capitalize() for r in attrs['range']])))
 
     if item['typeclass'] in ("typeclasses.armors.Armor",
                              "typeclasses.armors.Shield"):
-        col2.append("      |CToughness|n: |y{}|n".format(item['toughness']))
+        col2.append("      |CToughness|n: |y{}|n".format(attrs['toughness']))
 
     if 'quantity' in item:
-        col2.append("       |CQuantity|n: |w{}|n".format(item['quantity']))
+        col2.append("       |CQuantity|n: |w{}|n".format(attrs['quantity']))
 
     table = EvTable(header=False, table=stats, border=None)
 
@@ -643,6 +647,6 @@ def _format_item_details(item):
         text += "  This weapon requires ammunition: |w{ammo}|n\n"
 
     return text.format(name=item['key'].title(),
-                       desc=fill(item['desc']),
+                       desc=fill(attrs['desc']),
                        stats=table,
-                       ammo=item.get('ammunition', ''))
+                       ammo=attrs.get('ammunition', ''))

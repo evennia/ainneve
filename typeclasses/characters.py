@@ -232,7 +232,7 @@ class NPC(Character):
 
         # initialize traits
         npc = Archetype()
-        for key, kwargs in npc.traits.iteritems():
+        for key, kwargs in npc.traits.items():
             self.traits.add(key, **kwargs)
 
         apply_skills(self)

@@ -58,6 +58,8 @@ IDLE_TIMEOUT = 86400
 # Internal Server-Portal port. Not visible.
 #AMP_PORT = 4006
 
+WEBSOCKET_CLIENT_URL = "wss://ainneve.evennia.com/ws"
+
 ######################################################################
 # Django web features
 ######################################################################
@@ -82,7 +84,7 @@ PROTOTYPE_MODULES = ('world.content.prototypes_armor',
                      'world.content.prototypes_weapons'
                      )
 
-BASE_BATCHPROCESS_PATHS = ['world.content']
+BASE_BATCHPROCESS_PATHS = ['.world.content']
 
 # Evennia game index settings
 GAME_INDEX_LISTING = {

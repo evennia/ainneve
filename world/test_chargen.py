@@ -172,7 +172,7 @@ class ChargenTestCase(EvenniaTest):
         """test trait allocation node"""
         archetypes.apply_archetype(self.char1, 'scout')
         self.session.execute_cmd('@charcreate Char')
-        for i in xrange(5):
+        for i in range(5):
             self.session.execute_cmd('6')
         self.session.execute_cmd('5')
         self.session.execute_cmd('4 ')
@@ -191,7 +191,7 @@ class ChargenTestCase(EvenniaTest):
         """test trait allocation node"""
         archetypes.apply_archetype(self.char1, 'warrior')
         self.session.execute_cmd('@charcreate Char')
-        for i in xrange(5):
+        for i in range(5):
             self.session.execute_cmd('1')
         self.assertEqual(self.char1.traits.STR.actual, 10)
         # confirm error message
@@ -202,7 +202,7 @@ class ChargenTestCase(EvenniaTest):
         """test starting over after having allocated some traits"""
         archetypes.apply_archetype(self.char1, 'scout')
         self.session.execute_cmd('@charcreate Char')
-        for i in xrange(5):
+        for i in range(5):
             self.session.execute_cmd('6')
         self.session.execute_cmd('5')
         self.session.execute_cmd('4')
@@ -393,9 +393,9 @@ class ChargenTestCase(EvenniaTest):
         traits.INT.mod = traits.MAG.mod = 1
         races.apply_race(self.char1, 'elf', 'spirit')
         self.session.execute_cmd('@charcreate Char')
-        for i in xrange(4):
+        for i in range(4):
             self.session.execute_cmd(' 1')
-        for i in xrange(5):
+        for i in range(5):
             self.session.execute_cmd('2 ')
         self.assertEqual(traits.WM.base, 4)
         self.assertEqual(traits.BM.base, 5)
@@ -414,7 +414,7 @@ class ChargenTestCase(EvenniaTest):
         traits.INT.mod = traits.MAG.mod = 1
         races.apply_race(self.char1, 'elf', 'spirit')
         self.session.execute_cmd('@charcreate Char')
-        for i in xrange(9):
+        for i in range(9):
             self.session.execute_cmd('2')
         self.assertEqual(traits.WM.base, 0)
         self.assertEqual(traits.BM.base, 9)
@@ -433,7 +433,7 @@ class ChargenTestCase(EvenniaTest):
         traits.INT.mod = traits.MAG.mod = 1
         races.apply_race(self.char1, 'elf', 'spirit')
         self.session.execute_cmd('@charcreate Char')
-        for i in xrange(4):
+        for i in range(4):
             self.session.execute_cmd('1')
             self.session.execute_cmd('2')
         self.session.execute_cmd('3')

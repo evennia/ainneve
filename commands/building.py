@@ -82,10 +82,10 @@ class CmdSpawn(MuxCommand):
         def _show_prototypes(prototypes):
             "Helper to show a list of available prototypes"
             string = "\nAvailable prototypes:\n %s"
-            string %= utils.fill(", ".join(sorted(prototypes.keys())))
+            string %= utils.fill(", ".join(sorted(list(prototypes.keys()))))
             return string
 
-        prototypes = spawn(return_prototypes=True)
+        prototypes = spawn(return_parents=True)
         if not self.args:
             string = "Usage: @spawn {key:value, key, value, ... }"
             self.caller.msg(string + _show_prototypes(prototypes))
@@ -103,7 +103,7 @@ class CmdSpawn(MuxCommand):
             self.caller.msg(string)
             return
 
-        if isinstance(prototype, basestring):
+        if isinstance(prototype, str):
             # A prototype key
             keystr = prototype
             prototype = prototypes.get(prototype, None)
@@ -132,13 +132,13 @@ class CmdSpawn(MuxCommand):
                 obj.sdesc.add(sdesc() if callable(sdesc) else sdesc)
 
             if traits and hasattr(obj, 'traits'):
-                for trait, value in traits.iteritems():
+                for trait, value in traits.items():
                     trait = trait.upper()
                     if trait in obj.traits.all:
                         obj.traits[trait].base = value() if callable(value) else value
 
             if skills and hasattr(obj, 'skills'):
-                for skill, value in skills.iteritems():
+                for skill, value in skills.items():
                     skill = skill.lower()
                     if skill in obj.skills.all:
                         obj.skills[skill].base = value() if callable(value) else value
@@ -233,7 +233,7 @@ class CmdSetTraits(MuxCommand):
             if len(self.lhslist) != len(self.rhslist):
                 caller.msg('Incorrect number of assignment values.')
                 return
-            for i in xrange(len(self.lhslist)):
+            for i in range(len(self.lhslist)):
                 if self.lhslist[i].upper() in char.traits.all:
                     char.traits[self.lhslist[i].upper()].base = \
                         min(max(int(self.rhslist[i]), 0), 10)
@@ -260,9 +260,9 @@ class CmdSetTraits(MuxCommand):
         else:
             [data.append([self._format_trait_3col(char.traits[t])
                           for t in traits[i::3]])
-             for i in xrange(3)]
+             for i in range(3)]
         table = EvTable(header=False, table=data)
-        caller.msg(unicode(table))
+        caller.msg(table)
 
 
 class CmdSetSkills(MuxCommand):
@@ -343,7 +343,7 @@ class CmdSetSkills(MuxCommand):
             if len(self.lhslist) != len(self.rhslist):
                 caller.msg('Incorrect number of assignment values.')
                 return
-            for i in xrange(len(self.lhslist)):
+            for i in range(len(self.lhslist)):
                 if self.lhslist[i].lower() in char.skills.all:
                     char.skills[self.lhslist[i].lower()].base = \
                         min(max(int(self.rhslist[i]), 0), 10)  # enforce {0, 10} bounds
@@ -368,6 +368,6 @@ class CmdSetSkills(MuxCommand):
         else:
             [data.append([self._format_skill_3col(char.skills[s])
                           for s in skills[i::3]])
-             for i in xrange(3)]
+             for i in range(3)]
         table = EvTable(header=False, table=data)
-        caller.msg(unicode(table))
+        caller.msg(table)

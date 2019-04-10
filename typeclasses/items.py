@@ -79,7 +79,7 @@ class Bundle(Item):
     """Typeclass for bundles of Items."""
     def expand(self):
         """Expands a bundle into its component items."""
-        for i in xrange(self.db.quantity):
+        for i in range(self.db.quantity):
             spawn(dict(prototype=self.db.prototype_name,
                        location=self.location))
         self.delete()

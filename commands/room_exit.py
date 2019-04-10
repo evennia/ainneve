@@ -10,9 +10,9 @@ class AinneveRoomExitsCmdSet(CmdSet):
     """Command set containing ExtendedRoom commands."""
     def at_cmdset_creation(self):
         # ExtendedRoom commands
-        self.add(CmdExtendedLook())
-        self.add(CmdExtendedDesc())
-        self.add(CmdGameTime())
+        self.add(CmdExtendedRoomLook())
+        self.add(CmdExtendedRoomDesc())
+        self.add(CmdExtendedRoomGameTime())
 
         # Ainneve room builder commands
         self.add(CmdTerrain())
@@ -60,7 +60,7 @@ class CmdTerrain(MuxCommand):
             try:
                 target.terrain = terrain
             except ValueError as e:
-                self.caller.msg(e.message)
+                self.caller.msg(e)
             else:
                 self.caller.msg("Terrain type '{}' set on {}.".format(terrain,
                                                                   target.key))
