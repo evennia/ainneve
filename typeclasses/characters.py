@@ -117,10 +117,10 @@ class Character(ContribRPCharacter):
         knows_archetype = arch and (skill_check(per, 5) or looker == self)
 
         # these values may need to be tweaked - how difficult should each one be?
-        knows_health_vague = skill_check(per, 4) or looker == self
+        knows_health_vague = (skill_check(per, 4) and per > 2) or looker == self
         knows_health_exact = skill_check(med, 7) or looker == self
 
-        knows_stamina_vague = skill_check(per, 6) or looker == self
+        knows_stamina_vague = (skill_check(per, 6) and per > 3) or looker == self
         knows_stamina_exact = skill_check(med, 8) or looker == self
 
         # this is the base name format - it just colors the name cyan
