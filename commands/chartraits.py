@@ -168,7 +168,7 @@ class CmdTraits(MuxCommand):
             return
         if not table:
             data = []
-            for i in xrange(3):
+            for i in range(3):
                 data.append([self._format_trait_3col(tr[t])
                              for t in traits[i::3]])
             table = EvTable(header=False, table=data)
@@ -236,7 +236,7 @@ class CmdSkills(MuxCommand):
         else:
             title = 'Skills'
             data = []
-            for i in xrange(3):
+            for i in range(3):
                 data.append([self._format_skill_3col(sk[s])
                              for s in skills.ALL_SKILLS[i::3]])
 

@@ -5,7 +5,7 @@ Building commands
 from .command import MuxCommand
 from evennia import utils, CmdSet
 from evennia.utils.evtable import EvTable
-from evennia.utils.spawner import spawn
+from evennia.prototypes.spawner import spawn
 from evennia.utils.utils import inherits_from
 from evennia.commands.default.building import _convert_from_string
 from world.archetypes import ALL_TRAITS
@@ -233,7 +233,7 @@ class CmdSetTraits(MuxCommand):
             if len(self.lhslist) != len(self.rhslist):
                 caller.msg('Incorrect number of assignment values.')
                 return
-            for i in xrange(len(self.lhslist)):
+            for i in range(len(self.lhslist)):
                 if self.lhslist[i].upper() in char.traits.all:
                     char.traits[self.lhslist[i].upper()].base = \
                         min(max(int(self.rhslist[i]), 0), 10)
@@ -260,7 +260,7 @@ class CmdSetTraits(MuxCommand):
         else:
             [data.append([self._format_trait_3col(char.traits[t])
                           for t in traits[i::3]])
-             for i in xrange(3)]
+             for i in range(3)]
         table = EvTable(header=False, table=data)
         caller.msg(unicode(table))
 
@@ -343,7 +343,7 @@ class CmdSetSkills(MuxCommand):
             if len(self.lhslist) != len(self.rhslist):
                 caller.msg('Incorrect number of assignment values.')
                 return
-            for i in xrange(len(self.lhslist)):
+            for i in range(len(self.lhslist)):
                 if self.lhslist[i].lower() in char.skills.all:
                     char.skills[self.lhslist[i].lower()].base = \
                         min(max(int(self.rhslist[i]), 0), 10)  # enforce {0, 10} bounds
@@ -368,6 +368,6 @@ class CmdSetSkills(MuxCommand):
         else:
             [data.append([self._format_skill_3col(char.skills[s])
                           for s in skills[i::3]])
-             for i in xrange(3)]
+             for i in range(3)]
         table = EvTable(header=False, table=data)
         caller.msg(unicode(table))

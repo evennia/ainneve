@@ -156,16 +156,16 @@ def apply_race(char, race, focus):
     char.db.limbs = race.limbs
 
     # apply race-based bonuses
-    for trait, bonus in race.bonuses.iteritems():
+    for trait, bonus in race.bonuses.items():
         char.traits[trait].mod += bonus
     # apply focus-based bonuses
-    for trait, bonus in focus.bonuses.iteritems():
+    for trait, bonus in focus.bonuses.items():
         char.traits[trait].mod += bonus
 
 
 def _format_bonuses(bonuses):
     """Formats a dict of bonuses to base traits as a string."""
-    traits = bonuses.keys()
+    traits = list(bonuses.keys())
     if len(bonuses) > 2:
         output = ", ".join(
                     "|w{:+1}|n to |C{}|n".format(bonuses[t],
