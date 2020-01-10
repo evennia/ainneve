@@ -1,6 +1,7 @@
+dist: xenial
 language: python
 python:
-  - "2.7"
+  - "3.7"
 install:
   - git clone https://github.com/evennia/evennia.git
   - cd evennia
@@ -8,4 +9,4 @@ install:
   - cd $TRAVIS_BUILD_DIR
 script:
   - evennia migrate
-  - evennia --settings settings.py test $TRAVIS_BUILD_DIR
+  - evennia test $TRAVIS_BUILD_DIR
