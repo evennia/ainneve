@@ -103,7 +103,7 @@ class CmdSpawn(MuxCommand):
             self.caller.msg(string)
             return
 
-        if isinstance(prototype, basestring):
+        if isinstance(prototype, str):
             # A prototype key
             keystr = prototype
             prototype = prototypes.get(prototype, None)
