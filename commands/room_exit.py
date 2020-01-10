@@ -3,16 +3,17 @@
 
 from evennia import CmdSet
 from evennia.commands.default.muxcommand import MuxCommand
-from evennia.contrib.extended_room import *
-
+from evennia.contrib.extended_room import CmdExtendedRoomLook
+from evennia.contrib.extended_room import CmdExtendedRoomDesc
+from evennia.contrib.extended_room import CmdExtendedRoomGameTime
 
 class AinneveRoomExitsCmdSet(CmdSet):
     """Command set containing ExtendedRoom commands."""
     def at_cmdset_creation(self):
         # ExtendedRoom commands
-        self.add(CmdExtendedLook())
-        self.add(CmdExtendedDesc())
-        self.add(CmdGameTime())
+        self.add(CmdExtendedRoomLook())
+        self.add(CmdExtendedRoomDesc())
+        self.add(CmdExtendedRoomGameTime())
 
         # Ainneve room builder commands
         self.add(CmdTerrain())
