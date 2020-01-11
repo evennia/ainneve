@@ -64,6 +64,7 @@ Example usage:
     True
 """
 from typeclasses.items import Equippable
+from functools import reduce
 
 
 class EquipException(Exception):

@@ -73,7 +73,7 @@ class CmdSheet(MuxCommand):
             'Y': self.caller.db.race,
             'Z': self.caller.db.focus,
         }
-        form.map({k: self._format_trait_val(v) for k, v in fields.iteritems()})
+        form.map({k: self._format_trait_val(v) for k, v in fields.items()})
 
         gauges = EvTable(
             "|CHP|n", "|CSP|n", "|CBM|n", "|CWM|n",
@@ -174,7 +174,7 @@ class CmdTraits(MuxCommand):
             table = EvTable(header=False, table=data)
 
         self.caller.msg("  |Y{}|n".format(title))
-        self.caller.msg(unicode(table))
+        self.caller.msg(table)
 
     def _format_trait_3col(self, trait):
         """Return a trait : value pair formatted for 3col layout"""
