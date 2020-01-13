@@ -301,7 +301,7 @@ class Archetype(object):
                  "|w{health_roll}|C HP|n.\n")
 
         data = []
-        for i in range(3):
+        for i in list(range(3)):
             data.append([self._format_trait_3col(self.traits[t])
                          for t in PRIMARY_TRAITS[i::3]])
         traits = EvTable(header=False, table=data)

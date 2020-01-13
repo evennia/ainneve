@@ -159,7 +159,7 @@ class CmdSetTraits(MuxCommand):
             if len(self.lhslist) != len(self.rhslist):
                 caller.msg('Incorrect number of assignment values.')
                 return
-            for i in range(len(self.lhslist)):
+            for i in list(range(len(self.lhslist))):
                 if self.lhslist[i].upper() in char.traits.all:
                     char.traits[self.lhslist[i].upper()].base = \
                         min(max(int(self.rhslist[i]), 0), 10)
@@ -186,9 +186,9 @@ class CmdSetTraits(MuxCommand):
         else:
             [data.append([self._format_trait_3col(char.traits[t])
                           for t in traits[i::3]])
-             for i in range(3)]
+             for i in list(range(3))]
         table = EvTable(header=False, table=data)
-        caller.msg(unicode(table))
+        caller.msg(table)
 
 
 class CmdSetSkills(MuxCommand):
@@ -269,7 +269,7 @@ class CmdSetSkills(MuxCommand):
             if len(self.lhslist) != len(self.rhslist):
                 caller.msg('Incorrect number of assignment values.')
                 return
-            for i in range(len(self.lhslist)):
+            for i in list(range(len(self.lhslist))):
                 if self.lhslist[i].lower() in char.skills.all:
                     char.skills[self.lhslist[i].lower()].base = \
                         min(max(int(self.rhslist[i]), 0), 10)  # enforce {0, 10} bounds
@@ -294,6 +294,6 @@ class CmdSetSkills(MuxCommand):
         else:
             [data.append([self._format_skill_3col(char.skills[s])
                           for s in skills[i::3]])
-             for i in range(3)]
+             for i in list(range(3))]
         table = EvTable(header=False, table=data)
-        caller.msg(unicode(table))
+        caller.msg(table)
