@@ -4,7 +4,7 @@ Generic Item typeclasses
 
 from typeclasses.objects import Object
 from evennia import create_object
-from evennia.utils.spawner import spawn
+from evennia.prototypes.spawner import spawn
 
 
 class Item(Object):
@@ -79,9 +79,9 @@ class Bundle(Item):
     """Typeclass for bundles of Items."""
     def expand(self):
         """Expands a bundle into its component items."""
-        for i in xrange(self.db.quantity):
-            spawn(dict(prototype=self.db.prototype_name,
-                       location=self.location))
+        for i in list(range(self.db.quantity)):
+            p = self.db.prototype_name
+            spawn(dict(prototype=p, location=self.location))
         self.delete()
 
 

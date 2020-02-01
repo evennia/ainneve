@@ -6,7 +6,7 @@ import re
 from django.conf import settings
 from mock import Mock
 from evennia.utils.test_resources import EvenniaTest
-from evennia.utils.spawner import spawn
+from evennia.prototypes.spawner import spawn
 from evennia.utils import ansi, create
 from server.conf import settings as ainneve_settings
 from typeclasses.characters import Character, NPC

@@ -34,7 +34,7 @@ def in_combat(accessing_obj, accessed_obj, *args, **kwargs):
 def in_range(accessing_obj, accessed_obj, *args, **kwargs):
     """returns true if accessing_obj has any targets in specified range"""
     range = args[0] if args else 0
-    if isinstance(range, basestring):
+    if isinstance(range, str):
         range = COMBAT_DISTANCES.indexof(range)
     if range < 0:
         return False

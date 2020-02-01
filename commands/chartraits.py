@@ -73,7 +73,7 @@ class CmdSheet(MuxCommand):
             'Y': self.caller.db.race,
             'Z': self.caller.db.focus,
         }
-        form.map({k: self._format_trait_val(v) for k, v in fields.iteritems()})
+        form.map({k: self._format_trait_val(v) for k, v in fields.items()})
 
         gauges = EvTable(
             "|CHP|n", "|CSP|n", "|CBM|n", "|CWM|n",
@@ -95,7 +95,7 @@ class CmdSheet(MuxCommand):
 
         form.map(tables={1: gauges, 2: desc})
 
-        self.caller.msg(unicode(form))
+        self.caller.msg(form)
 
         if any(sw.startswith('sk') for sw in self.switches):
             self.caller.execute_cmd('skills')
@@ -168,13 +168,13 @@ class CmdTraits(MuxCommand):
             return
         if not table:
             data = []
-            for i in xrange(3):
+            for i in list(range(3)):
                 data.append([self._format_trait_3col(tr[t])
                              for t in traits[i::3]])
             table = EvTable(header=False, table=data)
 
         self.caller.msg("  |Y{}|n".format(title))
-        self.caller.msg(unicode(table))
+        self.caller.msg(table)
 
     def _format_trait_3col(self, trait):
         """Return a trait : value pair formatted for 3col layout"""
@@ -236,14 +236,14 @@ class CmdSkills(MuxCommand):
         else:
             title = 'Skills'
             data = []
-            for i in xrange(3):
+            for i in list(range(3)):
                 data.append([self._format_skill_3col(sk[s])
                              for s in skills.ALL_SKILLS[i::3]])
 
             table = EvTable(header=False, table=data)
 
         self.caller.msg("  |Y{}|n".format(title))
-        self.caller.msg(unicode(table))
+        self.caller.msg(table)
 
     def _format_skill_3col(self, skill):
         """Return a trait : value pair formatted for 3col layout"""

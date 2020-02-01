@@ -59,8 +59,7 @@ _CATEGORY_HELP = {
              'equipment slot.')
 }
 
-_CATEGORY_LIST = sorted(_EQUIPMENT_CATEGORIES.iterkeys(),
-                        key=lambda c: _EQUIPMENT_CATEGORIES[c][0])
+_CATEGORY_LIST = sorted(list(_EQUIPMENT_CATEGORIES.keys()), key=lambda c: _EQUIPMENT_CATEGORIES[c][0])
 
 
 article_re = re.compile(r'^an?\s', re.IGNORECASE)
@@ -152,7 +151,7 @@ def menunode_allocate_traits(caller, raw_string):
         return (text, help), options
     else:
         data = []
-        for i in xrange(3):
+        for i in list(range(3)):
             data.append([_format_trait_opts(char.traits[t])
                          for t in archetypes.PRIMARY_TRAITS[i::3]])
         table = EvTable(header=False, table=data)
@@ -342,7 +341,7 @@ def menunode_allocate_skills(caller, raw_string):
     else:
         skills.finalize_skills(char.skills)
         data = []
-        for i in xrange(3):
+        for i in list(range(3)):
             data.append([_format_trait_opts(sk[s], color='|M')
                          for s in skills.ALL_SKILLS[i::3]])
         table = EvTable(header=False, table=data)
@@ -529,7 +528,7 @@ def menunode_confirm(caller, raw_string):
         (char.db.archetype,
          char.db.race,
          char.db.focus,
-         char.db.desc) = [None for _ in xrange(4)]
+         char.db.desc) = [None for _ in list(range(4))]
 
         char.sdesc.add('a normal person')
         char.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}

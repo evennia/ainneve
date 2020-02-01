@@ -100,7 +100,7 @@ def apply_archetype(char, name, reset=False):
     char.db.archetype = archetype.name
     if reset:
         char.traits.clear()
-    for key, kwargs in archetype.traits.iteritems():
+    for key, kwargs in archetype.traits.items():
         char.traits.add(key, **kwargs)
 
 
@@ -225,7 +225,7 @@ def _make_dual(a, b):
         frozenset(['Scout', 'Arcanist']): 'Arcanist-Scout'
     }
     dual = Archetype()
-    for key, trait in dual.traits.iteritems():
+    for key, trait in dual.traits.items():
         trait['base'] = (a.traits.get(key, trait)['base'] +
                          b.traits.get(key, trait)['base']) // 2
         trait['mod'] = (a.traits.get(key, trait)['mod'] +
@@ -301,7 +301,7 @@ class Archetype(object):
                  "|w{health_roll}|C HP|n.\n")
 
         data = []
-        for i in xrange(3):
+        for i in list(range(3)):
             data.append([self._format_trait_3col(self.traits[t])
                          for t in PRIMARY_TRAITS[i::3]])
         traits = EvTable(header=False, table=data)
