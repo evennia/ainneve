@@ -5,18 +5,18 @@ The menu node functions defined in this module make up
 the Ainneve character creation process, which is based
 on a subset of Open Adventure rules.
 """
+import re
+from math import ceil
+
 from evennia import spawn, TICKER_HANDLER as tickerhandler
 from evennia.utils import fill, dedent
 from evennia.utils.evtable import EvTable
 
+from utils.prototypeutils import convert_prototypes
 from world import archetypes, races, skills
-from world.rulebook import d_roll
 from world.economy import format_coin as as_price
 from world.economy import transfer_funds, InsufficientFunds
-
-from math import ceil
-import re
-
+from world.rulebook import d_roll
 
 # Organize starter equipment prototypes by category
 _EQUIPMENT_CATEGORIES = {
@@ -431,15 +431,18 @@ def menunode_examine_and_buy(caller, raw_string):
     """Examine and buy an item."""
     char = caller.new_char
     prototypes = spawn(return_parents=True)
+    prototypes = convert_prototypes(prototypes)
+
     items, item = _EQUIPMENT_CATEGORIES[caller.ndb._menutree.item_category][1:], None
     raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(items):
         item = prototypes[items[int(raw_string) - 1].lower()]
+
     if item:
         text = _format_item_details(item)
         text += "You currently have {}. Purchase |w{}|n?".format(
                     as_price(char.db.wallet),
-                    item['key']
+                    item.key
                 )
         help = "Choose carefully. Purchases are final."
 
@@ -449,8 +452,8 @@ def menunode_examine_and_buy(caller, raw_string):
                 # this will raise exception if caller doesn't
                 # have enough funds in their `db.wallet`
                 print(item)
-                transfer_funds(char, None, item['value'])
-                ware = spawn(item).pop()
+                transfer_funds(char, None, item.value)
+                ware = item.spawn()
                 ware.move_to(char, quiet=True)
                 ware.at_get(char)
                 rtext = "You pay {} and purchase {}".format(
@@ -458,15 +461,11 @@ def menunode_examine_and_buy(caller, raw_string):
                             ware.key
                          )
             except InsufficientFunds:
-                rtext = "You do not have enough money to buy {}.".format(
-                            item['key'])
+                rtext = f"You do not have enough money to buy {item.key}."
             session.msg(rtext)
 
         options = ({"key": ("Yes", "ye", "y"),
-                    "desc": "Purchase {} for {}".format(
-                               item['key'],
-                               as_price(item['value'])
-                            ),
+                    "desc": f"Purchase {item.key} for {item.value}",
                     "exec": purchase_item,
                     "goto": "menunode_equipment_cats"},
                    {"key": ("No", "n", "_default"),
@@ -600,54 +599,49 @@ def _format_menuitem_desc(item):
 
 
 def _format_item_details(item):
-    print(item)
-    # The hackiest solution in the world
-    # Todo: Evaluate replacing this method
-    value = [i for i in item['attrs'] if i[0] == 'value'][0][1]
-    weight = [i for i in item['attrs'] if i[0] == 'weight'][0][1]
     """Returns a piece of equipment's details and description."""
-    stats = [["          |CPrice|n: {}".format(as_price(value)),
-              "         |CWeight|n: |w{}|n".format(weight)],
+
+    stats = [["          |CPrice|n: {}".format(as_price(item.value)),
+              "         |CWeight|n: |w{}|n".format(item.weight)],
              []]
     col1, col2 = stats
+
     # this is somewhat awkward because we're using prototype dicts instead
     # of instances of these classes.
-    if item['typeclass'] in ("typeclasses.weapons.Weapon",
+    if item.typeclass in ("typeclasses.weapons.Weapon",
                              "typeclasses.weapons.TwoHandedWeapon",
                              "typeclasses.weapons.RangedWeapon",
                              "typeclasses.weapons.TwoHandedRanged",
                              "typeclasses.armors.Shield"):
         col2.append("     |CHandedness|n: |c{}H|n".format(
-            2 if 'TwoHanded' in item['typeclass'] else 1
+            2 if 'TwoHanded' in item.typeclass else 1
         ))
 
-    if item['typeclass'] in ("typeclasses.weapons.Weapon",
+    if item.typeclass in ("typeclasses.weapons.Weapon",
                              "typeclasses.weapons.TwoHandedWeapon",
                              "typeclasses.weapons.RangedWeapon",
                              "typeclasses.weapons.TwoHandedRanged"):
-        col2.append("         |CDamage|n: |r{}|n".format(item['damage']))
+        col2.append("         |CDamage|n: |r{}|n".format(item.damage))
 
-    if item['typeclass'] in ("typeclasses.weapons.RangedWeapon",
+    if item.typeclass in ("typeclasses.weapons.RangedWeapon",
                              "typeclasses.weapons.TwoHandedRanged"):
         col2.append("          |CRange|n: |G{}|n".format(
-            ", ".join([r.capitalize() for r in item['range']])))
+            ", ".join([r.capitalize() for r in item.range])))
 
-    if item['typeclass'] in ("typeclasses.armors.Armor",
+    if item.typeclass in ("typeclasses.armors.Armor",
                              "typeclasses.armors.Shield"):
-        col2.append("      |CToughness|n: |y{}|n".format(item['toughness']))
+        col2.append("      |CToughness|n: |y{}|n".format(item.toughness))
 
-    if 'quantity' in item:
-        col2.append("       |CQuantity|n: |w{}|n".format(item['quantity']))
+    if item.has_attribute('quantity'):
+        col2.append("       |CQuantity|n: |w{}|n".format(item.quantity))
 
-    table = EvTable(header=False, table=stats, border=None)
+    stats_table = EvTable(header=False, table=stats, border=None)
 
-    text = "|Y{name}|n\n"
-    text += "{desc}\n"
-    text += "{stats}\n"
-    if 'ammunition' in item:
-        text += "  This weapon requires ammunition: |w{ammo}|n\n"
+    text = f"|Y{item.key.title()}|n\n" \
+           f"{fill(item.desc)}\n" \
+           f"{stats_table}\n"
 
-    return text.format(name=item['key'].title(),
-                       desc=fill(item['desc']),
-                       stats=table,
-                       ammo=item.get('ammunition', ''))
+    if item.has_attribute('ammunition'):
+        text += f"  This weapon requires ammunition: |w{item.ammunition}|n\n"
+
+    return text
