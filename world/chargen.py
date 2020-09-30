@@ -12,7 +12,7 @@ from evennia import spawn, TICKER_HANDLER as tickerhandler
 from evennia.utils import fill, dedent
 from evennia.utils.evtable import EvTable
 
-from utils.prototypeutils import convert_prototypes
+from utils import prototypeutils
 from world import archetypes, races, skills
 from world.economy import format_coin as as_price
 from world.economy import transfer_funds, InsufficientFunds
@@ -412,7 +412,7 @@ def menunode_equipment_list(caller, raw_string):
                 else '')
 
     help = _CATEGORY_HELP[category]
-    prototypes = spawn(return_parents=True)
+    prototypes = prototypeutils.get_prototypes()
     options = []
     for proto in _EQUIPMENT_CATEGORIES[category][1:]:
         options.append({
@@ -430,8 +430,7 @@ def menunode_equipment_list(caller, raw_string):
 def menunode_examine_and_buy(caller, raw_string):
     """Examine and buy an item."""
     char = caller.new_char
-    prototypes = spawn(return_parents=True)
-    prototypes = convert_prototypes(prototypes)
+    prototypes = prototypeutils.get_prototypes()
 
     items, item = _EQUIPMENT_CATEGORIES[caller.ndb._menutree.item_category][1:], None
     raw_string = raw_string.strip()
@@ -576,26 +575,37 @@ def _format_skill_opts(skill):
 
 def _format_menuitem_desc(item):
     """Returns a piece of equipment formatted as a one-line menu item."""
-    template = "|w{name}|n Cost: ({price}) "
-    if item['typeclass'] in ("typeclasses.weapons.Weapon",
-                             "typeclasses.weapons.TwoHandedWeapon",
-                             "typeclasses.weapons.RangedWeapon",
-                             "typeclasses.weapons.TwoHandedRanged"):
-        template += "|c{handed}H|n [|rDmg: {damage}|n]"
+    name_title = article_re.sub('', item.key).title()
+    cost = as_price(item.get_attribute('value', 0))
 
-    elif item['typeclass'] in ("typeclasses.armors.Shield",):
-        template += "|c{handed}H|n [|yDef: {toughness}|n]"
+    weapon_typeclasses = {
+        "typeclasses.weapons.Weapon",
+        "typeclasses.weapons.TwoHandedWeapon",
+        "typeclasses.weapons.RangedWeapon",
+        "typeclasses.weapons.TwoHandedRanged",
+    }
+    shield_typeclasses = {
+        "typeclasses.armors.Shield"
+    }
+    armor_typeclasses= {
+        "typeclasses.armors.Armor"
+    }
 
-    elif item['typeclass'] in ("typeclasses.armors.Armor",):
-        template += "[|yDef: {toughness}|n]"
+    type_class_info = ''
+    if item.typeclass in weapon_typeclasses:
+        handed_str = 2 if 'TwoHanded' in item.typeclass else 1
+        type_class_info = f"|c{handed_str}H|n [|rDmg: {item.damage}|n]"
 
-    return template.format(
-        name=article_re.sub('', item['key']).title(),
-        price=as_price(item.get('value', {})),
-        handed=2 if 'TwoHanded' in item['typeclass'] else 1,
-        damage=item.get('damage', ''),
-        toughness=item.get('toughness', '')
-    )
+    elif item.typeclass in shield_typeclasses:
+        handed_str = 2 if 'TwoHanded' in item.typeclass else 1
+        toughness = item.get_attribute('toughness', 0)
+        type_class_info = f"|c{handed_str}H|n [|yDef: {toughness}]"
+
+    elif item.typeclass in armor_typeclasses:
+        toughness = item.get_attribute('toughness', 0)
+        type_class_info = f"[|yDef: {toughness}|n]"
+
+    return f"|w{name_title}|n Cost: ({cost}) {type_class_info}"
 
 
 def _format_item_details(item):
