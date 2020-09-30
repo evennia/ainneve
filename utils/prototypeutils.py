@@ -42,8 +42,11 @@ class PrototypeDataClass:
             return True
         return False
 
-    def get_attribute(self, key):
-        return self.attributes.get(key)
+    def get_attribute(self, key, default=None):
+        attribute = self.attributes.get(key, _NOT_FOUND)
+        if attribute is _NOT_FOUND:
+            return default
+        return attribute.value
 
     def spawn(self):
         return spawn(self.prototype_key).pop()
@@ -68,3 +71,13 @@ def convert_prototypes(prototypes):
         result[new_instance.prototype_key] = new_instance
 
     return result
+
+
+def get_prototypes():
+    """
+    Convenience function to retrieve prototypes and convert them to dataclasses.
+    """
+    raw_prototypes = spawn(return_parents=True)
+    prototypes = convert_prototypes(raw_prototypes)
+
+    return prototypes
