@@ -644,9 +644,9 @@ def _format_item_details(item, item_attributes):
         col2.append(f"         |CDamage|n: |r{damage}|n")
 
     if item_typeclass in _RANGED_TYPECLASSES:
-        range = item_attributes.get('range', [])
-        range_str = ", ".join([r.capitalize() for r in range])
-        col2.append(f"          |CRange|n: |G{range_str}|n")
+        item_range = item_attributes.get('range', [])
+        item_range_str = ", ".join([r.capitalize() for r in item_range])
+        col2.append(f"          |CRange|n: |G{item_range_str}|n")
 
     if item_typeclass in _ARMOR_TYPECLASSES | _SHIELD_TYPECLASSES:
         toughness = item_attributes.get('toughness', 0)
