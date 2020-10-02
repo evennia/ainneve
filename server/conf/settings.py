@@ -64,13 +64,6 @@ WEBSOCKET_CLIENT_URL = "wss://ainneve.evennia.com/ws"
 # Django web features
 ######################################################################
 
-
-# The secret key is randomly seeded upon creation. It is used to sign
-# Django's cookies. Do not share this with anyone. Changing it will
-# log out all active web browsing sessions. Game web client sessions
-# may survive.
-SECRET_KEY = '5(r:%@Gmg-?}NU3d[/ul8+t.SJ$",c`|qxsDo"Z='
-
 # Allow multiple sessions per account; one character per session
 MULTISESSION_MODE = 2
 MAX_NR_CHARACTERS = 5
