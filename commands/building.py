@@ -2,16 +2,15 @@
 Building commands
 """
 
-from .command import MuxCommand
-from evennia import utils, CmdSet
-from evennia.utils.evtable import EvTable
-from evennia.prototypes.spawner import spawn
-from evennia.utils.utils import inherits_from
+from evennia import CmdSet
 from evennia.commands.default.building import CmdSpawn as DefaultCmdSpawn
-from evennia.commands.default.building import _convert_from_string
+from evennia.utils.evtable import EvTable
+from evennia.utils.utils import inherits_from
+
+from commands.command import MuxCommand
+from typeclasses.npcshop.npcshop import CmdBuildShop
 from world.archetypes import ALL_TRAITS
 from world.skills import ALL_SKILLS
-from typeclasses.npcshop.npcshop import CmdBuildShop
 
 
 class AinneveBuildingCmdSet(CmdSet):

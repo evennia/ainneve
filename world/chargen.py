@@ -5,6 +5,7 @@ The menu node functions defined in this module make up
 the Ainneve character creation process, which is based
 on a subset of Open Adventure rules.
 """
+
 import re
 from math import ceil
 
@@ -17,10 +18,6 @@ from world import archetypes, races, skills
 from world.economy import format_coin as as_price
 from world.economy import transfer_funds, InsufficientFunds
 from world.rulebook import d_roll
-
-from math import ceil
-from functools import reduce
-import re
 
 
 # Organize starter equipment prototypes by category

@@ -4,8 +4,6 @@ Prototype module containing mobs.
 
 import random
 
-from evennia.utils import fill
-
 from world.content.sdesc_vars import *
 from world.rulebook import d_roll
 
