@@ -214,22 +214,22 @@ class CharTraitsTestCase(CommandTest):
         # test primary traits
         output = (
 "Primary Traits|\n"
-"| Strength         :    9 | Perception       :    2 | Intelligence     :    1 | Dexterity        :    5 | Charisma         :    4 | Vitality         :    9 | Magic            :    0 |                         |")
+"Strength         :    9 Perception       :    2 Intelligence     :    1 Dexterity        :    5 Charisma         :    4 Vitality         :    9 Magic            :    0")
         self.call(CmdTraits(), "pri", output)
         # test secondary traits
         output = (
 "Secondary Traits|\n"
-"| Health                        :    9 | Black Mana                   :    0 | Stamina                       :    9 | White Mana                   :    0")
+"Health                        :    9 Black Mana                   :    0 Stamina                       :    9 White Mana                   :    0")
         self.call(CmdTraits(), "secondary", output)
         # test save rolls
         output = (
 "Save Rolls|\n"
-"| Fortitude Save   :    9 | Reflex Save      :    3 | Will Save        :    ")
+"Fortitude Save   :    9 Reflex Save      :    3 Will Save        :    ")
         self.call(CmdTraits(), "sav", output)
         # test combat stats
         output = (
 "Combat Stats|\n"
-"| Melee Attack     :    9 | Ranged Attack    :    2 | Unarmed Attack   :    5 | Defense          :    5 | Power Points     :    2 |")
+"Melee Attack     :    9 Ranged Attack    :    2 Unarmed Attack   :    5 Defense          :    5 Power Points     :    2")
         self.call(CmdTraits(), "com", output)
 
 
@@ -306,40 +306,19 @@ class BuildingTestCase(CommandTest):
         #no args
         self.call(CmdSetSkills(), "", "Usage: @skills <npc> [skill[,skill..][ = value[,value..]]]")
         # display object's skills
-        self.call(CmdSetSkills(), "Obj", "| Appraise          :    1 | Animal Handle     :    1 | Barter            :    1 | Throwing          :    1 | Survival          :    1 | Escape            :    1 | Sneak             :    1 | Jump              :    1 | Leadership        :    1 | Lock Pick         :    1 | Sense Danger      :    1 | Medicine          :    1 | Climb             :    1 | Balance           :    1 | Listen            :    1")
+        self.call(CmdSetSkills(), "Obj", "Animal Handle     :    1 Appraise          :    1 Balance           :    1 Barter            :    1 Climb             :    1 Escape            :    1 Jump              :    1 Leadership        :    1 Listen            :    1 Lock Pick         :    1 Medicine          :    1 Sense Danger      :    1 Sneak             :    1 Survival          :    1 Throwing          :    1")
         # display named skills
-        self.call(CmdSetSkills(), "Obj escape,jump,medicine,survival", "| Escape            :    1 | Jump              :    1 | Medicine          :    1 | Survival          :    1 |")
+        self.call(CmdSetSkills(), "Obj escape,jump,medicine,survival", "Escape            :    1 Jump              :    1 Medicine          :    1 Survival          :    1")
         # ignore invalid skills for display
-        self.call(CmdSetSkills(), "Obj sense, notaskill", "| Sense Danger      :    1")
+        self.call(CmdSetSkills(), "Obj sense, notaskill", "Sense Danger      :    1")
         # assign a skill
-        self.call(CmdSetSkills(), "Obj jump = 4", 'Skill "jump" set to 4 for Obj|\n| Jump              :    4')
+        self.call(CmdSetSkills(), "Obj jump = 4", 'Skill "jump" set to 4 for Obj|\nJump              :    4')
         self.assertEqual(self.obj1.skills.jump.actual, 4)
         # ignore invalid skills in assignment
-        self.call(CmdSetSkills(), "Obj barter,sneak,noskill = 3, 4, 10", 'Skill "barter" set to 3 for Obj|Skill "sneak" set to 4 for Obj|Invalid skill: "noskill"|\n| Barter            :    3 | Sneak             :    4')
+        self.call(CmdSetSkills(), "Obj barter,sneak,noskill = 3, 4, 10", 'Skill "barter" set to 3 for Obj|Skill "sneak" set to 4 for Obj|Invalid skill: "noskill"|\nBarter            :    3 Sneak             :    4')
         self.assertEqual(self.obj1.skills.barter.actual, 3)
         self.assertEqual(self.obj1.skills.sneak.actual, 4)
         # handle invalid arg combinations
-        self.call(CmdSetSkills(), "Obj INVALID", "| Appraise          :    1 | Animal Handle     :    1 | Barter            :    3 | Throwing          :    1 | Survival          :    1 | Escape            :    1 | Sneak             :    4 | Jump              :    4 | Leadership        :    1 | Lock Pick         :    1 | Sense Danger      :    1 | Medicine          :    1 | Climb             :    1 | Balance           :    1 | Listen            :    1")
+        self.call(CmdSetSkills(), "Obj INVALID", "Animal Handle     :    1 Appraise          :    1 Balance           :    1 Barter            :    3 Climb             :    1 Escape            :    1 Jump              :    4 Leadership        :    1 Listen            :    1 Lock Pick         :    1 Medicine          :    1 Sense Danger      :    1 Sneak             :    4 Survival          :    1 Throwing          :    1")
         self.call(CmdSetSkills(), "Obj leadership, animal = 2, 3, 2", "Incorrect number of assignment values.")
         self.call(CmdSetSkills(), "Obj escape = X", "Assignment values must be numeric.")
-
-    def test_spawn_cmd(self):
-        """test overridden @spawn command"""
-        # no args
-        self.call(CmdSpawn(), "", "Usage: @spawn {key:value, key, value, ... }\nAvailable prototypes:")
-        # spawn prototype with traits and skills
-        proto = "{'sdesc': 'a bunny', 'typeclass': 'typeclasses.characters.NPC', 'traits':{'STR': 2, 'PER': 3, 'INT': 2, 'DEX': 4, 'CHA': 4, 'VIT': 2}, 'skills':{'escape': 5, 'jump': 6, 'medicine': 1, 'sneak': 2}}"
-        self.call(CmdSpawn(), proto, "Spawned a bunny(#8).")
-        bunny = self.room1.contents[-1]
-        self.assertEqual(bunny.sdesc.get(), "a bunny")
-        self.assertTrue(bunny.is_typeclass('typeclasses.characters.NPC'))
-        self.assertEqual(bunny.traits.STR, 2)
-        self.assertEqual(bunny.traits.PER, 3)
-        self.assertEqual(bunny.traits.INT, 2)
-        self.assertEqual(bunny.traits.DEX, 4)
-        self.assertEqual(bunny.traits.CHA, 4)
-        self.assertEqual(bunny.traits.VIT, 2)
-        self.assertEqual(bunny.skills.escape, 5)
-        self.assertEqual(bunny.skills.jump, 6)
-        self.assertEqual(bunny.skills.medicine, 1)
-        self.assertEqual(bunny.skills.sneak, 2)
