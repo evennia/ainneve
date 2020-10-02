@@ -475,7 +475,6 @@ def menunode_examine_and_buy(caller, raw_string):
             try:
                 # this will raise exception if caller doesn't
                 # have enough funds in their `db.wallet`
-                transfer_funds(char, None, item['value'])
                 transfer_funds(char, None, item_value)
                 ware = spawn(item).pop()
                 ware.move_to(char, quiet=True)
