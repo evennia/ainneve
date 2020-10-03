@@ -28,6 +28,7 @@ __pycache__
 
 # Installation-specific
 #server/conf/settings.py
+server/conf/secret_settings.py
 server/logs/*.log.*
 web/static/*
 web/media/*

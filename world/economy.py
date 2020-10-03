@@ -33,8 +33,7 @@ def value_to_coin(value):
             cc = value % SC
             return dict(CC=cc, SC=sc, GC=gc)
         elif isinstance(value, (dict, _SaverDict)):
-            return {c: v for c, v in value.items()
-                    if c in _WALLET_KEYS}
+            return {c: v for c, v in value.items() if c in _WALLET_KEYS}
     return None
 
 def coin_to_value(coins):

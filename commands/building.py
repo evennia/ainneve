@@ -2,15 +2,15 @@
 Building commands
 """
 
-from .command import MuxCommand
-from evennia import utils, CmdSet
+from evennia import CmdSet
+from evennia.commands.default.building import CmdSpawn as DefaultCmdSpawn
 from evennia.utils.evtable import EvTable
-from evennia.prototypes.spawner import spawn
 from evennia.utils.utils import inherits_from
-from evennia.commands.default.building import _convert_from_string
+
+from commands.command import MuxCommand
+from typeclasses.npcshop.npcshop import CmdBuildShop
 from world.archetypes import ALL_TRAITS
 from world.skills import ALL_SKILLS
-from typeclasses.npcshop.npcshop import CmdBuildShop
 
 
 class AinneveBuildingCmdSet(CmdSet):
@@ -33,50 +33,9 @@ class AinneveBuildingCmdSet(CmdSet):
 # Reload the server and the prototypes should be available.
 #
 
-class CmdSpawn(MuxCommand):
-    """
-    spawn objects from prototype
-
-    Usage:
-      @spawn
-      @spawn[/switch] prototype_name
-      @spawn[/switch] {prototype dictionary}
-
-    Switch:
-      noloc - allow location to be None if not specified explicitly. Otherwise,
-              location will default to caller's current location.
-
-    Example:
-      @spawn GOBLIN
-      @spawn {"key":"goblin", "typeclass":"monster.Monster", "location":"#2"}
-
-    Dictionary keys:
-      |wprototype  |n - name of parent prototype to use. Can be a list for
-                        multiple inheritance (inherits left to right)
-      |wkey        |n - string, the main object identifier
-      |wtypeclass  |n - string, if not set, will use settings.BASE_OBJECT_TYPECLASS
-      |wlocation   |n - this should be a valid object or #dbref
-      |whome       |n - valid object or #dbref
-      |wdestination|n - only valid for exits (object or dbref)
-      |wpermissions|n - string or list of permission strings
-      |wlocks      |n - a lock-string
-      |waliases    |n - string or list of strings
-      |wtraits     |n - dict of trait:value pairs to set on NPCs
-      |wskills     |n - dict of skill:value pairs to set on NPCs
-      |wndb_|n<name>  - value of a nattribute (ndb_ is stripped)
-      any other keywords are interpreted as Attributes and their values.
-
-    The available prototypes are defined globally in modules set in
-    settings.PROTOTYPE_MODULES. If @spawn is used without arguments it
-    displays a list of available prototypes.
-    """
-
-    key = "@spawn"
-    aliases = ["spawn"]
-    locks = "cmd:perm(spawn) or perm(Builders)"
-    help_category = "Building"
-
+class CmdSpawn(DefaultCmdSpawn):
     def func(self):
+        """
         "Implements the spawner"
 
         def _show_prototypes(prototypes):
@@ -123,6 +82,13 @@ class CmdSpawn(MuxCommand):
             prototype["home"] = prototype["location"]
 
         # overridden for Ainneve
+        #
+        # TODO FIXME this used to fully cut-n-paste/extend the old spawner,
+        # but really it should just tack on any traits/skills/sdec found in the
+        #   generated prototype object
+        # For now, assume that the spawner already creates them.
+        # The rest of this string'd-out code is for posterity to show what it used to do.
+        #
         traits = prototype.pop('traits') if 'traits' in prototype else None
         skills = prototype.pop('skills') if 'skills' in prototype else None
         sdesc = prototype.pop('sdesc') if 'sdesc' in prototype else None
@@ -144,6 +110,9 @@ class CmdSpawn(MuxCommand):
                         obj.skills[skill].base = value() if callable(value) else value
 
             self.caller.msg("Spawned %s." % obj.get_display_name(self.caller))
+        """
+        return super().func()
+
 
 
 class CmdSetTraits(MuxCommand):

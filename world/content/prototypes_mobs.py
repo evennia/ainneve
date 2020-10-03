@@ -2,10 +2,11 @@
 Prototype module containing mobs.
 """
 
-from evennia.utils import fill
-from world.rulebook import d_roll
 import random
-from .sdesc_vars import *
+
+from world.content.sdesc_vars import *
+from world.rulebook import d_roll
+
 
 ### Notes
 #variable traits: 'traits': {'STR': lambda: d_roll('1d8')}
@@ -150,5 +151,3 @@ GOBLIN = {
     "traits": {'STR': lambda: d_roll('1d8'), 'DEX': lambda: d_roll('1d8')},
     "skills": {'escape': 10, 'barter': 3},
 }
-
-

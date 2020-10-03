@@ -5,18 +5,19 @@ The menu node functions defined in this module make up
 the Ainneve character creation process, which is based
 on a subset of Open Adventure rules.
 """
+
+import re
+from math import ceil
+
 from evennia import spawn, TICKER_HANDLER as tickerhandler
 from evennia.utils import fill, dedent
 from evennia.utils.evtable import EvTable
 
+from utils import prototypeutils
 from world import archetypes, races, skills
-from world.rulebook import d_roll
 from world.economy import format_coin as as_price
 from world.economy import transfer_funds, InsufficientFunds
-
-from math import ceil
-from functools import reduce
-import re
+from world.rulebook import d_roll
 
 
 # Organize starter equipment prototypes by category
@@ -62,6 +63,30 @@ _CATEGORY_HELP = {
 
 _CATEGORY_LIST = sorted(_EQUIPMENT_CATEGORIES.keys(),
                         key=lambda c: _EQUIPMENT_CATEGORIES[c][0])
+
+
+# In multiple occurrences we refer to the typeclass strings for logic
+# It is cleaner to store and reuse here
+# Eventually we should see about using typeclass attributes/properties instead
+_ARMOR_TYPECLASSES = {"typeclasses.armors.Armor"}
+_SHIELD_TYPECLASSES = {"typeclasses.armors.Shield"}
+_WEAPON_TYPECLASSES = {
+        "typeclasses.weapons.Weapon",
+        "typeclasses.weapons.TwoHandedWeapon",
+        "typeclasses.weapons.RangedWeapon",
+        "typeclasses.weapons.TwoHandedRanged",
+}
+_HANDED_TYPECLASSES = {
+    "typeclasses.weapons.Weapon",
+    "typeclasses.weapons.TwoHandedWeapon",
+    "typeclasses.weapons.RangedWeapon",
+    "typeclasses.weapons.TwoHandedRanged",
+    "typeclasses.armors.Shield"
+}
+_RANGED_TYPECLASSES = {
+    "typeclasses.weapons.RangedWeapon",
+    "typeclasses.weapons.TwoHandedRanged"
+}
 
 
 article_re = re.compile(r'^an?\s', re.IGNORECASE)
@@ -438,12 +463,11 @@ def menunode_examine_and_buy(caller, raw_string):
     if raw_string.isdigit() and int(raw_string) <= len(items):
         item = prototypes[items[int(raw_string) - 1].lower()]
     if item:
-        attrs = {attr[0]: attr[1] for attr in item['attrs']}
-        text = _format_item_details(item)
-        text += "You currently have {}. Purchase |w{}|n?".format(
-                    as_price(char.db.wallet),
-                    item['key']
-                )
+        item_attributes = prototypeutils.create_attribute_dict(item)
+        item_key = item['key']
+        item_value = item_attributes.get('value', 0)
+        text = _format_item_details(item, item_attributes)
+        text += f"You currently have {as_price(char.db.wallet)}. Purchase |w{item_key}|n?"
         help = "Choose carefully. Purchases are final."
 
         def purchase_item(session):
@@ -451,24 +475,17 @@ def menunode_examine_and_buy(caller, raw_string):
             try:
                 # this will raise exception if caller doesn't
                 # have enough funds in their `db.wallet`
-                transfer_funds(char, None, attrs['value'])
+                transfer_funds(char, None, item_value)
                 ware = spawn(item).pop()
                 ware.move_to(char, quiet=True)
                 ware.at_get(char)
-                rtext = "You pay {} and purchase {}".format(
-                            as_price(ware.db.value),
-                            ware.key
-                         )
+                rtext = f"You pay {as_price(ware.db.value)} and purchase {ware.key}"
             except InsufficientFunds:
-                rtext = "You do not have enough money to buy {}.".format(
-                            item['key'])
+                rtext = f"You do not have enough money to buy {item_key}."
             session.msg(rtext)
 
         options = ({"key": ("Yes", "ye", "y"),
-                    "desc": "Purchase {} for {}".format(
-                               item['key'],
-                               as_price(attrs['value'])
-                            ),
+                    "desc": f"Purchase {item_key} for {item_value}",
                     "exec": purchase_item,
                     "goto": "menunode_equipment_cats"},
                    {"key": ("No", "n", "_default"),
@@ -579,74 +596,77 @@ def _format_skill_opts(skill):
 
 def _format_menuitem_desc(item):
     """Returns a piece of equipment formatted as a one-line menu item."""
-    template = "|w{name}|n Cost: ({price}) "
-    attrs = {attr[0]: attr[1] for attr in item['attrs']}
-    if item['typeclass'] in ("typeclasses.weapons.Weapon",
-                             "typeclasses.weapons.TwoHandedWeapon",
-                             "typeclasses.weapons.RangedWeapon",
-                             "typeclasses.weapons.TwoHandedRanged"):
-        template += "|c{handed}H|n [|rDmg: {damage}|n]"
+    item_attributes = prototypeutils.create_attribute_dict(item)
+    item_typeclass = item['typeclass']
 
-    elif item['typeclass'] in ("typeclasses.armors.Shield",):
-        template += "|c{handed}H|n [|yDef: {toughness}|n]"
+    type_class_info = ''
+    if item_typeclass in _WEAPON_TYPECLASSES:
+        damage = item_attributes.get('damage', 0)
+        handed_str = 2 if 'TwoHanded' in item_typeclass else 1
+        type_class_info = f"|c{handed_str}H|n [|rDmg: {damage}|n]"
 
-    elif item['typeclass'] in ("typeclasses.armors.Armor",):
-        template += "[|yDef: {toughness}|n]"
+    elif item_typeclass in _SHIELD_TYPECLASSES:
+        handed_str = 2 if 'TwoHanded' in item_typeclass else 1
+        toughness = item_attributes.get('toughness', 0)
+        type_class_info = f"|c{handed_str}H|n [|yDef: {toughness}]"
 
-    return template.format(
-        name=article_re.sub('', item['key']).title(),
-        price=as_price(attrs.get('value', {})),
-        handed=2 if 'TwoHanded' in item['typeclass'] else 1,
-        damage=attrs.get('damage', ''),
-        toughness=attrs.get('toughness', '')
-    )
+    elif item_typeclass in _ARMOR_TYPECLASSES:
+        toughness = item_attributes.get('toughness', 0)
+        type_class_info = f"[|yDef: {toughness}|n]"
+
+    name_title = article_re.sub('', item['key']).title()
+    cost = as_price(item_attributes.get('value', 0))
+
+    return f"|w{name_title}|n Cost: ({cost}) {type_class_info}"
 
 
-def _format_item_details(item):
+def _format_item_details(item, item_attributes):
     attrs = {attr[0]: attr[1] for attr in item['attrs']}
     """Returns a piece of equipment's details and description."""
-    stats = [["          |CPrice|n: {}".format(as_price(attrs['value'])),
-              "         |CWeight|n: |w{}|n".format(attrs['weight'])],
-             []]
+
+    item_typeclass = item['typeclass']
+    price_value = as_price(item_attributes.get('value', 0))
+    weight = item_attributes.get('weight', 0)
+
+    stats = [[
+        f"          |CPrice|n: {price_value}",
+        f"         |CWeight|n: |w{weight}|n"],
+        []]
     col1, col2 = stats
+
     # this is somewhat awkward because we're using prototype dicts instead
     # of instances of these classes.
-    if item['typeclass'] in ("typeclasses.weapons.Weapon",
-                             "typeclasses.weapons.TwoHandedWeapon",
-                             "typeclasses.weapons.RangedWeapon",
-                             "typeclasses.weapons.TwoHandedRanged",
-                             "typeclasses.armors.Shield"):
-        col2.append("     |CHandedness|n: |c{}H|n".format(
-            2 if 'TwoHanded' in item['typeclass'] else 1
-        ))
+    if item_typeclass in _HANDED_TYPECLASSES:
+        handed_str = 2 if 'TwoHanded' in item_typeclass else 1
+        col2.append(f"     |CHandedness|n: |c{handed_str}H|n")
 
-    if item['typeclass'] in ("typeclasses.weapons.Weapon",
-                             "typeclasses.weapons.TwoHandedWeapon",
-                             "typeclasses.weapons.RangedWeapon",
-                             "typeclasses.weapons.TwoHandedRanged"):
-        col2.append("         |CDamage|n: |r{}|n".format(attrs['damage']))
+    if item_typeclass in _WEAPON_TYPECLASSES:
+        damage = item_attributes.get('damage', 0)
+        col2.append(f"         |CDamage|n: |r{damage}|n")
 
-    if item['typeclass'] in ("typeclasses.weapons.RangedWeapon",
-                             "typeclasses.weapons.TwoHandedRanged"):
-        col2.append("          |CRange|n: |G{}|n".format(
-            ", ".join([r.capitalize() for r in attrs['range']])))
+    if item_typeclass in _RANGED_TYPECLASSES:
+        item_range = item_attributes.get('range', [])
+        item_range_str = ", ".join([r.capitalize() for r in item_range])
+        col2.append(f"          |CRange|n: |G{item_range_str}|n")
 
-    if item['typeclass'] in ("typeclasses.armors.Armor",
-                             "typeclasses.armors.Shield"):
-        col2.append("      |CToughness|n: |y{}|n".format(attrs['toughness']))
+    if item_typeclass in _ARMOR_TYPECLASSES | _SHIELD_TYPECLASSES:
+        toughness = item_attributes.get('toughness', 0)
+        col2.append(f"      |CToughness|n: |y{toughness}|n")
 
-    if 'quantity' in item:
-        col2.append("       |CQuantity|n: |w{}|n".format(attrs['quantity']))
+    quantity = item_attributes.get('quantity')
+    if quantity:
+        col2.append(f"       |CQuantity|n: |w{quantity}|n")
 
-    table = EvTable(header=False, table=stats, border=None)
+    stats_table = EvTable(header=False, table=stats, border=None)
 
-    text = "|Y{name}|n\n"
-    text += "{desc}\n"
-    text += "{stats}\n"
-    if 'ammunition' in item:
-        text += "  This weapon requires ammunition: |w{ammo}|n\n"
+    name_title = item['key'].title()
+    desc = item_attributes.get('desc', '')
+    text = f"|Y{name_title}|n\n" \
+           f"{fill(desc)}\n" \
+           f"{stats_table}\n"
 
-    return text.format(name=item['key'].title(),
-                       desc=fill(attrs['desc']),
-                       stats=table,
-                       ammo=attrs.get('ammunition', ''))
+    ammunition = item_attributes.get('ammunition')
+    if ammunition:
+        text += f"  This weapon requires ammunition: |w{ammunition}|n\n"
+
+    return text

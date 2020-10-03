@@ -3,6 +3,8 @@
 |--------|---------|
 | [![Master build Status](https://travis-ci.org/evennia/ainneve.svg?branch=master)](https://travis-ci.org/evennia/ainneve) | [![Develop build Status](https://travis-ci.org/evennia/ainneve.svg?branch=develop)](https://travis-ci.org/evennia/ainneve) |
 
+# Codebase is undergoing major refactoring - please join #ainneve on Freenode if you wish to discuss ideas for Ainneve's future direction.
+
 Welcome! The [Evennia](http://www.evennia.com/) community has created Ainneve for you to use as a base to learn from and build off of.  Ainneve currently is an early work in progress. 
 
 The main configuration file is found in

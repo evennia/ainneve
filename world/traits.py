@@ -322,7 +322,7 @@ class TraitHandler(object):
 
     def clear(self):
         """Remove all Traits from the handler's parent object."""
-        for trait in self.all:
+        for trait in list(self.all):
             self.remove(trait)
 
     @property
