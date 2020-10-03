@@ -5,6 +5,7 @@ The menu node functions defined in this module make up
 the Ainneve character creation process, which is based
 on a subset of Open Adventure rules.
 """
+
 import re
 from math import ceil
 
@@ -17,6 +18,7 @@ from world import archetypes, races, skills
 from world.economy import format_coin as as_price
 from world.economy import transfer_funds, InsufficientFunds
 from world.rulebook import d_roll
+
 
 # Organize starter equipment prototypes by category
 _EQUIPMENT_CATEGORIES = {
@@ -60,6 +62,30 @@ _CATEGORY_HELP = {
 }
 
 _CATEGORY_LIST = sorted(list(_EQUIPMENT_CATEGORIES.keys()), key=lambda c: _EQUIPMENT_CATEGORIES[c][0])
+
+
+# In multiple occurrences we refer to the typeclass strings for logic
+# It is cleaner to store and reuse here
+# Eventually we should see about using typeclass attributes/properties instead
+_ARMOR_TYPECLASSES = {"typeclasses.armors.Armor"}
+_SHIELD_TYPECLASSES = {"typeclasses.armors.Shield"}
+_WEAPON_TYPECLASSES = {
+        "typeclasses.weapons.Weapon",
+        "typeclasses.weapons.TwoHandedWeapon",
+        "typeclasses.weapons.RangedWeapon",
+        "typeclasses.weapons.TwoHandedRanged",
+}
+_HANDED_TYPECLASSES = {
+    "typeclasses.weapons.Weapon",
+    "typeclasses.weapons.TwoHandedWeapon",
+    "typeclasses.weapons.RangedWeapon",
+    "typeclasses.weapons.TwoHandedRanged",
+    "typeclasses.armors.Shield"
+}
+_RANGED_TYPECLASSES = {
+    "typeclasses.weapons.RangedWeapon",
+    "typeclasses.weapons.TwoHandedRanged"
+}
 
 
 # In multiple occurrences we refer to the typeclass strings for logic

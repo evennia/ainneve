@@ -15,6 +15,8 @@ from world.skills import apply_skills
 from world.archetypes import Archetype
 from world.death import CharDeathHandler, NPCDeathHandler
 
+from world.rulebook import skill_check
+
 
 class Character(ContribRPCharacter):
     """Base character typeclass for Ainneve.
@@ -84,6 +86,138 @@ class Character(ContribRPCharacter):
         if self.nattributes.has('combat_handler'):
             self.ndb.combat_handler.remove_character(self)
 
+    def process_sdesc(self, sdesc, obj, **kwargs):
+        """Called to format sdesc and recog before displaying"""
+        if obj.permissions.get('Developer'):
+            return "|r{}|n".format(sdesc)
+        else:
+            return "|G{}|n".format(sdesc)
+
+    def return_appearance(self, looker):
+        """
+        This formats a description. It is the hook a 'look' command
+        should call.
+        Args:
+            looker (Object): Object doing the looking.
+        """
+        if not looker:
+            return ""
+
+        # get description, build string
+        name = self.get_display_name(looker)
+        race = self.db.race
+        arch = self.db.archetype
+
+        med = looker.skills.medicine.actual
+        per = looker.traits.PER.actual
+
+        # These each do a skill check, but they always pass
+        # if you're looking at yourself
+        knows_race = race and (skill_check(per, 3) or looker == self)
+        knows_archetype = arch and (skill_check(per, 5) or looker == self)
+
+        # these values may need to be tweaked - how difficult should each one be?
+        knows_health_vague = (skill_check(per, 4) and per > 2) or looker == self
+        knows_health_exact = skill_check(med, 7) or looker == self
+
+        knows_stamina_vague = (skill_check(per, 6) and per > 3) or looker == self
+        knows_stamina_exact = skill_check(med, 8) or looker == self
+
+        # this is the base name format - it just colors the name cyan
+        string = "|c%s|n" % name
+
+        # if we're adding race or archetype, add "the" after the name
+        if knows_race or knows_archetype:
+            string += " the"
+
+        if knows_race:
+            string += " {}".format(race)
+        if knows_archetype:
+            string += " {}".format(arch)
+
+        # There may be a more efficient way to do this,
+        # but we just want to add a period and a newline
+        # after the name.
+        string += ".\n"
+
+        health_percent = float(self.traits.HP.percent().strip('%'))
+        health_current = self.traits.HP.actual
+        health_max = self.traits.HP.max
+
+        if knows_health_vague or knows_health_exact:
+            # traits.percent returns a string with a percent symbol
+            # this is probably a silly idea, so maybe we should do a
+            # PR in the future, but for now, we strip the symbol
+            # and convert to a float
+            if health_percent > .8:
+                health_string = "They seem to be in good health."
+            elif health_percent > .5:
+                health_string = "They seem a little roughed up."
+            # If we've not passed either previous condition, they could
+            # have 0 health. Since we're converting to a float, it's possible
+            # we won't get a float of zero, so we check HP.actual instead
+            elif self.traits.HP.actual > 0:
+                health_string = "They seem to be in pretty bad shape."
+            else:
+                health_string = "They're dead."
+
+            if knows_health_exact:
+                health_string += " HP {}/{}\n".format( health_current, health_max )
+            else:
+                health_string += "\n"
+        # if we don't know their health, then just show a default message
+        else:
+            health_string = "They seem to be in good health.\n"
+
+        string += health_string
+
+        stamina_percent = float(self.traits.SP.percent().strip('%'))
+        stamina_current = str(self.traits.SP.actual)
+        stamina_max = str(self.traits.SP.max)
+        stamina_string = ""
+
+        # we check HP.actual, in case they're dead
+        if health_current > 0 and (knows_stamina_vague or knows_stamina_exact):
+            if stamina_percent > .8:
+                stamina_string = "They seem full of energy."
+            elif stamina_percent > .5:
+                stamina_string = "They look a bit tired."
+            else:
+                stamina_string = "They look ready to fall over."
+
+            if knows_stamina_exact:
+                stamina_string += " SP {}/{}\n".format(stamina_current, stamina_max)
+            else:
+                stamina_string += "\n"
+
+        string += stamina_string
+
+        desc = self.db.desc
+        if desc:
+            string += "%s\n\n" % desc
+
+        # self.equip.limbs is a dictionary of limbs and slots
+        # the slots are things like armor and weild_1, while
+        # the limbs are readable, like left arm and right arm
+        limbs = self.equip.limbs
+
+        # remember, when you do this with a dictionary, you're looping over
+        # the keys in the dict.
+        for limb in limbs:
+            slots = limbs[limb] # since we just have a key to the dict, we use
+                                # it to get the slot.
+
+            for slot in slots:  # It's possible that a limb could have multiple slots
+                item = self.equip.get(slot) # this returns None if there's no
+                                            # item equipped
+                if item:
+                    key = item.get_display_name(looker)
+                else:
+                    key = 'Nothing'
+
+                string += "|y{limb}|n: |w{name}|n\n".format(limb=limb, name=key)
+
+        return string
 
 class NPC(Character):
     """Base character typeclass for NPCs and enemies.

@@ -1,6 +1,3 @@
-
-
-
 from evennia import CmdSet
 from evennia.commands.default.muxcommand import MuxCommand
 from evennia.contrib.extended_room import CmdExtendedRoomLook
@@ -61,7 +58,7 @@ class CmdTerrain(MuxCommand):
             try:
                 target.terrain = terrain
             except ValueError as e:
-                self.caller.msg(e.message)
+                self.caller.msg(e)
             else:
                 self.caller.msg("Terrain type '{}' set on {}.".format(terrain,
                                                                   target.key))

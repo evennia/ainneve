@@ -2,15 +2,14 @@
 Building commands
 """
 
-from .command import MuxCommand
-from evennia import utils, CmdSet
+from evennia import CmdSet
+from evennia.commands.default.building import CmdSpawn as DefaultCmdSpawn
 from evennia.utils.evtable import EvTable
 from evennia.utils.utils import inherits_from
-from evennia.commands.default.building import CmdSpawn as DefaultCmdSpawn
-from evennia.commands.default.building import _convert_from_string
+from commands.command import MuxCommand
+from typeclasses.npcshop.npcshop import CmdBuildShop
 from world.archetypes import ALL_TRAITS
 from world.skills import ALL_SKILLS
-from typeclasses.npcshop.npcshop import CmdBuildShop
 
 
 class AinneveBuildingCmdSet(CmdSet):
@@ -22,7 +21,7 @@ class AinneveBuildingCmdSet(CmdSet):
 
     def at_cmdset_creation(self):
         "Populates the cmdset"
-        self.add(CmdSpawn())
+        #self.add(CmdSpawn())
         self.add(CmdSetTraits())
         self.add(CmdSetSkills())
         self.add(CmdBuildShop())
@@ -37,6 +36,49 @@ class CmdSpawn(DefaultCmdSpawn):
     def func(self):
         """
         "Implements the spawner"
+
+        def _show_prototypes(prototypes):
+            "Helper to show a list of available prototypes"
+            string = "\nAvailable prototypes:\n %s"
+            string %= utils.fill(", ".join(sorted(list(prototypes.keys()))))
+            return string
+
+        prototypes = spawn(return_parents=True)
+        if not self.args:
+            string = "Usage: @spawn {key:value, key, value, ... }"
+            self.caller.msg(string + _show_prototypes(prototypes))
+            return
+        try:
+            # make use of _convert_from_string from the SetAttribute command
+            prototype = _convert_from_string(self, self.args)
+        except SyntaxError:
+            # this means literal_eval tried to parse a faulty string
+            string = "|RCritical Python syntax error in argument. "
+            string += "Only primitive Python structures are allowed. "
+            string += "\nYou also need to use correct Python syntax. "
+            string += "Remember especially to put quotes around all "
+            string += "strings inside lists and dicts.|n"
+            self.caller.msg(string)
+            return
+
+        if isinstance(prototype, str):
+            # A prototype key
+            keystr = prototype
+            prototype = prototypes.get(prototype, None)
+            if not prototype:
+                string = "No prototype named '%s'." % keystr
+                self.caller.msg(string + _show_prototypes(prototypes))
+                return
+        elif not isinstance(prototype, dict):
+            self.caller.msg("The prototype must be a prototype key or a Python dictionary.")
+            return
+
+        if not "noloc" in self.switches and not "location" in prototype:
+            prototype["location"] = self.caller.location
+
+        # set the home of any prototypes to the location they were spawned
+        if not "home" in prototype:
+            prototype["home"] = prototype["location"]
 
         # overridden for Ainneve
         #
@@ -53,15 +95,15 @@ class CmdSpawn(DefaultCmdSpawn):
         for obj in spawn(prototype):
             if sdesc and hasattr(obj, 'sdesc'):
                 obj.sdesc.add(sdesc() if callable(sdesc) else sdesc)
-            
+
             if traits and hasattr(obj, 'traits'):
-                for trait, value in traits.iteritems():
+                for trait, value in traits.items():
                     trait = trait.upper()
                     if trait in obj.traits.all:
                         obj.traits[trait].base = value() if callable(value) else value
 
             if skills and hasattr(obj, 'skills'):
-                for skill, value in skills.iteritems():
+                for skill, value in skills.items():
                     skill = skill.lower()
                     if skill in obj.skills.all:
                         obj.skills[skill].base = value() if callable(value) else value

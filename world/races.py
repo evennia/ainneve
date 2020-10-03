@@ -170,7 +170,7 @@ def _format_bonuses(bonuses):
         output = ", ".join(
                     "|w{:+1}|n to |C{}|n".format(bonuses[t],
                                                      _ARC.traits[t]['name'])
-                    for t in traits[:-1])
+                    for t in reversed(traits))
         output += ", and |w{:+1}|n to |C{}|n".format(
                       bonuses[traits[-1]],
                       _ARC.traits[traits[-1]]['name'])
@@ -195,8 +195,8 @@ class Race(object):
             'armor': None,
         }
         self.limbs = (
-            ('r_arm', ('wield1',)),
-            ('l_arm', ('wield2',)),
+            ('right arm', ('wield1',)),
+            ('left arm', ('wield2',)),
             ('body', ('armor',)),
         )
         self.foci = []

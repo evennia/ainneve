@@ -216,7 +216,7 @@ Example:
 
 from evennia.utils.dbserialize import _SaverDict
 from evennia.utils import logger, lazy_property
-from functools import total_ordering
+from functools import total_ordering, reduce
 
 TRAIT_TYPES = ('static', 'counter', 'gauge')
 RANGE_TRAITS = ('counter', 'gauge')
@@ -328,7 +328,7 @@ class TraitHandler(object):
     @property
     def all(self):
         """Return a list of all trait keys in this TraitHandler."""
-        return self.attr_dict.keys()
+        return list(self.attr_dict.keys())
 
 
 @total_ordering
@@ -391,7 +391,7 @@ class Trait(object):
 
     def __unicode__(self):
         """User-friendly unicode representation of this `Trait`"""
-        return unicode(str(self))
+        return str(self)
 
     # Extra Properties magic
 
@@ -654,7 +654,7 @@ class Trait(object):
     @property
     def extra(self):
         """Returns a list containing available extra data keys."""
-        return self._data['extra'].keys()
+        return list(self._data['extra'].keys())
 
     def reset_mod(self):
         """Clears any mod value on the `Trait`."""
