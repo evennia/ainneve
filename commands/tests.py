@@ -1,17 +1,23 @@
 """
 Command test module
 """
-from evennia.utils.test_resources import EvenniaTest
+import re
+
 from evennia.commands.default.tests import CommandTest
-from commands.equip import *
+from evennia.utils.test_resources import EvenniaTest
+
+from commands.building import CmdSetTraits, CmdSetSkills
 from commands.chartraits import CmdSheet, CmdTraits
+from commands.equip import *
 from commands.room_exit import CmdCapacity, CmdTerrain
-from commands.building import CmdSpawn, CmdSetTraits, CmdSetSkills
 from typeclasses.characters import Character, NPC
-from typeclasses.weapons import Weapon
 from typeclasses.rooms import Room
-from world.archetypes import apply_archetype, calculate_secondary_traits
+from typeclasses.weapons import Weapon
 from utils.utils import sample_char
+from world.archetypes import apply_archetype, calculate_secondary_traits
+
+# This is used to parse CmdTraits outputs into a dict we can Test
+_TRAITS_MATCH_REGEX = re.compile(r"(\w*\s\w*\s*[:]\s*\d)")
 
 
 class ItemEncumbranceTestCase(EvenniaTest):
@@ -207,30 +213,74 @@ class CharTraitsTestCase(CommandTest):
 
         self.call(CmdSheet(), "", sheet_output)
 
-    def test_traits(self):
-        """test traits command"""
-        # test no args
+    def test_traits_no_args(self):
         self.call(CmdTraits(), "", "Usage: traits <traitgroup>")
-        # test primary traits
-        output = (
-"Primary Traits|\n"
-"Strength         :    9 Perception       :    2 Intelligence     :    1 Dexterity        :    5 Charisma         :    4 Vitality         :    9 Magic            :    0")
-        self.call(CmdTraits(), "pri", output)
-        # test secondary traits
-        output = (
-"Secondary Traits|\n"
-"Health                        :    9 Black Mana                   :    0 Stamina                       :    9 White Mana                   :    0")
-        self.call(CmdTraits(), "secondary", output)
-        # test save rolls
-        output = (
-"Save Rolls|\n"
-"Fortitude Save   :    9 Reflex Save      :    3 Will Save        :    ")
-        self.call(CmdTraits(), "sav", output)
-        # test combat stats
-        output = (
-"Combat Stats|\n"
-"Melee Attack     :    9 Ranged Attack    :    2 Unarmed Attack   :    5 Defense          :    5 Power Points     :    2")
-        self.call(CmdTraits(), "com", output)
+
+    def test_primary_traits(self):
+        expected = {
+            "Strength": 9,
+            "Perception": 2,
+            "Intelligence": 1,
+            "Dexterity": 5,
+            "Charisma": 4,
+            "Vitality": 9,
+            "Magic": 0,
+        }
+        raw_output = self.call(CmdTraits(), "pri")
+        parsed_output = self._parse_to_dict(raw_output)
+        self.assertDictEqual(expected, parsed_output)
+
+    def test_secondary_traits(self):
+        expected = {
+            "Health": 9,
+            "Black Mana": 0,
+            "Stamina": 9,
+            "White Mana": 0
+        }
+        raw_output = self.call(CmdTraits(), "secondary")
+        parsed_output = self._parse_to_dict(raw_output)
+        self.assertDictEqual(expected, parsed_output)
+
+    def test_save_rolls(self):
+        expected = {
+            "Fortitude Save": 9,
+            "Reflex Save": 3,
+            "Will Save": 1,
+        }
+        raw_output = self.call(CmdTraits(), "sav")
+        parsed_output = self._parse_to_dict(raw_output)
+        self.assertDictEqual(expected, parsed_output)
+
+    def test_combat_stats(self):
+        expected = {
+            "Melee Attack": 9,
+            "Ranged Attack": 2,
+            "Unarmed Attack": 5,
+            "Defense": 5,
+            "Power Points": 2
+        }
+        raw_output = self.call(CmdTraits(), "com")
+        parsed_output = self._parse_to_dict(raw_output)
+        self.assertDictEqual(expected, parsed_output)
+
+    def _parse_to_dict(self, traits_output):
+        """
+        This is used to test for traits when the values are important
+        and the order or display isn't.
+        """
+        groups = _TRAITS_MATCH_REGEX.findall(traits_output)
+        traits = {}
+        for match_str in groups:
+            trait_name, value = match_str.split(":")
+            stripped_trait_name = trait_name.strip()
+            stripped_value = value.strip()
+            if stripped_value.isdigit():
+                traits[stripped_trait_name] = int(stripped_value)
+            else:
+                traits[stripped_trait_name] = stripped_value
+
+        return traits
+
 
 
 class BuildingTestCase(CommandTest):
