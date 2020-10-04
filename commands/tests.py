@@ -347,7 +347,26 @@ class SetSkillTestCase(CommandTest):
         self.call(CmdSetSkills(), "", "Usage: @skills <npc> [skill[,skill..][ = value[,value..]]]")
 
     def test_display_object_skills(self):
-        self.call(CmdSetSkills(), "Obj", "Animal Handle     :    1 Appraise          :    1 Balance           :    1 Barter            :    1 Climb             :    1 Escape            :    1 Jump              :    1 Leadership        :    1 Listen            :    1 Lock Pick         :    1 Medicine          :    1 Sense Danger      :    1 Sneak             :    1 Survival          :    1 Throwing          :    1")
+        expected_output = {
+            "Animal Handle": 1,
+            "Appraise": 1,
+            "Balance": 1,
+            "Barter": 1,
+            "Climb": 1,
+            "Escape": 1,
+            "Jump": 1,
+            "Leadership": 1,
+            "Listen": 1,
+            "Lock Pick": 1,
+            "Medicine": 1,
+            "Sense Danger": 1,
+            "Sneak": 1,
+            "Survival": 1,
+            "Throwing": 1,
+        }
+        raw_output = self.call(CmdSetSkills(), "Obj")
+        parsed_output = _parse_to_dict(raw_output)
+        self.assertDictEqual(expected_output, parsed_output)
 
     def test_display_named_skills(self):
         self.call(CmdSetSkills(), "Obj escape,jump,medicine,survival", "Escape            :    1 Jump              :    1 Medicine          :    1 Survival          :    1")
