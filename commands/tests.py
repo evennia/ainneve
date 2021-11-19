@@ -1,17 +1,23 @@
 """
 Command test module
 """
-from evennia.utils.test_resources import EvenniaTest
+import re
+
 from evennia.commands.default.tests import CommandTest
-from commands.equip import *
+from evennia.utils.test_resources import EvenniaTest
+
+from commands.building import CmdSetTraits, CmdSetSkills
 from commands.chartraits import CmdSheet, CmdTraits
+from commands.equip import *
 from commands.room_exit import CmdCapacity, CmdTerrain
-from commands.building import CmdSpawn, CmdSetTraits, CmdSetSkills
 from typeclasses.characters import Character, NPC
-from typeclasses.weapons import Weapon
 from typeclasses.rooms import Room
-from world.archetypes import apply_archetype, calculate_secondary_traits
+from typeclasses.weapons import Weapon
 from utils.utils import sample_char
+from world.archetypes import apply_archetype, calculate_secondary_traits
+
+# This is used to parse CmdTraits outputs into a dict we can Test
+_TRAITS_MATCH_REGEX = re.compile(r"(\w*\s\w*\s*[:]\s*\d)")
 
 
 class ItemEncumbranceTestCase(EvenniaTest):
@@ -207,30 +213,55 @@ class CharTraitsTestCase(CommandTest):
 
         self.call(CmdSheet(), "", sheet_output)
 
-    def test_traits(self):
-        """test traits command"""
-        # test no args
+    def test_traits_no_args(self):
         self.call(CmdTraits(), "", "Usage: traits <traitgroup>")
-        # test primary traits
-        output = (
-"Primary Traits|\n"
-"| Strength         :    9 | Perception       :    2 | Intelligence     :    1 | Dexterity        :    5 | Charisma         :    4 | Vitality         :    9 | Magic            :    0 |                         |")
-        self.call(CmdTraits(), "pri", output)
-        # test secondary traits
-        output = (
-"Secondary Traits|\n"
-"| Health                        :    9 | Black Mana                   :    0 | Stamina                       :    9 | White Mana                   :    0")
-        self.call(CmdTraits(), "secondary", output)
-        # test save rolls
-        output = (
-"Save Rolls|\n"
-"| Fortitude Save   :    9 | Reflex Save      :    3 | Will Save        :    ")
-        self.call(CmdTraits(), "sav", output)
-        # test combat stats
-        output = (
-"Combat Stats|\n"
-"| Melee Attack     :    9 | Ranged Attack    :    2 | Unarmed Attack   :    5 | Defense          :    5 | Power Points     :    2 |")
-        self.call(CmdTraits(), "com", output)
+
+    def test_primary_traits(self):
+        expected = {
+            "Strength": 9,
+            "Perception": 2,
+            "Intelligence": 1,
+            "Dexterity": 5,
+            "Charisma": 4,
+            "Vitality": 9,
+            "Magic": 0,
+        }
+        raw_output = self.call(CmdTraits(), "pri")
+        parsed_output = _parse_to_dict(raw_output)
+        self.assertDictEqual(expected, parsed_output)
+
+    def test_secondary_traits(self):
+        expected = {
+            "Health": 9,
+            "Black Mana": 0,
+            "Stamina": 9,
+            "White Mana": 0
+        }
+        raw_output = self.call(CmdTraits(), "secondary")
+        parsed_output = _parse_to_dict(raw_output)
+        self.assertDictEqual(expected, parsed_output)
+
+    def test_save_rolls(self):
+        expected = {
+            "Fortitude Save": 9,
+            "Reflex Save": 3,
+            "Will Save": 1,
+        }
+        raw_output = self.call(CmdTraits(), "sav")
+        parsed_output = _parse_to_dict(raw_output)
+        self.assertDictEqual(expected, parsed_output)
+
+    def test_combat_stats(self):
+        expected = {
+            "Melee Attack": 9,
+            "Ranged Attack": 2,
+            "Unarmed Attack": 5,
+            "Defense": 5,
+            "Power Points": 2
+        }
+        raw_output = self.call(CmdTraits(), "com")
+        parsed_output = _parse_to_dict(raw_output)
+        self.assertDictEqual(expected, parsed_output)
 
 
 class BuildingTestCase(CommandTest):
@@ -301,45 +332,79 @@ class BuildingTestCase(CommandTest):
         self.call(CmdSetTraits(), "Obj STR, INT = 5, 6, 7", "Incorrect number of assignment values.")
         self.call(CmdSetTraits(), "Obj STR = X", "Assignment values must be numeric.")
 
-    def test_setskills_cmd(self):
-        """test @skills command"""
-        #no args
+
+class SetSkillTestCase(CommandTest):
+    """Test case for Builder SetSkill command."""
+
+    def setUp(self):
+        self.character_typeclass = Character
+        self.object_typeclass = NPC
+        self.room_typeclass = Room
+        super().setUp()
+        self.obj1.sdesc.add(self.obj1.key)
+
+    def test_without_args(self):
         self.call(CmdSetSkills(), "", "Usage: @skills <npc> [skill[,skill..][ = value[,value..]]]")
-        # display object's skills
-        self.call(CmdSetSkills(), "Obj", "| Appraise          :    1 | Animal Handle     :    1 | Barter            :    1 | Throwing          :    1 | Survival          :    1 | Escape            :    1 | Sneak             :    1 | Jump              :    1 | Leadership        :    1 | Lock Pick         :    1 | Sense Danger      :    1 | Medicine          :    1 | Climb             :    1 | Balance           :    1 | Listen            :    1")
-        # display named skills
-        self.call(CmdSetSkills(), "Obj escape,jump,medicine,survival", "| Escape            :    1 | Jump              :    1 | Medicine          :    1 | Survival          :    1 |")
-        # ignore invalid skills for display
-        self.call(CmdSetSkills(), "Obj sense, notaskill", "| Sense Danger      :    1")
-        # assign a skill
-        self.call(CmdSetSkills(), "Obj jump = 4", 'Skill "jump" set to 4 for Obj|\n| Jump              :    4')
+
+    def test_display_object_skills(self):
+        expected_output = {
+            "Animal Handle": 1,
+            "Appraise": 1,
+            "Balance": 1,
+            "Barter": 1,
+            "Climb": 1,
+            "Escape": 1,
+            "Jump": 1,
+            "Leadership": 1,
+            "Listen": 1,
+            "Lock Pick": 1,
+            "Medicine": 1,
+            "Sense Danger": 1,
+            "Sneak": 1,
+            "Survival": 1,
+            "Throwing": 1,
+        }
+        raw_output = self.call(CmdSetSkills(), "Obj")
+        parsed_output = _parse_to_dict(raw_output)
+        self.assertDictEqual(expected_output, parsed_output)
+
+    def test_display_named_skills(self):
+        self.call(CmdSetSkills(), "Obj escape,jump,medicine,survival", "Escape            :    1 Jump              :    1 Medicine          :    1 Survival          :    1")
+
+    def test_ignore_invalid_skills_for_display(self):
+        self.call(CmdSetSkills(), "Obj sense, notaskill", "Sense Danger      :    1")
+
+    def test_assign_a_skill(self):
+        self.call(CmdSetSkills(), "Obj jump = 4", 'Skill "jump" set to 4 for Obj|\nJump              :    4')
         self.assertEqual(self.obj1.skills.jump.actual, 4)
-        # ignore invalid skills in assignment
-        self.call(CmdSetSkills(), "Obj barter,sneak,noskill = 3, 4, 10", 'Skill "barter" set to 3 for Obj|Skill "sneak" set to 4 for Obj|Invalid skill: "noskill"|\n| Barter            :    3 | Sneak             :    4')
+
+    def test_ignore_invalid_skills_in_assignment(self):
+        self.call(CmdSetSkills(), "Obj barter,sneak,noskill = 3, 4, 10", 'Skill "barter" set to 3 for Obj|Skill "sneak" set to 4 for Obj|Invalid skill: "noskill"|\nBarter            :    3 Sneak             :    4')
         self.assertEqual(self.obj1.skills.barter.actual, 3)
         self.assertEqual(self.obj1.skills.sneak.actual, 4)
-        # handle invalid arg combinations
-        self.call(CmdSetSkills(), "Obj INVALID", "| Appraise          :    1 | Animal Handle     :    1 | Barter            :    3 | Throwing          :    1 | Survival          :    1 | Escape            :    1 | Sneak             :    4 | Jump              :    4 | Leadership        :    1 | Lock Pick         :    1 | Sense Danger      :    1 | Medicine          :    1 | Climb             :    1 | Balance           :    1 | Listen            :    1")
+
+    def test_handle_invalid_arg_combinations(self):
+        raw_output = self.call(CmdSetSkills(), "Obj INVALID")
+        parsed_output = _parse_to_dict(raw_output)
+        self.assertGreaterEqual(len(parsed_output), 1)
         self.call(CmdSetSkills(), "Obj leadership, animal = 2, 3, 2", "Incorrect number of assignment values.")
         self.call(CmdSetSkills(), "Obj escape = X", "Assignment values must be numeric.")
 
-    def test_spawn_cmd(self):
-        """test overridden @spawn command"""
-        # no args
-        self.call(CmdSpawn(), "", "Usage: @spawn {key:value, key, value, ... }\nAvailable prototypes:")
-        # spawn prototype with traits and skills
-        proto = "{'sdesc': 'a bunny', 'typeclass': 'typeclasses.characters.NPC', 'traits':{'STR': 2, 'PER': 3, 'INT': 2, 'DEX': 4, 'CHA': 4, 'VIT': 2}, 'skills':{'escape': 5, 'jump': 6, 'medicine': 1, 'sneak': 2}}"
-        self.call(CmdSpawn(), proto, "Spawned a bunny(#8).")
-        bunny = self.room1.contents[-1]
-        self.assertEqual(bunny.sdesc.get(), "a bunny")
-        self.assertTrue(bunny.is_typeclass('typeclasses.characters.NPC'))
-        self.assertEqual(bunny.traits.STR, 2)
-        self.assertEqual(bunny.traits.PER, 3)
-        self.assertEqual(bunny.traits.INT, 2)
-        self.assertEqual(bunny.traits.DEX, 4)
-        self.assertEqual(bunny.traits.CHA, 4)
-        self.assertEqual(bunny.traits.VIT, 2)
-        self.assertEqual(bunny.skills.escape, 5)
-        self.assertEqual(bunny.skills.jump, 6)
-        self.assertEqual(bunny.skills.medicine, 1)
-        self.assertEqual(bunny.skills.sneak, 2)
+
+def _parse_to_dict(traits_output):
+    """
+    This is used to test for traits when the values are important
+    and the order or display isn't.
+    """
+    groups = _TRAITS_MATCH_REGEX.findall(traits_output)
+    traits = {}
+    for match_str in groups:
+        trait_name, value = match_str.split(":")
+        stripped_trait_name = trait_name.strip()
+        stripped_value = value.strip()
+        if stripped_value.isdigit():
+            traits[stripped_trait_name] = int(stripped_value)
+        else:
+            traits[stripped_trait_name] = stripped_value
+
+    return traits
