@@ -109,6 +109,7 @@ class CmdEquip(MuxCommand):
                         action = 'wear'
                     else:
                         caller.msg("You can't equip {}.".format(obj.get_display_name(caller)))
+                        return
 
                 if not obj.access(caller, 'equip'):
                     caller.msg("You can't {} {}.".format(action,
