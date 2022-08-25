@@ -1,8 +1,8 @@
 from evennia import CmdSet
 from evennia.commands.default.muxcommand import MuxCommand
-from evennia.contrib.extended_room import CmdExtendedRoomLook
-from evennia.contrib.extended_room import CmdExtendedRoomDesc
-from evennia.contrib.extended_room import CmdExtendedRoomGameTime
+from evennia.contrib.grid.extended_room import CmdExtendedRoomLook
+from evennia.contrib.grid.extended_room import CmdExtendedRoomDesc
+from evennia.contrib.grid.extended_room import CmdExtendedRoomGameTime
 
 class AinneveRoomExitsCmdSet(CmdSet):
     """Command set containing ExtendedRoom commands."""

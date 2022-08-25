@@ -10,7 +10,7 @@ the other types, you can do so by adding this as a multiple
 inheritance.
 
 """
-from evennia.contrib.rpsystem import ContribRPObject
+from evennia.contrib.rpg.rpsystem import ContribRPObject
 
 
 class Object(ContribRPObject):

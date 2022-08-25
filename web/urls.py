@@ -1,4 +1,4 @@
-from django.conf.urls import url, include
+####
 
 from evennia.web.urls import urlpatterns
 
@@ -19,7 +19,6 @@ from evennia.web.urls import urlpatterns
 # https://docs.djangoproject.com/en/1.6/intro/tutorial01/
 
 patterns = [
-    # url(r'/desired/url/', view, name='example'),
 ]
 
 urlpatterns = patterns + urlpatterns

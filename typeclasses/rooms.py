@@ -4,8 +4,8 @@ Room
 Rooms are simple containers that has no location of their own.
 
 """
-from evennia.contrib.extended_room import ExtendedRoom
-from evennia.contrib.rpsystem import ContribRPRoom
+from evennia.contrib.grid.extended_room import ExtendedRoom
+from evennia.contrib.rpg.rpsystem import ContribRPRoom
 
 
 class Room(ExtendedRoom, ContribRPRoom):

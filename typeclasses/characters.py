@@ -7,7 +7,7 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-from evennia.contrib.rpsystem import ContribRPCharacter
+from evennia.contrib.rpg.rpsystem import ContribRPCharacter
 from evennia.utils import lazy_property, utils
 from world.equip import EquipHandler
 from world.traits import TraitHandler
