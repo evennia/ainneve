@@ -3,7 +3,7 @@ Combat commands.
 """
 
 from evennia import default_cmds, CmdSet, create_script
-from evennia.contrib.rpsystem import CmdEmote, CmdPose, CmdSay
+from evennia.contrib.rpg.rpsystem import CmdEmote, CmdPose, CmdSay
 from evennia.utils.utils import inherits_from
 from evennia.utils.evtable import EvTable
 from commands.equip import CmdInventory
