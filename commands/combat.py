@@ -21,9 +21,10 @@ class InitCombatCmdSet(CmdSet):
         self.add(CmdInitiateAttack())
 
 
-class CmdAttack(Command):
-    """A basic attack command."""
+class CmdInitiateCombat(Command):
+    """Engage an opponent in combat."""
     key = "attack"
+    aliases = ("engage",)
     
     def func(self):
         caller = self.caller
@@ -39,12 +40,12 @@ class CmdAttack(Command):
             combat = target.ndb.combat
         elif combat != target.ndb.combat:
             # merge combat instances
-            caller.msg("Merging combat isn't implemented yet.")
+            caller.msg("Merging combat instances isn't implemented yet.")
             return
         if not combat:
             combat = CombatHandler(caller, target)
-        
-        caller.msg("You would attack {target} here if it was implemented.")
+        range = combat.get_range(caller, target)
+        caller.msg(f"You prepare for combat! {target.get_display_name(caller)} is within {range} weapon range.")
 
 class CmdAdvance(Command):
     """Advance towards a target."""
@@ -55,6 +56,7 @@ class CmdAdvance(Command):
     def func(self):
         caller = self.caller
         args = self.args
+        # should do movement cooldown check here, actually
         
         target = caller.search(args)
         if not target:
@@ -63,6 +65,7 @@ class CmdAdvance(Command):
         combat = caller.ndb.combat
         success = combat.advance(caller, target)
         if success:
+            # apply movement cost/cooldown here
             range = combat.get_range(caller, target)
             caller.location.msg_contents("{attacker} advances towards {target}.", exclude=caller, mapping={ "attacker": caller, "target": target })
             caller.msg(f"You advance towards {target.get_display_name(caller)} and are now in {range} weapon range.")
@@ -79,6 +82,7 @@ class CmdRetreat(Command):
     def func(self):
         caller = self.caller
         args = self.args
+        # should do movement cooldown check here, actually
         
         target = caller.search(args)
         if not target:
@@ -87,6 +91,7 @@ class CmdRetreat(Command):
         combat = caller.ndb.combat
         success = combat.retreat(caller, target)
         if success:
+            # apply movement cost/cooldown here
             range = combat.get_range(caller, target)
             caller.location.msg_contents("{attacker} retreats from {target}.", exclude=caller, mapping={ "attacker": caller, "target": target })
             caller.msg(f"You retreat from {target.get_display_name(caller)} and are now in {range} weapon range.")
@@ -99,13 +104,12 @@ class CmdRetreat(Command):
 class CmdHit(Command):
     """Basic melee combat attack."""
     key = "hit"
-    locks = "cmd:in_combat()"
+    locks = "cmd:in_combat() and melee_equipped() and in_range(melee)"
 
     def func(self):
         caller = self.caller
         args = self.args
 
-        # haven't actually added cooldowns yet
         if not caller.cooldowns.ready("attack"):
             # include a time here
             caller.msg("You can't attack again yet.")
@@ -133,38 +137,45 @@ class CmdHit(Command):
             return
         
         # apply damage and set cooldown
+				caller.cooldowns.add("attack", cooldown)
         caller.msg("This is where you would do the attack stuff if it was implemented.")
 
-class CombatBaseCmdSet(CmdSet):
-    """Command set containing always-available commands"""
-    key = 'combat_base_cmdset'
-    priority = 10
-    mergetype = 'Replace'
-    no_exits = True
 
-    def at_cmdset_creation(self):
-        inv = CmdInventory()
-        inv.help_category = 'free instant actions'
-        self.add(inv)
+class CmdShoot(Command):
+    """Basic ranged combat attack."""
+    key = "shoot"
+    locks = "cmd:in_combat() and ranged_equipped() and in_range(ranged)"
 
-        say = CmdSay()
-        say.help_category = 'free instant actions'
-        self.add(say)
+    def func(self):
+        caller = self.caller
+        args = self.args
 
-        emote = CmdEmote()
-        emote.help_category = 'free instant actions'
-        self.add(emote)
+        # haven't actually added cooldowns yet
+        if not caller.cooldowns.ready("attack"):
+            # include a time here
+            caller.msg("You can't attack again yet.")
+            return
 
-        pose = CmdPose()
-        pose.help_category = 'free instant actions'
-        self.add(pose)
+        target = caller.search(args)
+        if not target:
+            return
 
-        self.add(CmdCombatLook())
-        self.add(default_cmds.CmdHelp())
+        combat = caller.ndb.combat
+        range = combat.get_range(caller, target)
+        if not range:
+            caller.msg("You can't fight that.")
+            return
 
-        # admin/builder commands
-        self.add(default_cmds.CmdScripts())
-        self.add(default_cmds.CmdPy())
+        # check equip handler to find how to get wielded weapon 
+        dmg, cooldown = weapon.at_attack(caller, range)
+        
+        if not dmg:
+            caller.msg(f"You can't hit {target.get_display_name(caller)} from here.")
+            return
+        
+        # apply damage and set cooldown
+				caller.cooldowns.add("attack", cooldown)
+        caller.msg("This is where you would do the attack stuff if it was implemented.")
 
 
 class CombatCmdSet(CmdSet):

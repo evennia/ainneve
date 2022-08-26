@@ -40,7 +40,7 @@ class Weapon(Equippable):
 
     def load_ammunition(self):
         """Checks whether there is proper ammunition and returns one unit."""
-        if ammo := self.db.ammunition:
+        if ammo_type := self.db.ammunition:
             ammunition = [obj for obj in self.location.contents
                           if obj.is_typeclass('typeclasses.items.Bundlable')
                               or any(obj.tags.has(ammo, category="ammunition"))]
@@ -48,7 +48,7 @@ class Weapon(Equippable):
             if not ammunition:
                 # no individual ammo found, search for bundle
                 bundle = [obj for obj in self.location.contents
-                          if "bundle {}".format(self.db.ammunition)
+                          if "bundle {}".format(ammo_type)
                               in obj.aliases.all()
                           and obj.is_typeclass('typeclasses.items.Bundle')]
 
