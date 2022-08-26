@@ -55,11 +55,11 @@ class Character(ContribRPCharacter):
     def at_turn_start(self):
         """Hook called at the start of each combat turn or by a 6s ticker."""
         # refill traits that are allocated every turn
-        self.traits.MV.fill_gauge()
-        self.traits.BM.fill_gauge()
-        self.traits.WM.fill_gauge()
+        self.traits.MV.reset()
+        self.traits.BM.reset()
+        self.traits.WM.reset()
         # Power Points are lost each turn
-        self.traits.PP.reset_counter()
+        self.traits.PP.reset()
 
         if self.nattributes.has('combat_handler'):
             for _, item in self.equip:

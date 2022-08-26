@@ -163,7 +163,7 @@ class CmdSetTraits(MuxCommand):
     def _format_trait_3col(self, trait):
         """Return a trait : value pair formatted for 3col layout"""
         return "|C{:<17.17}|n : |w{:>4}|n".format(
-                    trait.name, trait.actual)
+                    trait.name, trait.value)
 
     def func(self):
         caller = self.caller
@@ -274,7 +274,7 @@ class CmdSetSkills(MuxCommand):
     def _format_skill_3col(self, skill):
         """Return a skill : value pair formatted for 3col layout"""
         return "|M{:<17.17}|n : |w{:>4}|n".format(
-                    skill.name, skill.actual)
+                    skill.name, skill.value)
 
     def func(self):
         caller = self.caller

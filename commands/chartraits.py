@@ -48,28 +48,28 @@ class CmdSheet(MuxCommand):
         fields = {
             'A': self.caller.name,
             'B': self.caller.db.archetype,
-            'C': tr.XP.actual,
-            'D': tr.XP.level_boundaries[tr.LV.actual],
-            'E': tr.LV.actual,
-            'F': tr.STR.actual,
-            'G': tr.PER.actual,
-            'H': tr.INT.actual,
-            'I': tr.DEX.actual,
-            'J': tr.CHA.actual,
-            'K': tr.VIT.actual,
-            'L': tr.MAG.actual,
-            'M': tr.FORT.actual,
-            'N': tr.REFL.actual,
-            'O': tr.WILL.actual,
-            'P': tr.ATKM.actual,
-            'Q': tr.ATKR.actual,
-            'R': tr.ATKU.actual,
-            'S': tr.DEF.actual,
-            'T': "{:+d}".format(tr.PP.actual),
-            'U': tr.ENC.actual,
+            'C': tr.XP.value,
+            'D': tr.XP.level_boundaries[int(tr.LV.value)],
+            'E': tr.LV.value,
+            'F': tr.STR.value,
+            'G': tr.PER.value,
+            'H': tr.INT.value,
+            'I': tr.DEX.value,
+            'J': tr.CHA.value,
+            'K': tr.VIT.value,
+            'L': tr.MAG.value,
+            'M': tr.FORT.value,
+            'N': tr.REFL.value,
+            'O': tr.WILL.value,
+            'P': tr.ATKM.value,
+            'Q': tr.ATKR.value,
+            'R': tr.ATKU.value,
+            'S': tr.DEF.value,
+            'T': "{:+d}".format(int(tr.PP.value)),
+            'U': tr.ENC.value,
             'V': tr.ENC.max,
             'W': tr.MV.mod,
-            'X': tr.MV.actual,
+            'X': tr.MV.value,
             'Y': self.caller.db.race,
             'Z': self.caller.db.focus,
         }
@@ -77,13 +77,13 @@ class CmdSheet(MuxCommand):
 
         gauges = EvTable(
             "|CHP|n", "|CSP|n", "|CBM|n", "|CWM|n",
-            table=[["{} / {}".format(self._format_trait_val(tr.HP.actual),
+            table=[["{} / {}".format(self._format_trait_val(tr.HP.value),
                                      self._format_trait_val(tr.HP.max))],
-                   ["{} / {}".format(self._format_trait_val(tr.SP.actual),
+                   ["{} / {}".format(self._format_trait_val(tr.SP.value),
                                      self._format_trait_val(tr.SP.max))],
-                   ["{} / {}".format(self._format_trait_val(tr.BM.actual),
+                   ["{} / {}".format(self._format_trait_val(tr.BM.value),
                                      self._format_trait_val(tr.BM.max))],
-                   ["{} / {}".format(self._format_trait_val(tr.WM.actual),
+                   ["{} / {}".format(self._format_trait_val(tr.WM.value),
                                      self._format_trait_val(tr.WM.max))]],
             align='c',
             border="incols"
@@ -145,22 +145,22 @@ class CmdTraits(MuxCommand):
         elif self.args.startswith('sec'):
             title = 'Secondary Traits'
             data = [["|C{:<29.29}|n : |w{:>4}|n".format(
-                        tr[t].name, tr[t].actual)
+                        tr[t].name, tr[t].value)
                     for t in ('HP', 'SP')],
                     ["|C{:<28.28}|n : |w{:>4}|n".format(
-                        tr[t].name, tr[t].actual)
+                        tr[t].name, tr[t].value)
                     for t in ('BM', 'WM')]]
             table = EvTable(header=False, table=data)
         elif self.args.startswith('enc') or self.args.startswith('car'):
             title = 'Encumbrance'
             data = [["|C{:<30.30s}|n : |w{:>4}|n / |w{:>5}|n".format(
-                        tr.ENC.name, tr.ENC.actual, tr.ENC.max
+                        tr.ENC.name, tr.ENC.value, tr.ENC.max
                      ),
                      "|C{:30.30s}|n : |w{:>+12}|n".format(
                          'Encumbrance Penalty', tr.MV.mod
                      ),
                      "|C{:30.30s}|n : |w{:>12}|n".format(
-                         tr.MV.name, tr.MV.actual
+                         tr.MV.name, tr.MV.value
                      )]]
             table = EvTable(header=False, table=data)
         else:
@@ -179,7 +179,7 @@ class CmdTraits(MuxCommand):
     def _format_trait_3col(self, trait):
         """Return a trait : value pair formatted for 3col layout"""
         return "|C{:<16.16}|n : |w{:>4}|n".format(
-                    trait.name, trait.actual)
+                    trait.name, trait.value)
 
 
 class CmdSkills(MuxCommand):
@@ -248,7 +248,7 @@ class CmdSkills(MuxCommand):
     def _format_skill_3col(self, skill):
         """Return a trait : value pair formatted for 3col layout"""
         return "|M{:<16.16}|n : |w{:>4}|n".format(
-                    skill.name, skill.actual)
+                    skill.name, skill.value)
 
 
 class CmdWealth(MuxCommand):

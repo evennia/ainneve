@@ -157,8 +157,8 @@ def calculate_secondary_traits(traits):
     traits.ATKU.base = traits.DEX.value
     traits.DEF.base = traits.DEX.value
     # mana
-    traits.BM.base = 10 if traits.MAG.value > 0 else 0
-    traits.WM.base = 10 if traits.MAG.value > 0 else 0
+    # traits.BM.max = 10 if traits.MAG.value > 0 else 0
+    # traits.WM.max = 10 if traits.MAG.value > 0 else 0
     # misc
     traits.STR.carry_factor = 10
     traits.STR.lift_factor = 20
@@ -177,11 +177,6 @@ def finalize_traits(traits):
     for t in PRIMARY_TRAITS + SECONDARY_TRAITS + SAVE_ROLLS:
         traits[t].base = traits[t].value if traits[t].value <= 10 else 10
         traits[t].mod = 0
-
-    if traits.BM.base == 0:
-        traits.BM.max = 0
-    if traits.WM.base == 0:
-        traits.WM.max = 0
 
 
 def load_archetype(name):
@@ -259,8 +254,8 @@ class Archetype(object):
             'VIT': {'trait_type': 'static', 'base': 1, 'mod': 0, 'name': 'Vitality'},
             # magic
             'MAG': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Magic'},
-            'BM': {'trait_type': 'gauge', 'base': 10, 'mod': 0, 'min': 0, 'name': 'Black Mana'},
-            'WM': {'trait_type': 'gauge', 'base': 10, 'mod': 0, 'min': 0, 'name': 'White Mana'},
+            'BM': {'trait_type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Black Mana'},
+            'WM': {'trait_type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'name': 'White Mana'},
             # secondary
             'HP': {'trait_type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Health'},
             'SP': {'trait_type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Stamina'},
@@ -280,7 +275,7 @@ class Archetype(object):
             'MV': {'trait_type': 'gauge', 'base': 6, 'mod': 0, 'min': 0, 'name': 'Movement Points'},
             'LV': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Level'},
             'XP': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Experience',
-                   'extra': {'level_boundaries': (500, 2000, 4500, 'unlimited')}},
+                   'level_boundaries': (500, 2000, 4500, 'unlimited')},
         }
         self.health_roll = None
 
