@@ -94,14 +94,12 @@ class Equippable(Item):
         multi_slot (bool): operator for multiple slots. False equips to
             first available slot; True requires all listed slots available.
     """
-    slots = None
-    multi_slot = False
+    slots = AttributeProperty(default=None)
+    multi_slot = AttributeProperty(default=False)
 
     def at_object_creation(self):
         super(Equippable, self).at_object_creation()
         self.locks.add("puppet:false();equip:true()")
-        self.db.slots = self.slots
-        self.db.multi_slot = self.multi_slot
         self.db.used_by = None
 
     def at_equip(self, character):
@@ -123,7 +121,7 @@ class Equippable(Item):
         pass
 
     def at_drop(self, dropper):
-        super(Equippable, self).at_drop(dropper)
+        super().at_drop(dropper)
         if self in dropper.equip:
             dropper.equip.remove(self)
             self.at_remove(dropper)
