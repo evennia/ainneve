@@ -40,10 +40,6 @@ class Weapon(Equippable):
 
     def load_ammunition(self):
         """Checks whether there is proper ammunition and returns one unit."""
-        if "ranged" not in self.tags.get(category="combat_range", return_list=True):
-            # not a ranged weapon
-            return None
-        
         if ammo := self.db.ammunition:
             ammunition = [obj for obj in self.location.contents
                           if obj.is_typeclass('typeclasses.items.Bundlable')
