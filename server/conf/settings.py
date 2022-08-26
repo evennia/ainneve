@@ -57,9 +57,9 @@ TELNET_INTERFACES = ["0.0.0.0"]
 # forward into the standard 4001/4002 ports
 WEBSERVER_ENABLED = True
 WEBSERVER_INTERFACES = ["127.0.0.1"]
-
-WEBSOCKET_CLIENT_URL = "wss://ainneve.com:4002/"
-WEBSOCKET_CLIENT_INTERFACE = "127.0.0.1"
+#
+# WEBSOCKET_CLIENT_URL = "wss://ainneve.com:4002/"
+# WEBSOCKET_CLIENT_INTERFACE = "127.0.0.1"
 
 
 ######################################################################
@@ -69,7 +69,6 @@ WEBSOCKET_CLIENT_INTERFACE = "127.0.0.1"
 # Allow multiple sessions per account; one character per session
 MULTISESSION_MODE = 2
 MAX_NR_CHARACTERS = 5
-IRC_ENABLED = True
 
 # Other defaults
 PROTOTYPE_MODULES = ('world.content.prototypes_armor',

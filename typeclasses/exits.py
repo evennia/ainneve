@@ -37,7 +37,7 @@ class Exit(DefaultExit):
 
         if (hasattr(traversing_object, 'traits') and
                 'MV' in traversing_object.traits.all):
-            if traversing_object.traits.MV.actual < move_cost:
+            if traversing_object.traits.MV.value < move_cost:
                 traversing_object.msg('Moving so far so fast has worn you out. '
                                       'You pause for a moment to gather your '
                                       'composure.')

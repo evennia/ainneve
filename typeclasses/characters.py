@@ -8,9 +8,9 @@ creation commands.
 
 """
 from evennia.contrib.rpg.rpsystem import ContribRPCharacter
+from evennia.contrib.rpg.traits import TraitHandler
 from evennia.utils import lazy_property, utils
 from world.equip import EquipHandler
-from world.traits import TraitHandler
 from world.skills import apply_skills
 from world.archetypes import Archetype
 from world.death import CharDeathHandler, NPCDeathHandler
@@ -44,8 +44,8 @@ class Character(ContribRPCharacter):
 
     @lazy_property
     def skills(self):
-        """TraitHandler that manages character traits."""
-        return TraitHandler(self, db_attribute='skills')
+        """TraitHandler that manages character skills."""
+        return TraitHandler(self, db_attribute_key='skills')
 
     @lazy_property
     def equip(self):
@@ -55,11 +55,11 @@ class Character(ContribRPCharacter):
     def at_turn_start(self):
         """Hook called at the start of each combat turn or by a 6s ticker."""
         # refill traits that are allocated every turn
-        self.traits.MV.fill_gauge()
-        self.traits.BM.fill_gauge()
-        self.traits.WM.fill_gauge()
+        self.traits.MV.reset()
+        self.traits.BM.reset()
+        self.traits.WM.reset()
         # Power Points are lost each turn
-        self.traits.PP.reset_counter()
+        self.traits.PP.reset()
 
         if self.nattributes.has('combat_handler'):
             for _, item in self.equip:
@@ -108,8 +108,8 @@ class Character(ContribRPCharacter):
         race = self.db.race
         arch = self.db.archetype
 
-        med = looker.skills.medicine.actual
-        per = looker.traits.PER.actual
+        med = looker.skills.medicine.value
+        per = looker.traits.PER.value
 
         # These each do a skill check, but they always pass
         # if you're looking at yourself
@@ -141,7 +141,7 @@ class Character(ContribRPCharacter):
         string += ".\n"
 
         health_percent = float(self.traits.HP.percent().strip('%'))
-        health_current = self.traits.HP.actual
+        health_current = self.traits.HP.value
         health_max = self.traits.HP.max
 
         if knows_health_vague or knows_health_exact:
@@ -155,8 +155,8 @@ class Character(ContribRPCharacter):
                 health_string = "They seem a little roughed up."
             # If we've not passed either previous condition, they could
             # have 0 health. Since we're converting to a float, it's possible
-            # we won't get a float of zero, so we check HP.actual instead
-            elif self.traits.HP.actual > 0:
+            # we won't get a float of zero, so we check HP.value instead
+            elif self.traits.HP.value > 0:
                 health_string = "They seem to be in pretty bad shape."
             else:
                 health_string = "They're dead."
@@ -172,11 +172,11 @@ class Character(ContribRPCharacter):
         string += health_string
 
         stamina_percent = float(self.traits.SP.percent().strip('%'))
-        stamina_current = str(self.traits.SP.actual)
+        stamina_current = str(self.traits.SP.value)
         stamina_max = str(self.traits.SP.max)
         stamina_string = ""
 
-        # we check HP.actual, in case they're dead
+        # we check HP.value, in case they're dead
         if health_current > 0 and (knows_stamina_vague or knows_stamina_exact):
             if stamina_percent > .8:
                 stamina_string = "They seem full of energy."
@@ -218,6 +218,7 @@ class Character(ContribRPCharacter):
                 string += "|y{limb}|n: |w{name}|n\n".format(limb=limb, name=key)
 
         return string
+
 
 class NPC(Character):
     """Base character typeclass for NPCs and enemies.

@@ -39,25 +39,25 @@ class ItemEncumbranceTestCase(EvenniaTest):
 
     def test_get_item(self):
         """test that item get hook properly affects encumbrance"""
-        self.assertEqual(self.char1.traits.ENC.actual, 0)
-        self.assertEqual(self.char1.traits.MV.actual, 5)
+        self.assertEqual(self.char1.traits.ENC.value, 0)
+        self.assertEqual(self.char1.traits.MV.value, 5)
         self.char1.execute_cmd('get Obj')
-        self.assertEqual(self.char1.traits.ENC.actual, 1.0)
-        self.assertEqual(self.char1.traits.MV.actual, 5)
+        self.assertEqual(self.char1.traits.ENC.value, 1.0)
+        self.assertEqual(self.char1.traits.MV.value, 5)
         # Obj2 is heavy enough to incur a movement penalty
         self.char1.execute_cmd('get Obj2')
-        self.assertEqual(self.char1.traits.ENC.actual, 19.0)
-        self.assertEqual(self.char1.traits.MV.actual, 4)
+        self.assertEqual(self.char1.traits.ENC.value, 19.0)
+        self.assertEqual(self.char1.traits.MV.value, 4)
 
     def test_drop_item(self):
         """test that item drop hook properly affects encumbrance"""
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('get Obj2')
-        self.assertEqual(self.char1.traits.ENC.actual, 19.0)
-        self.assertEqual(self.char1.traits.MV.actual, 4)
+        self.assertEqual(self.char1.traits.ENC.value, 19.0)
+        self.assertEqual(self.char1.traits.MV.value, 4)
         self.char1.execute_cmd('drop Obj2')
-        self.assertEqual(self.char1.traits.ENC.actual, 1.0)
-        self.assertEqual(self.char1.traits.MV.actual, 5)
+        self.assertEqual(self.char1.traits.ENC.value, 1.0)
+        self.assertEqual(self.char1.traits.MV.value, 5)
 
 
 class EquipTestCase(CommandTest):
@@ -86,7 +86,7 @@ class EquipTestCase(CommandTest):
         self.char1.execute_cmd('get Obj')
         self.call(CmdWield(), 'Obj', "You wield Obj(#4).")
         # test the at_equip hooks
-        self.assertEqual(self.char1.traits.ATKM.actual, 8)
+        self.assertEqual(self.char1.traits.ATKM.value, 8)
         self.assertEqual(self.char1.equip.get('wield1'), self.obj1)
         self.assertIs(self.char1.equip.get('wield2'), None)
         # can't wield armor
@@ -104,7 +104,7 @@ class EquipTestCase(CommandTest):
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('wield Obj')
         # test the at_equip hooks
-        self.assertEqual(self.char1.traits.ATKM.actual, 8)
+        self.assertEqual(self.char1.traits.ATKM.value, 8)
         self.assertEqual(self.char1.equip.get('wield1'), self.obj1)
         self.assertEqual(self.char1.equip.get('wield2'), self.obj1)
 
@@ -120,7 +120,7 @@ class EquipTestCase(CommandTest):
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('wield Obj')
         # test the at_equip hooks
-        self.assertEqual(self.char1.traits.ATKR.actual, 4)
+        self.assertEqual(self.char1.traits.ATKR.value, 4)
         self.assertEqual(self.char1.equip.get('wield1'), self.obj1)
         self.assertIs(self.char1.equip.get('wield2'), None)
 
@@ -136,7 +136,7 @@ class EquipTestCase(CommandTest):
         self.char1.execute_cmd('get Obj')
         self.char1.execute_cmd('wield Obj')
         # test the at_equip hooks
-        self.assertEqual(self.char1.traits.ATKR.actual, 4)
+        self.assertEqual(self.char1.traits.ATKR.value, 4)
         self.assertEqual(self.char1.equip.get('wield1'), self.obj1)
         self.assertIs(self.char1.equip.get('wield2'), self.obj1)
 
@@ -322,11 +322,11 @@ class BuildingTestCase(CommandTest):
         self.call(CmdSetTraits(), "Obj STR,INVALID", "| Strength          :    1")
         # assign a trait
         self.call(CmdSetTraits(), "Obj STR = 8", 'Trait "STR" set to 8 for Obj|\n| Strength          :    8')
-        self.assertEqual(self.obj1.traits.STR.actual, 8)
+        self.assertEqual(self.obj1.traits.STR.value, 8)
         # ignore invalid traits in assignment
         self.call(CmdSetTraits(), "Obj STR,INVALID,PER = 7,5,6", 'Trait "STR" set to 7 for Obj|Invalid trait: "INVALID"|Trait "PER" set to 6 for Obj|\n| Strength          :    7 | Perception        :    6')
-        self.assertEqual(self.obj1.traits.STR.actual, 7)
-        self.assertEqual(self.obj1.traits.PER.actual, 6)
+        self.assertEqual(self.obj1.traits.STR.value, 7)
+        self.assertEqual(self.obj1.traits.PER.value, 6)
         # handle invalid arg combinations
         self.call(CmdSetTraits(), "Obj INVALID", "| Dexterity         :    1 | Black Mana        :    0 | Health            :    0 | Perception        :    6 | Action Points     :    0 | Defense           :    0 | Power Points      :    0 | Level             :    0 | White Mana        :    0 | Charisma          :    1 | Carry Weight      :    0 | Magic             :    0 | Reflex Save       :    0 | Strength          :    7 | Experience        :    0 | Fortitude Save    :    0 | Melee Attack      :    0 | Intelligence      :    1 | Stamina           :    0 | Will Save         :    0 | Movement Points   :    6 | Vitality          :    1 | Unarmed Attack    :    0 | Ranged Attack     :    0")
         self.call(CmdSetTraits(), "Obj STR, INT = 5, 6, 7", "Incorrect number of assignment values.")
@@ -376,12 +376,12 @@ class SetSkillTestCase(CommandTest):
 
     def test_assign_a_skill(self):
         self.call(CmdSetSkills(), "Obj jump = 4", 'Skill "jump" set to 4 for Obj|\nJump              :    4')
-        self.assertEqual(self.obj1.skills.jump.actual, 4)
+        self.assertEqual(self.obj1.skills.jump.value, 4)
 
     def test_ignore_invalid_skills_in_assignment(self):
         self.call(CmdSetSkills(), "Obj barter,sneak,noskill = 3, 4, 10", 'Skill "barter" set to 3 for Obj|Skill "sneak" set to 4 for Obj|Invalid skill: "noskill"|\nBarter            :    3 Sneak             :    4')
-        self.assertEqual(self.obj1.skills.barter.actual, 3)
-        self.assertEqual(self.obj1.skills.sneak.actual, 4)
+        self.assertEqual(self.obj1.skills.barter.value, 3)
+        self.assertEqual(self.obj1.skills.sneak.value, 4)
 
     def test_handle_invalid_arg_combinations(self):
         raw_output = self.call(CmdSetSkills(), "Obj INVALID")

@@ -30,12 +30,12 @@ class Item(Object):
     def at_get(self, getter):
         getter.traits.ENC.current += self.db.weight
         getter.traits.MV.mod = \
-            int(-(getter.traits.ENC.actual // (2 * getter.traits.STR.actual)))
+            int(-(getter.traits.ENC.value // (2 * getter.traits.STR.value)))
 
     def at_drop(self, dropper):
         dropper.traits.ENC.current -= self.db.weight
         dropper.traits.MV.mod = \
-            int(-(dropper.traits.ENC.actual // (2 * dropper.traits.STR.actual)))
+            int(-(dropper.traits.ENC.value // (2 * dropper.traits.STR.value)))
 
 
 class Bundlable(Item):

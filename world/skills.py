@@ -164,6 +164,7 @@ INT_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'INT']
 DEX_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'DEX']
 CHA_SKILLS = [s for s in ALL_SKILLS if _SKILL_DATA[s]['base'] == 'CHA']
 
+
 def apply_skills(char):
     """Sets up a character's initial skill traits.
 
@@ -173,12 +174,13 @@ def apply_skills(char):
     char.skills.clear()
     for skill, data in _SKILL_DATA.items():
         char.skills.add(
-            key=skill,
+            trait_key=skill,
             type='static',
-            base=char.traits[data['base']].actual,
+            base=char.traits[data['base']].value,
             mod=0,
             name=data['name'],
-            extra=dict(plus=0, minus=0)
+            plus=0,
+            minus=0
         )
 
 
@@ -209,7 +211,7 @@ def validate_skills(char):
             second value is error message
     """
     minus_count = 3
-    plus_count = ceil(char.traits.INT.actual / 3.0)
+    plus_count = ceil(char.traits.INT.value / 3.0)
     if sum(char.skills[s].minus for s in ALL_SKILLS) != minus_count:
         return False, 'Not enough -1 counters allocated.'
     if sum(char.skills[s].plus for s in ALL_SKILLS) != plus_count:

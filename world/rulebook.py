@@ -161,10 +161,10 @@ def resolve_death(killer, victim, combat_handler):
     # award XP
     if victim.is_typeclass('typeclasses.characters.Character'):
         # in PVP, gain 10% of opponents XP
-        xp_gained = int(floor(0.1 * victim.traits.XP.actual))
+        xp_gained = int(floor(0.1 * victim.traits.XP.value))
     else:
         # XP trait on NPCs contains the full award
-        xp_gained = int(victim.traits.XP.actual)
+        xp_gained = int(victim.traits.XP.value)
 
     killer.traits.XP.base += xp_gained
     killer.msg("{actor} gains {xp} XP".format(
@@ -445,11 +445,11 @@ def _do_attack(st_remaining, character, target, args):
         # this attack has earned PPs
         character.traits.PP.current += atk_roll
 
-    if character.traits.PP.actual > 0:
+    if character.traits.PP.value > 0:
         # handle equipment abilities
         pass
 
-    if target.traits.HP.actual <= 0:
+    if target.traits.HP.value <= 0:
         # target has died
         resolve_death(character, target, ch)
 
@@ -546,11 +546,11 @@ def _do_kick(st_remaining, character, target, args):
             # this attack has earned PPs
             character.traits.PP.current += atk_roll
 
-        if character.traits.PP.actual > 0:
+        if character.traits.PP.value > 0:
             # handle equipment abilities
             pass
 
-        if target.traits.HP.actual <= 0:
+        if target.traits.HP.value <= 0:
             # target has died
             resolve_death(character, target, ch)
 
@@ -648,11 +648,11 @@ def _do_strike(st_remaining, character, target, args):
         # this attack has earned PPs
         character.traits.PP.current += atk_roll
 
-    if character.traits.PP.actual > 0:
+    if character.traits.PP.value > 0:
         # handle equipment abilities
         pass
 
-    if target.traits.HP.actual <= 0:
+    if target.traits.HP.value <= 0:
         # target has died
         resolve_death(character, target, ch)
 
@@ -716,7 +716,7 @@ def _do_retreat(st_remaining, character, _, args):
         return 0.2 * COMBAT_DELAY
 
     elif start_range == 'melee':
-        ok = skill_check(character.skills.balance.actual, 4)
+        ok = skill_check(character.skills.balance.value, 4)
 
     else:
         ok = True
@@ -764,7 +764,7 @@ def _do_flee(st_remaining, character, _, args):
             # easiest
             target_num = 4
 
-        ok = skill_check(character.skills.escape.actual, target_num)
+        ok = skill_check(character.skills.escape.value, target_num)
         if ok:
             # successfully escaped
             ch.combat_msg(
@@ -930,8 +930,8 @@ def resolve_combat(combat_handler):
             else:
                 # third tiebreaker: reroll
                 while True:  # repeat until we get a result
-                    roll_x = std_roll() + combatants[x[0]].traits.PER.actual
-                    roll_y = std_roll() + combatants[y[0]].traits.PER.actual
+                    roll_x = std_roll() + combatants[x[0]].traits.PER.value
+                    roll_y = std_roll() + combatants[y[0]].traits.PER.value
                     if roll_x != roll_y:
                         return roll_x - roll_y
 
@@ -941,7 +941,7 @@ def resolve_combat(combat_handler):
 
     for cid, combatant in combatants.items():
         roll = std_roll()
-        initiative = roll + combatant.traits.PER.actual
+        initiative = roll + combatant.traits.PER.value
         if initiative in intv_rolls:
             intv_rolls[initiative].append((cid, initiative, roll))
         else:

@@ -182,7 +182,7 @@ class CmdCharCreate(MuxAccountCommand):
                     if new_character.db.race:
                         startnode = "menunode_allocate_mana"
                         if (new_character.traits.BM.base + new_character.traits.WM.base
-                                == new_character.traits.MAG.actual
+                                == new_character.traits.MAG.value
                                 and len(new_character.skills.all) > 0):
                             startnode = "menunode_allocate_skills"
                             if ('escape' in new_character.skills.all

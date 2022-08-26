@@ -81,7 +81,7 @@ class CmdAppraise(default_cmds.MuxCommand):
                 caller.ndb.appr_win.pop(obj.dbref)
 
             # run the skill check again
-        if skill_check(caller.skills.appraise.actual):
+        if skill_check(caller.skills.appraise.value):
             self.display(obj)
 
                #add a record of the item to the win list

@@ -54,7 +54,7 @@ class CharDeathHandler(DeathHandler):
                                        exclude=self.obj)
 
         self.obj.db.pose = self.obj.db.pose_death
-        self.obj.traits.XP.base = int(floor(0.1 * self.obj.traits.XP.actual))
+        self.obj.traits.XP.base = int(floor(0.1 * self.obj.traits.XP.value))
         delay(20, getattr(self, self.db.death_sequence[self.db.death_step]))
 
     def floating(self):
@@ -94,8 +94,8 @@ class CharDeathHandler(DeathHandler):
 
     def revive(self):
         # revive the dead character
-        self.obj.traits.HP.fill_gauge()
-        self.obj.traits.SP.fill_gauge()
+        self.obj.traits.HP.reset()
+        self.obj.traits.SP.reset()
         self.obj.db.pose = self.obj.db.pose_default
         self.obj.move_to(self.obj.home, quiet=True)
         self.stop()
@@ -131,8 +131,8 @@ class NPCDeathHandler(DeathHandler):
 
     def revive(self):
         # revive the dead NPC
-        self.obj.traits.HP.fill_gauge()
-        self.obj.traits.SP.fill_gauge()
+        self.obj.traits.HP.reset()
+        self.obj.traits.SP.reset()
         self.obj.db.pose = self.obj.db.pose_default
         self.obj.move_to(self.obj.home)
         self.stop()

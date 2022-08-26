@@ -103,8 +103,8 @@ class ChargenTestCase(EvenniaTest):
         """test chargen overridden @ic command"""
         self.session.execute_cmd('@ic Char')
         # confirm the menu displayed the next node
-        last_msg = self.session.msg.mock_calls[-1][1][0]
-        self.assertIn('Select an Archetype by number', last_msg)
+        last_msg = self.session.msg.call_args[1]['text'][0]
+        self.assertIn('select an |cArchetype|n', last_msg)
 
     def test_node_welcome(self):
         """test welcome node output"""
@@ -177,12 +177,12 @@ class ChargenTestCase(EvenniaTest):
         self.session.execute_cmd('5')
         self.session.execute_cmd('4 ')
         self.session.execute_cmd(' 3')
-        self.assertEqual(self.char1.traits.STR.actual, 4)
-        self.assertEqual(self.char1.traits.PER.actual, 6)
-        self.assertEqual(self.char1.traits.INT.actual, 7)
-        self.assertEqual(self.char1.traits.DEX.actual, 5)
-        self.assertEqual(self.char1.traits.CHA.actual, 2)
-        self.assertEqual(self.char1.traits.VIT.actual, 6)
+        self.assertEqual(self.char1.traits.STR.value, 4)
+        self.assertEqual(self.char1.traits.PER.value, 6)
+        self.assertEqual(self.char1.traits.INT.value, 7)
+        self.assertEqual(self.char1.traits.DEX.value, 5)
+        self.assertEqual(self.char1.traits.CHA.value, 2)
+        self.assertEqual(self.char1.traits.VIT.value, 6)
         # confirm the menu displayed the next node
         last_msg = self.session.msg.mock_calls[-1][1][0]
         self.assertIn('Next, select a race for your character:', last_msg)
@@ -193,7 +193,7 @@ class ChargenTestCase(EvenniaTest):
         self.session.execute_cmd('@charcreate Char')
         for i in list(range(5)):
             self.session.execute_cmd('1')
-        self.assertEqual(self.char1.traits.STR.actual, 10)
+        self.assertEqual(self.char1.traits.STR.value, 10)
         # confirm error message
         last_msg = ansi.strip_ansi(self.session.msg.mock_calls[-1][1][0])
         self.assertIn('Cannot allocate more than 10 points to one trait!', last_msg)
@@ -207,12 +207,12 @@ class ChargenTestCase(EvenniaTest):
         self.session.execute_cmd('5')
         self.session.execute_cmd('4')
         self.session.execute_cmd('8')
-        self.assertEqual(self.char1.traits.STR.actual, 4)
-        self.assertEqual(self.char1.traits.PER.actual, 6)
-        self.assertEqual(self.char1.traits.INT.actual, 6)
-        self.assertEqual(self.char1.traits.DEX.actual, 4)
-        self.assertEqual(self.char1.traits.CHA.actual, 1)
-        self.assertEqual(self.char1.traits.VIT.actual, 1)
+        self.assertEqual(self.char1.traits.STR.value, 4)
+        self.assertEqual(self.char1.traits.PER.value, 6)
+        self.assertEqual(self.char1.traits.INT.value, 6)
+        self.assertEqual(self.char1.traits.DEX.value, 4)
+        self.assertEqual(self.char1.traits.CHA.value, 1)
+        self.assertEqual(self.char1.traits.VIT.value, 1)
         # confirm the menu is still at trait allocation
         last_msg = self.session.msg.mock_calls[-1][1][0]
         self.assertIn('Allocate additional trait points as you choose.', last_msg)
@@ -465,21 +465,21 @@ class ChargenTestCase(EvenniaTest):
         self.session.execute_cmd('13')  # Animal Handle
         self.session.execute_cmd('13')
         sk = self.char1.skills
-        self.assertEqual(sk.escape.actual, 5)
-        self.assertEqual(sk.climb.actual, 4)
-        self.assertEqual(sk.jump.actual, 4)
-        self.assertEqual(sk.lockpick.actual, 7)
-        self.assertEqual(sk.listen.actual, 6)
-        self.assertEqual(sk.sense.actual, 7)
-        self.assertEqual(sk.appraise.actual, 8)
-        self.assertEqual(sk.medicine.actual, 9)
-        self.assertEqual(sk.survival.actual, 8)
-        self.assertEqual(sk.balance.actual, 5)
-        self.assertEqual(sk.sneak.actual, 5)
-        self.assertEqual(sk.throwing.actual, 5)
-        self.assertEqual(sk.animal.actual, 4)
-        self.assertEqual(sk.barter.actual, 2)
-        self.assertEqual(sk.leadership.actual, 2)
+        self.assertEqual(sk.escape.value, 5)
+        self.assertEqual(sk.climb.value, 4)
+        self.assertEqual(sk.jump.value, 4)
+        self.assertEqual(sk.lockpick.value, 7)
+        self.assertEqual(sk.listen.value, 6)
+        self.assertEqual(sk.sense.value, 7)
+        self.assertEqual(sk.appraise.value, 8)
+        self.assertEqual(sk.medicine.value, 9)
+        self.assertEqual(sk.survival.value, 8)
+        self.assertEqual(sk.balance.value, 5)
+        self.assertEqual(sk.sneak.value, 5)
+        self.assertEqual(sk.throwing.value, 5)
+        self.assertEqual(sk.animal.value, 4)
+        self.assertEqual(sk.barter.value, 2)
+        self.assertEqual(sk.leadership.value, 2)
         # confirm we're on the equipment node
         last_msg = self.session.msg.mock_calls[-1][1][0]
         self.assertIn('Select a category of equipment to view:', last_msg)
