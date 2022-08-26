@@ -1,10 +1,13 @@
 
 # breakpoints for distance ranges of different weapon types
 _WEAPON_RANGES = {
-    0: "melee",
-    2: "reach",
-    4: "ranged",
+    "melee": 0,
+    "reach": 2,
+    "ranged": 4,
 }
+
+# format for combat prompt
+_COMBAT_PROMPT = "HP {hp} - MP {mp} - CD {cd}"
 
 class CombatHandler:
     positions = None
@@ -44,11 +47,20 @@ class CombatHandler:
         distance = abs(self.positions[attacker] - self.positions[target])
         range = None
         for key, val in _WEAPON_RANGES.items():
-            if key > distance:
+            if val > distance:
                 break
-            range = val
+            range = key
 
         return range
+    
+    def any_in_range(self, attacker, range):
+        if attacker not in self.positions:
+            return False
+        
+        if range not in _WEAPON_RANGES:
+            return False
+        
+        return any( p for p in self.positions.values() if p < _WEAPON_RANGES[range] )
 
     def approach(self, mover, target):
         """
@@ -65,11 +77,11 @@ class CombatHandler:
         if start == end:
             # already as close as you can get
             return False
-            
+        
+        # add additional checks for movement cooldown
         change = 1 if start < end else -1
         self.positions[mover] += change
         return True
-
 
     def retreat(self, mover, target):
         """
@@ -83,6 +95,7 @@ class CombatHandler:
         start = self.positions[mover]
         end = self.positions[target]
         
+        # add additional checks for movement cooldown
         change = -1 if start < end else 1
         self.positions[mover] += change
         return True

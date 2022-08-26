@@ -24,7 +24,6 @@ class Weapon(Equippable):
     def at_object_creation(self):
         super().at_object_creation()
         self.slots = ['wield1', 'wield2']
-        self.db.combat_cmdset = 'commands.combat.MeleeWeaponCmdSet'
         self.db.messages = {
             'dmg_hp': "{actor} attacks {target} with {weapon}, striking a painful blow.",
             'dmg_sp': "{actor} stuns {target} with {weapon}.",
@@ -32,13 +31,16 @@ class Weapon(Equippable):
             'missed': "{actor} attacks {target} with {weapon} and misses."
         }
 
-    def at_attack(self, character):
+    def at_attack(self, character, range):
+        if not self.tags.has(range, category="combat_range"):
+            # can't be used for this kind of attack
+            return (0, 0)
         # add stat bonuses here?
         return (self.damage, self.cooldown)
 
     def load_ammunition(self):
         """Checks whether there is proper ammunition and returns one unit."""
-        if "ranged" not in self.tags.get(category="combat_type", return_list=True):
+        if "ranged" not in self.tags.get(category="combat_range", return_list=True):
             # not a ranged weapon
             return None
         
