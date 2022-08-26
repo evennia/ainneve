@@ -119,21 +119,21 @@ class CharSkillsTestCase(EvenniaTest):
         """test module function `apply_skills`"""
         skills.apply_skills(self.char1)
         sk = self.char1.skills
-        self.assertEqual(sk.escape.actual, 8)
-        self.assertEqual(sk.climb.actual, 8)
-        self.assertEqual(sk.jump.actual, 8)
-        self.assertEqual(sk.lockpick.actual, 2)
-        self.assertEqual(sk.listen.actual, 2)
-        self.assertEqual(sk.sense.actual, 2)
-        self.assertEqual(sk.appraise.actual, 2)
-        self.assertEqual(sk.medicine.actual, 2)
-        self.assertEqual(sk.survival.actual, 2)
-        self.assertEqual(sk.balance.actual, 5)
-        self.assertEqual(sk.sneak.actual, 5)
-        self.assertEqual(sk.throwing.actual, 5)
-        self.assertEqual(sk.animal.actual, 5)
-        self.assertEqual(sk.barter.actual, 5)
-        self.assertEqual(sk.leadership.actual, 5)
+        self.assertEqual(sk.escape.value, 8)
+        self.assertEqual(sk.climb.value, 8)
+        self.assertEqual(sk.jump.value, 8)
+        self.assertEqual(sk.lockpick.value, 2)
+        self.assertEqual(sk.listen.value, 2)
+        self.assertEqual(sk.sense.value, 2)
+        self.assertEqual(sk.appraise.value, 2)
+        self.assertEqual(sk.medicine.value, 2)
+        self.assertEqual(sk.survival.value, 2)
+        self.assertEqual(sk.balance.value, 5)
+        self.assertEqual(sk.sneak.value, 5)
+        self.assertEqual(sk.throwing.value, 5)
+        self.assertEqual(sk.animal.value, 5)
+        self.assertEqual(sk.barter.value, 5)
+        self.assertEqual(sk.leadership.value, 5)
 
     def test_validate_skills(self):
         """test module function `apply_skills`"""
@@ -164,10 +164,10 @@ class CharSkillsTestCase(EvenniaTest):
         sk.medicine.plus += 1
         skills.finalize_skills(sk)
         # confirm the plusses and minuses are applied
-        self.assertEqual(sk.escape.actual, 7)
-        self.assertEqual(sk.climb.actual, 7)
-        self.assertEqual(sk.jump.actual, 7)
-        self.assertEqual(sk.medicine.actual, 3)
+        self.assertEqual(sk.escape.value, 7)
+        self.assertEqual(sk.climb.value, 7)
+        self.assertEqual(sk.jump.value, 7)
+        self.assertEqual(sk.medicine.value, 3)
         # confirm plus/minus counters are deleted
         with self.assertRaises(AttributeError):
             x = sk.escape.plus

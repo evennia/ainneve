@@ -54,7 +54,7 @@ class CharDeathHandler(DeathHandler):
                                        exclude=self.obj)
 
         self.obj.db.pose = self.obj.db.pose_death
-        self.obj.traits.XP.base = int(floor(0.1 * self.obj.traits.XP.actual))
+        self.obj.traits.XP.base = int(floor(0.1 * self.obj.traits.XP.value))
         delay(20, getattr(self, self.db.death_sequence[self.db.death_step]))
 
     def floating(self):

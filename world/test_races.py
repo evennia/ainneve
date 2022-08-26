@@ -92,16 +92,16 @@ class ApplyRaceTestCase(EvenniaTest):
 
     def check_traits(self, str, per, int, dex, cha, vit, mag, fort, refl, will):
         """enables one-line check of all character traits"""
-        self.assertEqual(self.char1.traits.STR.actual, str)
-        self.assertEqual(self.char1.traits.PER.actual, per)
-        self.assertEqual(self.char1.traits.INT.actual, int)
-        self.assertEqual(self.char1.traits.DEX.actual, dex)
-        self.assertEqual(self.char1.traits.CHA.actual, cha)
-        self.assertEqual(self.char1.traits.VIT.actual, vit)
-        self.assertEqual(self.char1.traits.MAG.actual, mag)
-        self.assertEqual(self.char1.traits.FORT.actual, fort)
-        self.assertEqual(self.char1.traits.REFL.actual, refl)
-        self.assertEqual(self.char1.traits.WILL.actual, will)
+        self.assertEqual(self.char1.traits.STR.value, str)
+        self.assertEqual(self.char1.traits.PER.value, per)
+        self.assertEqual(self.char1.traits.INT.value, int)
+        self.assertEqual(self.char1.traits.DEX.value, dex)
+        self.assertEqual(self.char1.traits.CHA.value, cha)
+        self.assertEqual(self.char1.traits.VIT.value, vit)
+        self.assertEqual(self.char1.traits.MAG.value, mag)
+        self.assertEqual(self.char1.traits.FORT.value, fort)
+        self.assertEqual(self.char1.traits.REFL.value, refl)
+        self.assertEqual(self.char1.traits.WILL.value, will)
 
     def test_apply_human_agility(self):
         """test character becoming human with agility focus"""

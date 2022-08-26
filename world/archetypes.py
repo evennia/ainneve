@@ -113,7 +113,7 @@ def get_remaining_allocation(traits):
     Returns:
         (int): number of trait points left for the player to allocate
     """
-    allocated = sum(traits[t].actual for t in PRIMARY_TRAITS)
+    allocated = sum(traits[t].value for t in PRIMARY_TRAITS)
     return TOTAL_PRIMARY_POINTS - allocated
 
 
@@ -128,7 +128,7 @@ def validate_primary_traits(traits):
         (tuple[bool, str]): first value is whether the traits are valid,
             second value is error message
     """
-    total = sum(traits[t].actual for t in PRIMARY_TRAITS)
+    total = sum(traits[t].value for t in PRIMARY_TRAITS)
     if total > TOTAL_PRIMARY_POINTS:
         return False, 'Too many trait points allocated.'
     if total < TOTAL_PRIMARY_POINTS:
@@ -145,25 +145,25 @@ def calculate_secondary_traits(traits):
         populated.
     """
     # secondary traits
-    traits.HP.base = traits.VIT.actual
-    traits.SP.base = traits.VIT.actual
+    traits.HP.base = traits.VIT.value
+    traits.SP.base = traits.VIT.value
     # save rolls
-    traits.FORT.base = traits.VIT.actual
-    traits.REFL.base = traits.DEX.actual
-    traits.WILL.base = traits.INT.actual
+    traits.FORT.base = traits.VIT.value
+    traits.REFL.base = traits.DEX.value
+    traits.WILL.base = traits.INT.value
     # combat
-    traits.ATKM.base = traits.STR.actual
-    traits.ATKR.base = traits.PER.actual
-    traits.ATKU.base = traits.DEX.actual
-    traits.DEF.base = traits.DEX.actual
+    traits.ATKM.base = traits.STR.value
+    traits.ATKR.base = traits.PER.value
+    traits.ATKU.base = traits.DEX.value
+    traits.DEF.base = traits.DEX.value
     # mana
-    traits.BM.max = 10 if traits.MAG.actual > 0 else 0
-    traits.WM.max = 10 if traits.MAG.actual > 0 else 0
+    traits.BM.base = 10 if traits.MAG.value > 0 else 0
+    traits.WM.base = 10 if traits.MAG.value > 0 else 0
     # misc
     traits.STR.carry_factor = 10
     traits.STR.lift_factor = 20
     traits.STR.push_factor = 40
-    traits.ENC.max = traits.STR.lift_factor * traits.STR.actual
+    traits.ENC.max = traits.STR.lift_factor * traits.STR.value
 
 
 def finalize_traits(traits):
@@ -175,8 +175,8 @@ def finalize_traits(traits):
     the `mod` property.
     """
     for t in PRIMARY_TRAITS + SECONDARY_TRAITS + SAVE_ROLLS:
-        traits[t].base = traits[t].actual if traits[t].actual <= 10 else 10
-        traits[t].reset_mod()
+        traits[t].base = traits[t].value if traits[t].value <= 10 else 10
+        traits[t].mod = 0
 
     if traits.BM.base == 0:
         traits.BM.max = 0
@@ -251,35 +251,35 @@ class Archetype(object):
         # base traits data
         self.traits = {
             # primary
-            'STR': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Strength'},
-            'PER': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Perception'},
-            'INT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Intelligence'},
-            'DEX': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Dexterity'},
-            'CHA': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Charisma'},
-            'VIT': {'type': 'static', 'base': 1, 'mod': 0, 'name': 'Vitality'},
+            'STR': {'trait_type': 'static', 'base': 1, 'mod': 0, 'name': 'Strength'},
+            'PER': {'trait_type': 'static', 'base': 1, 'mod': 0, 'name': 'Perception'},
+            'INT': {'trait_type': 'static', 'base': 1, 'mod': 0, 'name': 'Intelligence'},
+            'DEX': {'trait_type': 'static', 'base': 1, 'mod': 0, 'name': 'Dexterity'},
+            'CHA': {'trait_type': 'static', 'base': 1, 'mod': 0, 'name': 'Charisma'},
+            'VIT': {'trait_type': 'static', 'base': 1, 'mod': 0, 'name': 'Vitality'},
             # magic
-            'MAG': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Magic'},
-            'BM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 10, 'name': 'Black Mana'},
-            'WM': {'type': 'gauge', 'base': 0, 'mod': 0, 'min': 0, 'max': 10, 'name': 'White Mana'},
+            'MAG': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Magic'},
+            'BM': {'trait_type': 'gauge', 'base': 10, 'mod': 0, 'min': 0, 'name': 'Black Mana'},
+            'WM': {'trait_type': 'gauge', 'base': 10, 'mod': 0, 'min': 0, 'name': 'White Mana'},
             # secondary
-            'HP': {'type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Health'},
-            'SP': {'type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Stamina'},
+            'HP': {'trait_type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Health'},
+            'SP': {'trait_type': 'gauge', 'base': 0, 'mod': 0, 'name': 'Stamina'},
             # saves
-            'FORT': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Fortitude Save'},
-            'REFL': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Reflex Save'},
-            'WILL': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Will Save'},
+            'FORT': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Fortitude Save'},
+            'REFL': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Reflex Save'},
+            'WILL': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Will Save'},
             # combat
-            'ATKM': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Melee Attack'},
-            'ATKR': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Ranged Attack'},
-            'ATKU': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Unarmed Attack'},
-            'DEF': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Defense'},
-            'ACT': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Action Points'},
-            'PP': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Power Points'},
+            'ATKM': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Melee Attack'},
+            'ATKR': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Ranged Attack'},
+            'ATKU': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Unarmed Attack'},
+            'DEF': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Defense'},
+            'ACT': {'trait_type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Action Points'},
+            'PP': {'trait_type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Power Points'},
             # misc
-            'ENC': {'type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Carry Weight'},
-            'MV': {'type': 'gauge', 'base': 6, 'mod': 0, 'min': 0, 'name': 'Movement Points'},
-            'LV': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Level'},
-            'XP': {'type': 'static', 'base': 0, 'mod': 0, 'name': 'Experience',
+            'ENC': {'trait_type': 'counter', 'base': 0, 'mod': 0, 'min': 0, 'name': 'Carry Weight'},
+            'MV': {'trait_type': 'gauge', 'base': 6, 'mod': 0, 'min': 0, 'name': 'Movement Points'},
+            'LV': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Level'},
+            'XP': {'trait_type': 'static', 'base': 0, 'mod': 0, 'name': 'Experience',
                    'extra': {'level_boundaries': (500, 2000, 4500, 'unlimited')}},
         }
         self.health_roll = None

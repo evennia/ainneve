@@ -166,7 +166,7 @@ def menunode_allocate_traits(caller, raw_string):
     raw_string = raw_string.strip()
     if raw_string.isdigit() and int(raw_string) <= len(archetypes.PRIMARY_TRAITS):
         chartrait = char.traits[archetypes.PRIMARY_TRAITS[int(raw_string) - 1]]
-        if chartrait.actual < 10:
+        if chartrait.value < 10:
             chartrait.mod += 1
         else:
             text += "|rCannot allocate more than 10 points to one trait!|n\n"
@@ -285,9 +285,9 @@ def menunode_allocate_mana(caller, raw_string):
     if raw_string.isdigit() and int(raw_string) <= len(manas):
         tr[manas[int(raw_string) - 1]].base += 1
 
-    remaining = tr.MAG.actual - sum(tr[m].base for m in manas)
+    remaining = tr.MAG.value - sum(tr[m].base for m in manas)
     if remaining:
-        text = "Your |CMagic|n trait is |w{}|n.\n\n".format(tr.MAG.actual)
+        text = "Your |CMagic|n trait is |w{}|n.\n\n".format(tr.MAG.value)
         text += "This allows you to allocate that many points to your\n"
         text += "|wWhite Mana|n and |xBlack Mana|n counters.\n"
         text += "You have |w{}|n points remaining. ".format(remaining)
@@ -312,10 +312,10 @@ def menunode_allocate_mana(caller, raw_string):
                         "goto": "menunode_allocate_mana"})
         return (text, help), options
     else:
-        if tr.MAG.actual > 0:
+        if tr.MAG.value > 0:
             output = "Final Mana Values:\n"
-            output += "  |wWhite Mana|n: |w{}|n\n".format(tr.WM.actual)
-            output += "  |xBlack Mana|n: |w{}|n\n".format(tr.BM.actual)
+            output += "  |wWhite Mana|n: |w{}|n\n".format(tr.WM.value)
+            output += "  |xBlack Mana|n: |w{}|n\n".format(tr.BM.value)
         else:
             output = ""
         # TODO: implement spells; add level 0 spell cmdsets here
@@ -334,7 +334,7 @@ def menunode_allocate_skills(caller, raw_string):
     total = 3
     counts = {1: 'one', 2: 'two', 3: 'three'}
 
-    plusses = (ceil(char.traits.INT.actual / 3.0) -
+    plusses = (ceil(char.traits.INT.value / 3.0) -
                sum(sk[s].plus for s in skills.ALL_SKILLS))
     minuses = total - sum(sk[s].minus for s in skills.ALL_SKILLS)
 
@@ -343,13 +343,13 @@ def menunode_allocate_skills(caller, raw_string):
     if raw_string.isdigit() and int(raw_string) <= len(skills.ALL_SKILLS):
         skill = sk[skills.ALL_SKILLS[int(raw_string) - 1]]
         if minuses:
-            if skill.actual - skill.minus - 1 > 0:
+            if skill.value - skill.minus - 1 > 0:
                 skill.minus += 1
                 minuses -= 1
             else:
                 text += "|rSkills cannot be reduced below one.|n\n"
         elif plusses:
-            if skill.actual + skill.plus + 1 <= 10:
+            if skill.value + skill.plus + 1 <= 10:
                 skill.plus += 1
                 plusses -= 1
             else:
@@ -609,14 +609,14 @@ def menunode_end(caller, raw_string):
 def _format_trait_opts(trait, color='|C'):
     """Return a trait : value pair formatted as a menu option"""
     return "{}{:<15.15}|n : |x[|n{:>4}|x]|n".format(
-                color, trait.name, trait.actual)
+                color, trait.name, trait.value)
 
 
 def _format_skill_opts(skill):
     """Return a trait : value : counters triad formatted as a menu option"""
     return "|M{:<15.15}|n: |w{:>4}|n (|m{:>+2}|n)".format(
                 skill.name,
-                skill.actual + skill.plus - skill.minus,
+                skill.value + skill.plus - skill.minus,
                 skill.plus - skill.minus)
 
 

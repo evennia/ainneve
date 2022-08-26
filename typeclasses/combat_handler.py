@@ -11,10 +11,10 @@ COMBAT_DISTANCES = ['melee', 'reach', 'ranged']
 WRESTLING_POSITIONS = ('STANDING', 'CLINCHED', 'TAKE DOWN', 'PINNED')
 
 _ACTIONS_PER_TURN = utils.variable_from_module('world.rulebook', 'ACTIONS_PER_TURN')
-_COMBAT_PROMPT = ("|M[|n HP: |g{tr.HP.actual}|n "
-                  "|| WM: |w{tr.WM.actual}|n "
-                  "|| BM: |x{tr.BM.actual}|n "
-                  "|| SP: |y{tr.SP.actual}|n |M]|n")
+_COMBAT_PROMPT = ("|M[|n HP: |g{tr.HP.value}|n "
+                  "|| WM: |w{tr.WM.value}|n "
+                  "|| BM: |x{tr.BM.value}|n "
+                  "|| SP: |y{tr.SP.value}|n |M]|n")
 
 
 class CombatHandler(Script):

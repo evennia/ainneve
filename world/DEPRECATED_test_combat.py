@@ -583,8 +583,8 @@ class AinneveCombatAttackTestCase(AinneveCombatTest):
                                ".. Char kicks toward Char2 and misses."])
 
         # final direct stat sanity check
-        self.assertEqual(self.char2.traits.HP.actual, 10)
-        self.assertEqual(self.char2.traits.SP.actual, 8)
+        self.assertEqual(self.char2.traits.HP.value, 10)
+        self.assertEqual(self.char2.traits.SP.value, 8)
 
     @patch('world.rulebook.std_roll', new=lambda: 0)
     def test_kick_succ(self):
@@ -642,8 +642,8 @@ class AinneveCombatAttackTestCase(AinneveCombatTest):
                                ".. Char kicks Char2 squarely in the chest, and Char2 staggers from the blow."])
 
         # final direct stat check
-        self.assertEqual(self.char2.traits.HP.actual, 8)
-        self.assertEqual(self.char2.traits.SP.actual, 6)
+        self.assertEqual(self.char2.traits.HP.value, 8)
+        self.assertEqual(self.char2.traits.SP.value, 6)
 
     @patch('world.rulebook.std_roll', new=lambda: 0)
     def test_strike_fail(self):
@@ -729,15 +729,15 @@ class AinneveCombatAttackTestCase(AinneveCombatTest):
         self.assertEqual(msg, [".. Char attempts to punch Char2 and misses.",
                                ".. Char attempts to punch Char2 and misses."])
         # final direct stat check
-        self.assertEqual(self.char2.traits.HP.actual, 10)
-        self.assertEqual(self.char2.traits.SP.actual, 8)
+        self.assertEqual(self.char2.traits.HP.value, 10)
+        self.assertEqual(self.char2.traits.SP.value, 8)
 
     @patch('world.rulebook.std_roll', new=lambda: 2)
     def test_strike_succ(self):
         """test successful 'strike' attacks"""
         ch = self.script
         # confirm starting stat values
-        self.assertEqual(self.char2.traits.HP.actual, 10)
+        self.assertEqual(self.char2.traits.HP.value, 10)
         msg, prompt = self.parse_msg_mock(self.char2)
         self.assertEqual(prompt, "[ HP: 10 | WM: 0 | BM: 0 | SP: 8 ]")
 
@@ -805,8 +805,8 @@ class AinneveCombatAttackTestCase(AinneveCombatTest):
         self.assertEqual(msg, [".. Char strikes Char2 savagely with their fist."])
 
         # final direct stat sanity check
-        self.assertEqual(self.char2.traits.HP.actual, 4)
-        self.assertEqual(self.char2.traits.SP.actual, 4)
+        self.assertEqual(self.char2.traits.HP.value, 4)
+        self.assertEqual(self.char2.traits.SP.value, 4)
 
     @patch('world.rulebook.std_roll', new=lambda: -2)
     def test_attack_fail(self):
