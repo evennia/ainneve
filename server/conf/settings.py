@@ -57,9 +57,9 @@ TELNET_INTERFACES = ["0.0.0.0"]
 # forward into the standard 4001/4002 ports
 WEBSERVER_ENABLED = True
 WEBSERVER_INTERFACES = ["127.0.0.1"]
-
-WEBSOCKET_CLIENT_URL = "wss://ainneve.com:4002/"
-WEBSOCKET_CLIENT_INTERFACE = "127.0.0.1"
+#
+# WEBSOCKET_CLIENT_URL = "wss://ainneve.com:4002/"
+# WEBSOCKET_CLIENT_INTERFACE = "127.0.0.1"
 
 
 ######################################################################
