@@ -39,17 +39,20 @@ Simple systems to show off Evennia's many features, while still being fun to pla
 Use Evennia Contribs whenever it makes sense
 
 The online consensus at the time was to make Ainneve's theme something kinda like:  "Magic Dungeon For Sale"
+
 Simple.  Lighthearted, and bonus points for puns.
 
 A stereotypical town with a bar, a smithy, an arena, and Ye-Olde-Magic shop... Next door to a "mega-dungeon"
 
 The dungeon would proc-gen every time it became empty.
 
+
 # Game System:
 
 To sum up our current game system:
 
 3 stats (names still being decided on)
+
 * Strength
 * Cunning
 * Will
