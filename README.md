@@ -49,25 +49,35 @@ Simple.  Lighthearted, and bonus points for puns.
 To sum up our current game system:
 
 3 stats (names still being decided on)
-        Strength
-        Cunning
-        Will
+* Strength
+* Cunning
+* Will
 
-3 "resource" stats:  Health, Mana, and Stamina
+3 "resource" stats:
+* Health
+* Mana
+* Stamina
 
 6 classes to start with (names still being decided on)
-        Warrior [ Primary: Strength, Secondary: Cunning  ]
-        Paladin [ Primary: Strength, Secondary: Will     ]
-        Rogue   [ Primary: Cunning,  Secondary: Strength ]
-        Bard    [ Primary: Cunning,  Secondary: Will     ]
-        Shaman  [ Primary: Will,     Secondary: Strength ]
-        Wizard  [ Primary: Will,     Secondary: Cunning  ]
+| Class   | Primary   | Secondary |
+| ------- | --------- | --------- |
+| Warrior | Strength  | Cunning   |
+| Paladin | Strength  | Will      |
+| Rogue   | Cunning   | Strength  |
+| Bard    | Cunning   | Will      |
+| Shaman  | Will      | Strength  |
+| Wizard  | Will      | Cunning   |
 
 classes can be swapped around, not permanent, this will be done at a "trainer" NPC.
+
 Each class would give you some unique abilities, each ability has a possible warmup and a cooldown timer
+
 2d6 vrs a target number (6? 7?) is a typical roll, modified +/-
+
 Races give a +1  to a couple of rolls
+
 Armor reduces damage
+
 Rings of protection type things could add to your defense target number.
 
 
