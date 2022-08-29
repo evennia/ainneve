@@ -65,8 +65,8 @@ class Character(ContribRPCharacter):
     def at_pre_unpuppet(self):
         """Called just before beginning to un-connect a puppeting from
         this Account."""
-				if combat := self.ndb.combat:
-						combat.remove(self)
+        if combat := self.ndb.combat:
+            combat.remove(self)
 
     def process_sdesc(self, sdesc, obj, **kwargs):
         """Called to format sdesc and recog before displaying"""

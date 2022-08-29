@@ -32,10 +32,12 @@ class Weapon(Equippable):
         }
 
     def at_attack(self, character, range):
+        # TODO: add ammo checks - if ammo attr, either auto-load or check if loaded
         if not self.tags.has(range, category="combat_range"):
             # can't be used for this kind of attack
             return (0, 0)
-        # add stat bonuses here?
+        # TODO: add stat checks
+        # TODO: add ammo consumption or removal
         return (self.damage, self.cooldown)
 
     def load_ammunition(self):

@@ -1,13 +1,15 @@
 
-# breakpoints for distance ranges of different weapon types
+# maximum range for different weapon types
 _WEAPON_RANGES = {
-    "melee": 0,
+    "grapple": 0,
+    "melee": 1,
     "reach": 2,
-    "ranged": 4,
+    "ranged": 6,
 }
 
-# format for combat prompt
-_COMBAT_PROMPT = "HP {hp} - MP {mp} - CD {cd}"
+# format for combat prompt, currently unused
+# health, mana, current attack cooldown
+COMBAT_PROMPT = "HP {hp} - MP {mp} - ACD {cd}"
 
 class CombatHandler:
     positions = None
@@ -37,11 +39,12 @@ class CombatHandler:
                 # only one participant means no more fight
                 survivors[0].nattributes.remove("combat")
                 self.positions = None
+    
 
     def get_range(self, attacker, target):
         """Get the distance from target in terms of weapon range."""
         # both combatants must be in combat
-        if not (mover in self.positions and target in self.positions):
+        if not (attacker in self.positions and target in self.positions):
             return None
 
         distance = abs(self.positions[attacker] - self.positions[target])
@@ -52,6 +55,18 @@ class CombatHandler:
             range = key
 
         return range
+
+    def in_range(self, attacker, target, range):
+        """Check if target is within the specified range of attacker."""
+        # both combatants must be in combat
+        if not (attacker in self.positions and target in self.positions):
+            return None
+        
+        if range not in _WEAPON_RANGES:
+            return False
+
+        distance = abs(self.positions[attacker] - self.positions[target])
+        return _WEAPON_RANGES[range] >= distance
     
     def any_in_range(self, attacker, range):
         if attacker not in self.positions:
@@ -60,7 +75,7 @@ class CombatHandler:
         if range not in _WEAPON_RANGES:
             return False
         
-        return any( p for p in self.positions.values() if p < _WEAPON_RANGES[range] )
+        return any( p for p in self.positions.values() if p <= _WEAPON_RANGES[range] )
 
     def approach(self, mover, target):
         """
@@ -78,7 +93,6 @@ class CombatHandler:
             # already as close as you can get
             return False
         
-        # add additional checks for movement cooldown
         change = 1 if start < end else -1
         self.positions[mover] += change
         return True
@@ -95,7 +109,10 @@ class CombatHandler:
         start = self.positions[mover]
         end = self.positions[target]
         
-        # add additional checks for movement cooldown
+        # can't move beyond maximum weapon range
+        if abs(start-end) >= max(_WEAPON_RANGES.values()):
+            return False
+
         change = -1 if start < end else 1
         self.positions[mover] += change
         return True
