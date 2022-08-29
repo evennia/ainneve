@@ -28,13 +28,14 @@ class CmdInitiateCombat(Command):
         # get or make combat instance
         combat = caller.ndb.combat
         if not combat:
+            # caller is not in combat, so use the target's combat instance
             combat = target.ndb.combat
-        elif combat != target.ndb.combat:
-            # TODO: merge combat instances
-            caller.msg("Merging combat instances isn't implemented yet.")
-            return
         if not combat:
+            # still no combat instance means neither are in combat; start new instance
             combat = CombatHandler(caller, target)
+        elif combat != target.ndb.combat:
+            # both parties are in separate combat instances; combine into one
+            combat.merge(target.ndb.combat)
         range = combat.get_range(caller, target)
         caller.msg(f"You prepare for combat! {target.get_display_name(caller)} is at {range} range.")
 

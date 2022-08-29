@@ -39,7 +39,14 @@ class CombatHandler:
                 # only one participant means no more fight
                 survivors[0].nattributes.remove("combat")
                 self.positions = None
-    
+  
+    def merge(self, other):
+        """Merge another combat instance into this one"""
+        # an entity can't be in two combat instances at once, so there should be no dupes
+        self.positions |= other.positions
+        for obj in other.positions.keys():
+            obj.ndb.combat = self
+        other.positions = None
 
     def get_range(self, attacker, target):
         """Get the distance from target in terms of weapon range."""
