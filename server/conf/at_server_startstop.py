@@ -22,7 +22,10 @@ def at_server_start():
     This is called every time the server starts up, regardless of
     how it was shut down.
     """
-    pass
+    # TODO Investigate why overworld script does not start without this
+    from world.overworld import Overworld
+    overworld = Overworld.get_instance()
+    overworld.start()
 
 
 def at_server_stop():
