@@ -41,7 +41,6 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         self.add(room_exit.AinneveRoomExitsCmdSet())
         self.add(building.AinneveBuildingCmdSet())
         self.add(skills.SkillCmdSet())
-        self.add(combat.InitCombatCmdSet())
         self.add(DebugCmdSet())
         
 

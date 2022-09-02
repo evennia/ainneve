@@ -322,7 +322,7 @@ def menunode_allocate_mana(caller, raw_string):
 
         archetypes.calculate_secondary_traits(char.traits)
         archetypes.finalize_traits(char.traits)
-        tickerhandler.add(interval=6, callback=char.at_turn_start)
+        #tickerhandler.add(interval=6, callback=char.at_turn_start)
         skills.apply_skills(char)
         return menunode_allocate_skills(caller, output)
 
