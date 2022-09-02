@@ -9,6 +9,7 @@ creation commands.
 """
 from evennia.contrib.rpg.rpsystem import ContribRPCharacter
 from evennia.contrib.rpg.traits import TraitHandler
+from evennia.contrib.game_systems.cooldowns import CooldownHandler
 from evennia.utils import lazy_property, utils
 from world.equip import EquipHandler
 from world.skills import apply_skills
@@ -25,6 +26,7 @@ class Character(ContribRPCharacter):
     common to NPCs, Mobs, Accounts, or anything else built off of it. Flags
     like "Aggro" would go further downstream.
     """
+
     def at_object_creation(self):
         super(Character, self).at_object_creation()
         self.db.race = None
@@ -36,6 +38,10 @@ class Character(ContribRPCharacter):
 
         self.db.pose = self.db.pose or self.db.pose_default
         self.db.pose_death = 'lies dead.'
+
+    @lazy_property
+    def cooldowns(self):
+        return CooldownHandler(self, db_attribute="cooldowns")
 
     @lazy_property
     def traits(self):
@@ -52,30 +58,6 @@ class Character(ContribRPCharacter):
         """Handler for equipped items."""
         return EquipHandler(self)
 
-    def at_turn_start(self):
-        """Hook called at the start of each combat turn or by a 6s ticker."""
-        # refill traits that are allocated every turn
-        self.traits.MV.reset()
-        self.traits.BM.reset()
-        self.traits.WM.reset()
-        # Power Points are lost each turn
-        self.traits.PP.reset()
-
-        if self.nattributes.has('combat_handler'):
-            for _, item in self.equip:
-                if item and hasattr(item, 'attributes') and \
-                        item.attributes.has('combat_cmdset') and \
-                        not self.cmdset.has_cmdset(item.db.combat_cmdset):
-                    self.cmdset.add(item.db.combat_cmdset)
-
-    def at_turn_end(self):
-        """Hook called after turn actions are entered"""
-        for _, item in self.equip:
-            if item and hasattr(item, 'attributes') and \
-                    item.attributes.has('combat_cmdset') and \
-                    self.cmdset.has_cmdset(item.db.combat_cmdset):
-                self.cmdset.remove(item.db.combat_cmdset)
-
     def at_death(self):
         """Hook called when a character dies."""
         self.scripts.add(CharDeathHandler)
@@ -83,8 +65,8 @@ class Character(ContribRPCharacter):
     def at_pre_unpuppet(self):
         """Called just before beginning to un-connect a puppeting from
         this Account."""
-        if self.nattributes.has('combat_handler'):
-            self.ndb.combat_handler.remove_character(self)
+        if combat := self.ndb.combat:
+            combat.remove(self)
 
     def process_sdesc(self, sdesc, obj, **kwargs):
         """Called to format sdesc and recog before displaying"""
@@ -228,7 +210,8 @@ class NPC(Character):
 
         self.db.emote_aggressive = "stares about angrily"
 
-        self.db.slots = {'wield': None,
+        self.db.slots = {'wield1': None,
+                         'wield2': None,
                          'armor': None}
 
         # initialize traits
@@ -241,28 +224,3 @@ class NPC(Character):
     def at_death(self):
         """Hook called when an NPC dies."""
         self.scripts.add(NPCDeathHandler)
-
-    def at_turn_start(self):
-        """Hook called at the start of each combat turn."""
-        super(NPC, self).at_turn_start()
-
-        if "aggressive" in self.tags.all() and self.nattributes.has('combat_handler'):
-
-            ch = self.ndb.combat_handler
-            opponent = ch.db.characters[[cid for cid in ch.db.characters.keys()
-                                    if cid != self.id][0]]
-
-            if ch.get_range(opponent, self) != 'melee':
-                ch.add_action('advance', self, opponent, 1)
-            else:
-                ch.add_action('attack', self, opponent, 1)
-
-            ch.add_action('attack', self, opponent, 1)
-
-    def at_turn_end(self):
-        """Hook called at the end of each combat turn."""
-        super(NPC, self).at_turn_end()
-
-        if "aggressive" in self.tags.all() and self.nattributes.has('combat_handler'):
-            if self.attributes.has('emote_aggressive'):
-                self.execute_cmd("emote {}".format(self.db.emote_aggressive))

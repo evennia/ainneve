@@ -24,42 +24,37 @@ from typeclasses.combat_handler import COMBAT_DISTANCES
 
 def in_combat(accessing_obj, accessed_obj, *args, **kwargs):
     """returns true if an active combat handler is present"""
-    if hasattr(accessing_obj, 'nattributes') and \
-            accessing_obj.nattributes.has('combat_handler'):
-        return True
+    if hasattr(accessing_obj, 'nattributes'):
+        return accessing_obj.nattributes.has('combat'):
     else:
         return False
 
-
 def in_range(accessing_obj, accessed_obj, *args, **kwargs):
     """returns true if accessing_obj has any targets in specified range"""
-    range = args[0] if args else 0
-    if isinstance(range, str):
-        range = COMBAT_DISTANCES.indexof(range)
-    if range < 0:
-        return False
-    if hasattr(accessing_obj, 'nattributes') and \
-            accessing_obj.nattributes.has('combat_handler'):
-        ch = accessing_obj.ndb.combat_handler
-        return any(y <= range for x,y in ch.db.distances.items()
-                    if accessing_obj.id in x)
-    return False
+    range = args[0] if args else "melee"
+    if hasattr(accessing_obj, 'nattributes'):
+        combat = accessing_obj.ndb.combat
+        if not combat:
+            return False
+        return combat.any_in_range(accessing_obj, range)
+    else:
+        return false
 
 
 def melee_equipped(accessing_obj, accessed_obj, *args, **kwargs):
     """returns true if accessing_obj has a melee weapon equipped"""
     if hasattr(accessing_obj, 'equip'):
         return any(
-            y.is_typeclass('typeclasses.weapons.Weapon', exact=True) or
-            y.is_typeclass('typeclasses.weapons.TwoHandedWeapon', exact=True)
-            for _, y in accessing_obj.equip
+            y.tags.has("melee", category="combat_range") for _, y in accessing_obj.equip
         )
+    else:
+      return False
 
 def ranged_equipped(accessing_obj, accessed_obj, *args, **kwargs):
     """returns true if accessing_obj hsa a ranged weapon equipped"""
     if hasattr(accessing_obj, 'equip'):
         return any(
-            y.is_typeclass('typeclasses.weapons.RangedWeapon', exact=True) or
-            y.is_typeclass('typeclasses.weapons.TwoHandedRanged', exact=True)
-            for _, y in accessing_obj.equip
+            y.tags.has("ranged", category="combat_range") for _, y in accessing_obj.equip
         )
+    else:
+      return False

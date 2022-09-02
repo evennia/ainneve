@@ -3,7 +3,7 @@
 |--------|---------|
 | [![Master build Status](https://travis-ci.org/evennia/ainneve.svg?branch=master)](https://travis-ci.org/evennia/ainneve) | [![Develop build Status](https://travis-ci.org/evennia/ainneve.svg?branch=develop)](https://travis-ci.org/evennia/ainneve) |
 
-# Codebase is undergoing major refactoring - please join #ainneve on Freenode if you wish to discuss ideas for Ainneve's future direction.
+# Codebase is undergoing major refactoring - please join the ainneve on Discord if you wish to discuss ideas for Ainneve's future.
 
 Welcome! The [Evennia](http://www.evennia.com/) community has created Ainneve for you to use as a base to learn from and build off of.  Ainneve currently is an early work in progress. 
 
@@ -24,6 +24,63 @@ to your new game using a MUD client on localhost:4000.  You can also
 log into the web client by pointing a browser to
 http://localhost:8000.
 
+# Current To-Do (feel free to contribute!):
+
+evaluate what we'd need to remove and replace with contribs
+
+get a simple MUD-like combat system working (probably including removing the current character classes and builds).
+
+customize the game's homepage to add this todo list, contact information (like Discord), etc...maybe a nice CSS theme?
+
+# Design Goals:
+
+Simple systems to show off Evennia's many features, while still being fun to play (emphasis on fun)
+
+Use Evennia Contribs whenever it makes sense
+
+The online consensus at the time was to make Ainneve's theme something kinda like:  "Magic Dungeon For Sale"
+A stereotypical town with a bar, a smithy, an arena, and Ye-Olde-Magic shop... Next door to a "mega-dungeon"
+Where the dungeon would proc-gen every time it became empty.
+Simple.  Lighthearted, and bonus points for puns.
+
+
+# Game System:
+
+To sum up our current game system:
+
+3 stats (names still being decided on)
+* Strength
+* Cunning
+* Will
+
+3 "resource" stats:
+* Health
+* Mana
+* Stamina
+
+6 classes to start with (names still being decided on)
+| Class   | Primary   | Secondary |
+| ------- | --------- | --------- |
+| Warrior | Strength  | Cunning   |
+| Paladin | Strength  | Will      |
+| Rogue   | Cunning   | Strength  |
+| Bard    | Cunning   | Will      |
+| Shaman  | Will      | Strength  |
+| Wizard  | Will      | Cunning   |
+
+classes can be swapped around, not permanent, this will be done at a "trainer" NPC.
+
+Each class would give you some unique abilities, each ability has a possible warmup and a cooldown timer
+
+2d6 vrs a target number (6? 7?) is a typical roll, modified +/-
+
+Races give a +1  to a couple of rolls
+
+Armor reduces damage
+
+Rings of protection type things could add to your defense target number.
+
+
 # Getting started
 
 We recommended you look up Evennia's extensive
@@ -38,7 +95,7 @@ To learn about Ainneve's game systems and world setting, check out [our wiki](ht
 
 If you're looking for what tasks we need help with, look at our [current open issues](https://github.com/evennia/ainneve/issues).
 
-To let us know you're interested in helping out visit the [Evennia developer IRC](http://webchat.freenode.net/?channels=evennia&uio=MT1mYWxzZSY5PXRydWUmMTE9MTk1JjEyPXRydWUbb) and the [Ainneve](https://groups.google.com/forum/?fromgroups#!categories/evennia/ainneve) category of the mailing list. 
+To let us know you're interested in helping out visit the [Evennia Discord](https://discord.gg/2aNJQGfx).
 
 Please submit pull requests as feature branches rather than from your master -- see https://github.com/evennia/evennia/wiki/Version-Control#making-a-work-branch. 
 
@@ -47,4 +104,4 @@ Please submit pull requests as feature branches rather than from your master -- 
 
 Ainneve uses the BSD license, the [same as Evennia](https://github.com/evennia/evennia/wiki/Licensing).
 
-Our game rules use [Open Adventure](http://www.geekguild.com/openadventure), copyright 2014 Kyle Mecklem and released under the Creative Commons Attribution [CC-by-SA license](https://creativecommons.org/licenses/by-sa/4.0/).
+Originally, our game was based on [Open Adventure](http://www.geekguild.com/openadventure), copyright 2014 Kyle Mecklem and released under the Creative Commons Attribution [CC-by-SA license](https://creativecommons.org/licenses/by-sa/4.0/).  It is no longer.
