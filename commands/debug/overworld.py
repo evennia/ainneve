@@ -1,5 +1,5 @@
 from evennia import Command
-from world.overworld import enter_overworld, Overworld
+from world.overworld import Overworld
 
 
 class CmdDebugEnterOverworld(Command):
@@ -9,7 +9,7 @@ class CmdDebugEnterOverworld(Command):
     help_category = "Debugging"
 
     def func(self):
-        enter_overworld(self.caller)
+        Overworld.enter(self.caller)
 
 
 class CmdDebugOverworldTeleport(Command):
