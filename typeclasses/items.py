@@ -1,10 +1,10 @@
 """
 Generic Item typeclasses
 """
-
-from typeclasses.objects import Object
 from evennia import create_object
 from evennia.prototypes.spawner import spawn
+from evennia.typeclasses.attributes import AttributeProperty
+from typeclasses.objects import Object
 
 
 class Item(Object):
