@@ -38,6 +38,7 @@ SERVERNAME = "ainneve"
 MULTISESSION_MODE = 2
 AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False
 AUTO_PUPPET_ON_LOGIN = False
+MAX_NR_CHARACTERS = 5
 
 
 ######################################################################
