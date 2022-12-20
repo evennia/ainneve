@@ -13,7 +13,6 @@ can be added to it). The function should not return anything. Plugin
 services are started last in the Server startup process.
 
 """
-# from evennia.contrib.egi_client import EvenniaGameIndexService
 
 
 def start_plugin_services(server):
@@ -22,8 +21,4 @@ def start_plugin_services(server):
 
     server - a reference to the main server application.
     """
-    # the following should only be un-commented for the online
-    # instance of Ainneve
-
-    # egi_service = EvenniaGameIndexService()
-    # server.services.addService(egi_service)
+    pass
