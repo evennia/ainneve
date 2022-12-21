@@ -12,7 +12,8 @@ to be modified.
 
 """
 
-from evennia import DefaultChannel
+from evennia.comms.comms import DefaultChannel
+
 
 class Channel(DefaultChannel):
     """
@@ -37,7 +38,7 @@ class Channel(DefaultChannel):
                 to accounts that are currently online (optimized for very large sends)
 
     Useful hooks:
-        channel_prefix(msg, emit=False) - how the channel should be
+        channel_prefix() - how the channel should be
                   prefixed when returning to user. Returns a string
         format_senders(senders) - should return how to display multiple
                 senders to a channel
@@ -57,4 +58,5 @@ class Channel(DefaultChannel):
         post_send_message(msg) - called just after message was sent to channel
 
     """
+
     pass

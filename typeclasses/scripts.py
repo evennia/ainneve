@@ -11,8 +11,8 @@ Rather, each script tends to inherit from the base Script class and
 just overloads its hooks to have it perform its function.
 
 """
-import evennia
-from evennia import DefaultScript
+
+from evennia.scripts.scripts import DefaultScript
 
 
 class Script(DefaultScript):
@@ -88,4 +88,5 @@ class Script(DefaultScript):
       at_server_shutdown() - called at a full server shutdown.
 
     """
+
     pass

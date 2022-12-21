@@ -10,10 +10,22 @@ the other types, you can do so by adding this as a multiple
 inheritance.
 
 """
-from evennia.contrib.rpg.rpsystem import ContribRPObject
+from evennia.objects.objects import DefaultObject
 
 
-class Object(ContribRPObject):
+class ObjectParent:
+    """
+    This is a mixin that can be used to override *all* entities inheriting at
+    some distance from DefaultObject (Objects, Exits, Characters and Rooms).
+
+    Just add any method that exists on `DefaultObject` to this class. If one
+    of the derived classes has itself defined that same hook already, that will
+    take precedence.
+
+    """
+
+
+class Object(ObjectParent, DefaultObject):
     """
     This is the root typeclass object, implementing an in-game Evennia
     game object, such as having a location, being able to be
@@ -34,21 +46,16 @@ class Object(ContribRPObject):
 
      key (string) - name of object
      name (string)- same as key
-     aliases (list of strings) - aliases to the object. Will be saved to
-                           database as AliasDB entries but returned as strings.
      dbref (int, read-only) - unique #id-number. Also "id" can be used.
-                                  back to this class
      date_created (string) - time stamp of object creation
-     permissions (list of strings) - list of permission strings
 
      account (Account) - controlling account (if any, only set together with
                        sessid below)
      sessid (int, read-only) - session id (if any, only set together with
-                       account above)
+                       account above). Use `sessions` handler to get the
+                       Sessions directly.
      location (Object) - current location. Is None if this is a room
      home (Object) - safety start-location
-     sessions (list of Sessions, read-only) - returns all sessions connected
-                       to this object
      has_account (bool, read-only)- will only return *connected* accounts
      contents (list of Objects, read-only) - returns all objects inside this
                        object (including exits)
@@ -59,14 +66,20 @@ class Object(ContribRPObject):
 
     * Handlers available
 
+     aliases - alias-handler: use aliases.add/remove/get() to use.
+     permissions - permission-handler: use permissions.add/remove() to
+                   add/remove new perms.
      locks - lock-handler: use locks.add() to add new lock strings
-     db - attribute-handler: store/retrieve database attributes on this
-                             self.db.myattr=val, val=self.db.myattr
-     ndb - non-persistent attribute handler: same as db but does not create
-                             a database entry when storing data
      scripts - script-handler. Add new scripts to object with scripts.add()
      cmdset - cmdset-handler. Use cmdset.add() to add new cmdsets to object
      nicks - nick-handler. New nicks with nicks.add().
+     sessions - sessions-handler. Get Sessions connected to this
+                object with sessions.get()
+     attributes - attribute-handler. Use attributes.add/remove/get.
+     db - attribute-handler: Shortcut for attribute-handler. Store/retrieve
+            database attributes using self.db.myattr=val, val=self.db.myattr
+     ndb - non-persistent attribute handler: same as db but does not create
+            a database entry when storing data
 
     * Helper methods (see src.objects.objects.py for full headers)
 
@@ -95,7 +108,7 @@ class Object(ContribRPObject):
      at_object_delete() - called just before deleting an object. If returning
                             False, deletion is aborted. Note that all objects
                             inside a deleted object are automatically moved
-                            to their <home>, they don't need to be removed here
+                            to their <home>, they don't need to be removed here.
 
      at_init()            - called whenever typeclass is cached from memory,
                             at least once every server restart/reload
@@ -118,25 +131,27 @@ class Object(ContribRPObject):
                             of a lock access check on this object. Return value
                             does not affect check result.
 
-     at_before_move(destination)             - called just before moving object
-                        to the destination. If returns False, move is cancelled
+     at_pre_move(destination)             - called just before moving object
+                        to the destination. If returns False, move is cancelled.
      announce_move_from(destination)         - called in old location, just
                         before move, if obj.move_to() has quiet=False
      announce_move_to(source_location)       - called in new location, just
                         after move, if obj.move_to() has quiet=False
-     at_after_move(source_location)          - always called after a move has
+     at_post_move(source_location)          - always called after a move has
                         been successfully performed.
      at_object_leave(obj, target_location)   - called when an object leaves
                         this object in any fashion
      at_object_receive(obj, source_location) - called when this object receives
                         another object
 
-     at_before_traverse(traversing_object)              - (exit-objects only)
-                            called just before an object traverses this object
-     at_after_traverse(traversing_object, source_location) -
-            (exit-objects only) called just after a traversal has happened.
+     at_traverse(traversing_object, source_loc) - (exit-objects only)
+                              handles all moving across the exit, including
+                              calling the other exit hooks. Use super() to retain
+                              the default functionality.
+     at_post_traverse(traversing_object, source_location) - (exit-objects only)
+                              called just after a traversal has happened.
      at_failed_traverse(traversing_object)      - (exit-objects only) called if
-                    traversal fails and property err_traverse is not defined.
+                       traversal fails and property err_traverse is not defined.
 
      at_msg_receive(self, msg, from_obj=None, **kwargs) - called when a message
                              (via self.msg()) is sent to this obj.
@@ -154,8 +169,6 @@ class Object(ContribRPObject):
      at_say(speaker, message)  - by default, called if an object inside this
                                  object speaks
 
-     """
-    def at_object_creation(self):
-        super(Object, self).at_object_creation()
-        self.db.pose = self.db.pose or self.db.default_pose
+    """
 
+    pass

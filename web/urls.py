@@ -1,24 +1,33 @@
-####
+"""
+This is the starting point when a user enters a url in their web browser.
 
-from evennia.web.urls import urlpatterns
+The urls is matched (by regex) and mapped to a 'view' - a Python function or
+callable class that in turn (usually) makes use of a 'template' (a html file
+with slots that can be replaced by dynamic content) in order to render a HTML
+page to show the user.
 
-#
-# File that determines what each URL points to. This uses _Python_ regular
-# expressions, not Perl's.
-#
-# See:
-# http://diveintopython.org/regular_expressions/street_addresses.html#re.matching.2.3
-#
+This file includes the urls in website, webclient and admin. To override you
+should modify urls.py in those sub directories.
 
-# Add your own URL patterns to the patterns variable below, and then change
-#
-# These are Django URL patterns, so you should look up how to use these at
-# https://docs.djangoproject.com/en/1.6/topics/http/urls/
+Search the Django documentation for "URL dispatcher" for more help.
 
-# Follow the full Django tutorial to learn how to create web views for Evennia.
-# https://docs.djangoproject.com/en/1.6/intro/tutorial01/
+"""
+from django.urls import include, path
 
-patterns = [
+# default evennia patterns
+from evennia.web.urls import urlpatterns as evennia_default_urlpatterns
+
+# add patterns
+urlpatterns = [
+    # website
+    path("", include("web.website.urls")),
+    # webclient
+    path("webclient/", include("web.webclient.urls")),
+    # web admin
+    path("admin/", include("web.admin.urls")),
+    # add any extra urls here:
+    # path("mypath/", include("path.to.my.urls.file")),
 ]
 
-urlpatterns = patterns + urlpatterns
+# 'urlpatterns' must be named such for Django to find it.
+urlpatterns = urlpatterns + evennia_default_urlpatterns

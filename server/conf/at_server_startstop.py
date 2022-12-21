@@ -7,6 +7,7 @@ allows for customizing the server operation as desired.
 
 This module must contain at least these global functions:
 
+at_server_init()
 at_server_start()
 at_server_stop()
 at_server_reload_start()
@@ -15,7 +16,13 @@ at_server_cold_start()
 at_server_cold_stop()
 
 """
-from evennia.utils import logger
+
+
+def at_server_init():
+    """
+    This is called first as the server is starting up, regardless of how.
+    """
+    pass
 
 
 def at_server_start():
@@ -23,10 +30,7 @@ def at_server_start():
     This is called every time the server starts up, regardless of
     how it was shut down.
     """
-    logger.info("Preparing overworld script...")
-    from world.overworld import Overworld
-    overworld = Overworld.get_instance()
-    overworld.start()
+    pass
 
 
 def at_server_stop():

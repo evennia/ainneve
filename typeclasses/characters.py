@@ -7,220 +7,30 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-from evennia.contrib.rpg.rpsystem import ContribRPCharacter
-from evennia.contrib.rpg.traits import TraitHandler
-from evennia.contrib.game_systems.cooldowns import CooldownHandler
-from evennia.utils import lazy_property, utils
-from world.equip import EquipHandler
-from world.skills import apply_skills
-from world.archetypes import Archetype
-from world.death import CharDeathHandler, NPCDeathHandler
+from evennia.objects.objects import DefaultCharacter
 
-from world.rulebook import skill_check
+from .objects import ObjectParent
 
 
-class Character(ContribRPCharacter):
-    """Base character typeclass for Ainneve.
+class Character(ObjectParent, DefaultCharacter):
+    """
+    The Character defaults to reimplementing some of base Object's hook methods with the
+    following functionality:
 
-    This base Character typeclass should only contain things that would be
-    common to NPCs, Mobs, Accounts, or anything else built off of it. Flags
-    like "Aggro" would go further downstream.
+    at_basetype_setup - always assigns the DefaultCmdSet to this object type
+                    (important!)sets locks so character cannot be picked up
+                    and its commands only be called by itself, not anyone else.
+                    (to change things, use at_object_creation() instead).
+    at_post_move(source_location) - Launches the "look" command after every move.
+    at_post_unpuppet(account) -  when Account disconnects from the Character, we
+                    store the current location in the pre_logout_location Attribute and
+                    move it to a None-location so the "unpuppeted" character
+                    object does not need to stay on grid. Echoes "Account has disconnected"
+                    to the room.
+    at_pre_puppet - Just before Account re-connects, retrieves the character's
+                    pre_logout_location Attribute and move it back on the grid.
+    at_post_puppet - Echoes "AccountName has entered the game" to the room.
+
     """
 
-    def at_object_creation(self):
-        super(Character, self).at_object_creation()
-        self.db.race = None
-        self.db.focus = None
-        self.db.archetype = None
-
-        self.db.wallet = {'GC': 0, 'SC': 0, 'CC': 0}
-        self.db.position = 'STANDING'
-
-        self.db.pose = self.db.pose or self.db.pose_default
-        self.db.pose_death = 'lies dead.'
-
-    @lazy_property
-    def cooldowns(self):
-        return CooldownHandler(self, db_attribute="cooldowns")
-
-    @lazy_property
-    def traits(self):
-        """TraitHandler that manages character traits."""
-        return TraitHandler(self)
-
-    @lazy_property
-    def skills(self):
-        """TraitHandler that manages character skills."""
-        return TraitHandler(self, db_attribute_key='skills')
-
-    @lazy_property
-    def equip(self):
-        """Handler for equipped items."""
-        return EquipHandler(self)
-
-    def at_death(self):
-        """Hook called when a character dies."""
-        self.scripts.add(CharDeathHandler)
-
-    def at_pre_unpuppet(self):
-        """Called just before beginning to un-connect a puppeting from
-        this Account."""
-        if combat := self.ndb.combat:
-            combat.remove(self)
-
-    def process_sdesc(self, sdesc, obj, **kwargs):
-        """Called to format sdesc and recog before displaying"""
-        if obj.permissions.get('Developer'):
-            return "|r{}|n".format(sdesc)
-        else:
-            return "|G{}|n".format(sdesc)
-
-    def return_appearance(self, looker):
-        """
-        This formats a description. It is the hook a 'look' command
-        should call.
-        Args:
-            looker (Object): Object doing the looking.
-        """
-        if not looker:
-            return ""
-
-        # get description, build string
-        name = self.get_display_name(looker)
-        race = self.db.race
-        arch = self.db.archetype
-
-        med = looker.skills.medicine.value
-        per = looker.traits.PER.value
-
-        # These each do a skill check, but they always pass
-        # if you're looking at yourself
-        knows_race = race and (skill_check(per, 3) or looker == self)
-        knows_archetype = arch and (skill_check(per, 5) or looker == self)
-
-        # these values may need to be tweaked - how difficult should each one be?
-        knows_health_vague = (skill_check(per, 4) and per > 2) or looker == self
-        knows_health_exact = skill_check(med, 7) or looker == self
-
-        knows_stamina_vague = (skill_check(per, 6) and per > 3) or looker == self
-        knows_stamina_exact = skill_check(med, 8) or looker == self
-
-        # this is the base name format - it just colors the name cyan
-        string = "|c%s|n" % name
-
-        # if we're adding race or archetype, add "the" after the name
-        if knows_race or knows_archetype:
-            string += " the"
-
-        if knows_race:
-            string += " {}".format(race)
-        if knows_archetype:
-            string += " {}".format(arch)
-
-        # There may be a more efficient way to do this,
-        # but we just want to add a period and a newline
-        # after the name.
-        string += ".\n"
-
-        health_percent = float(self.traits.HP.percent().strip('%'))
-        health_current = self.traits.HP.value
-        health_max = self.traits.HP.max
-
-        if knows_health_vague or knows_health_exact:
-            # traits.percent returns a string with a percent symbol
-            # this is probably a silly idea, so maybe we should do a
-            # PR in the future, but for now, we strip the symbol
-            # and convert to a float
-            if health_percent > .8:
-                health_string = "They seem to be in good health."
-            elif health_percent > .5:
-                health_string = "They seem a little roughed up."
-            # If we've not passed either previous condition, they could
-            # have 0 health. Since we're converting to a float, it's possible
-            # we won't get a float of zero, so we check HP.value instead
-            elif self.traits.HP.value > 0:
-                health_string = "They seem to be in pretty bad shape."
-            else:
-                health_string = "They're dead."
-
-            if knows_health_exact:
-                health_string += " HP {}/{}\n".format( health_current, health_max )
-            else:
-                health_string += "\n"
-        # if we don't know their health, then just show a default message
-        else:
-            health_string = "They seem to be in good health.\n"
-
-        string += health_string
-
-        stamina_percent = float(self.traits.SP.percent().strip('%'))
-        stamina_current = str(self.traits.SP.value)
-        stamina_max = str(self.traits.SP.max)
-        stamina_string = ""
-
-        # we check HP.value, in case they're dead
-        if health_current > 0 and (knows_stamina_vague or knows_stamina_exact):
-            if stamina_percent > .8:
-                stamina_string = "They seem full of energy."
-            elif stamina_percent > .5:
-                stamina_string = "They look a bit tired."
-            else:
-                stamina_string = "They look ready to fall over."
-
-            if knows_stamina_exact:
-                stamina_string += " SP {}/{}\n".format(stamina_current, stamina_max)
-            else:
-                stamina_string += "\n"
-
-        string += stamina_string
-
-        desc = self.db.desc
-        if desc:
-            string += "%s\n\n" % desc
-
-        # self.equip.limbs is a dictionary of limbs and slots
-        # the slots are things like armor and weild_1, while
-        # the limbs are readable, like left arm and right arm
-        limbs = self.equip.limbs
-
-        # remember, when you do this with a dictionary, you're looping over
-        # the keys in the dict.
-        for limb in limbs:
-            slots = limbs[limb] # since we just have a key to the dict, we use
-                                # it to get the slot.
-
-            for slot in slots:  # It's possible that a limb could have multiple slots
-                item = self.equip.get(slot) # this returns None if there's no
-                                            # item equipped
-                if item:
-                    key = item.get_display_name(looker)
-                else:
-                    key = 'Nothing'
-
-                string += "|y{limb}|n: |w{name}|n\n".format(limb=limb, name=key)
-
-        return string
-
-
-class NPC(Character):
-    """Base character typeclass for NPCs and enemies.
-    """
-    def at_object_creation(self):
-        super(NPC, self).at_object_creation()
-
-        self.db.emote_aggressive = "stares about angrily"
-
-        self.db.slots = {'wield1': None,
-                         'wield2': None,
-                         'armor': None}
-
-        # initialize traits
-        npc = Archetype()
-        for key, kwargs in npc.traits.items():
-            self.traits.add(key, **kwargs)
-
-        apply_skills(self)
-
-    def at_death(self):
-        """Hook called when an NPC dies."""
-        self.scripts.add(NPCDeathHandler)
+    pass
