@@ -4,7 +4,7 @@ EvAdventure character generation.
 """
 from django.conf import settings
 
-from evennia import create_object
+from evennia import create_object, logger
 from evennia.objects.models import ObjectDB
 from evennia.prototypes.spawner import spawn
 from evennia.utils.evmenu import EvMenu
@@ -174,21 +174,39 @@ class TemporaryCharacterSheet:
         )
         # spawn equipment
         if self.weapon:
-            weapon = spawn(self.weapon)
-            new_character.equipment.move(weapon[0])
+            try:
+                weapon = spawn(self.weapon)
+                new_character.equipment.move(weapon[0])
+            except KeyError:
+                logger.log_err(f"[Chargen] Could not spawn Weapon: Prototype not found for '{self.weapon}'.")
+
         if self.armor:
-            armor = spawn(self.armor)
-            new_character.equipment.move(armor[0])
+            try:
+                armor = spawn(self.armor)
+                new_character.equipment.move(armor[0])
+            except KeyError:
+                logger.log_err(f"[Chargen] Could not spawn Armor: Prototype not found for '{self.armor}'.")
+
         if self.shield:
-            shield = spawn(self.shield)
-            new_character.equipment.move(shield[0])
+            try:
+                shield = spawn(self.shield)
+                new_character.equipment.move(shield[0])
+            except KeyError:
+                logger.log_err(f"[Chargen] Could not spawn Shield: Prototype not found for '{self.shield}'.")
+
         if self.helmet:
-            helmet = spawn(self.helmet)
-            new_character.equipment.move(helmet[0])
+            try:
+                helmet = spawn(self.helmet)
+                new_character.equipment.move(helmet[0])
+            except KeyError:
+                logger.log_err(f"[Chargen] Could not spawn Helmet: Prototype not found for '{self.helmet}'.")
 
         for item in self.backpack:
-            item = spawn(item)
-            new_character.equipment.move(item[0])
+            try:
+                item = spawn(item)
+                new_character.equipment.move(item[0])
+            except KeyError:
+                logger.log_err(f"[Chargen] Could not spawn Item: Prototype not found for '{item}'.")
 
         return new_character
 
@@ -318,6 +336,8 @@ def node_apply_character(caller, raw_string, **kwargs):
     tmp_character = kwargs["tmp_character"]
     new_character = tmp_character.apply(caller)
     caller.db._playable_characters.append(new_character)
+    session = caller.ndb._evmenu._session
+    caller.puppet_object(session=session, obj=new_character)
 
     text = "Character created!"
 
