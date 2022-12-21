@@ -1,0 +1,1 @@
+from .chargen import CmdCharCreate
