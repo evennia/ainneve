@@ -40,6 +40,20 @@ AUTO_CREATE_CHARACTER_WITH_ACCOUNT = False
 AUTO_PUPPET_ON_LOGIN = False
 MAX_NR_CHARACTERS = 5
 
+######################################################################
+# XYZ Grid install settings
+######################################################################
+
+# make contrib prototypes available as parents for map nodes
+PROTOTYPE_MODULES += ['evennia.contrib.grid.xyzgrid.prototypes']
+
+# add launcher command
+EXTRA_LAUNCHER_COMMANDS['xyzgrid'] = 'evennia.contrib.grid.xyzgrid.launchcmd.xyzcommand'
+
+# add game-specific maps
+XYZGRID_MAP_LIST = [
+    'world.maps.riverport',
+    ]
 
 ######################################################################
 # Settings given in secret_settings.py override those in this file.

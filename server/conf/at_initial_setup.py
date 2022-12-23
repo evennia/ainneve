@@ -13,7 +13,19 @@ will be QUIETLY ignored, so make sure to check it well to make sure it
 does what you expect it to.
 
 """
-
+from django.conf import settings
+from evennia.contrib.grid.xyzgrid.launchcmd import xyzcommand
+from evennia.contrib.grid.xyzgrid.xyzgrid import get_xyzgrid
 
 def at_initial_setup():
-    pass
+    maps_list = settings.XYZGRID_MAP_LIST
+    xyzcommand("add",*maps_list)
+
+    grid = get_xyzgrid()
+
+    # override grid's logger to echo directly to console
+    def _log(msg):
+        print(msg)
+
+    grid.log = _log
+    grid.spawn(xyz=("*", "*", "*"))
