@@ -4,29 +4,55 @@ Room
 Rooms are simple containers that has no location of their own.
 
 """
+from copy import deepcopy
 
-from evennia.contrib.grid import wilderness
 from evennia.objects.objects import DefaultRoom
+from evennia.utils.utils import inherits_from
+from evennia.contrib.grid import wilderness
+from evennia.contrib.grid.xyzgrid.xyzroom import XYZRoom
+
 from world.overworld import Overworld, OverworldMap
 
 from .objects import ObjectParent
+from .characters import Character
+
+
+CHAR_SYMBOL = "|w@|n"
+CHAR_ALT_SYMBOL = "|w>|n"
+ROOM_SYMBOL = "|bo|n"
+LINK_COLOR = "|B"
+
+_MAP_GRID = [
+    [" ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " "],
+    [" ", " ", "@", " ", " "],
+    [" ", " ", " ", " ", " "],
+    [" ", " ", " ", " ", " "],
+]
+_EXIT_GRID_SHIFT = {
+    "north": (0, 1, "||"),
+    "east": (1, 0, "-"),
+    "south": (0, -1, "||"),
+    "west": (-1, 0, "-"),
+    "northeast": (1, 1, "/"),
+    "southeast": (1, -1, "\\"),
+    "southwest": (-1, -1, "/"),
+    "northwest": (-1, 1, "\\"),
+}
 
 
 class Room(ObjectParent, DefaultRoom):
     """
-    Rooms are like any Object, except their location is None
-    (which is default). They also use basetype_setup() to
-    add locks so they cannot be puppeted or picked up.
-    (to change that, use at_object_creation instead)
+    Simple room supporting game-specific mechanics.
 
-    See examples/object.py for a list of
-    properties and methods available on all Objects.
     """
 
-    pass
+    allow_combat = False
+    allow_pvp = False
+    allow_death = False
 
 
-class OverworldRoom(wilderness.WildernessRoom):
+class OverworldRoom(wilderness.WildernessRoom, Room):
     """
     Special typeclass for the Overworld rooms
     Allows displaying the Overworld map
@@ -64,3 +90,26 @@ class OverworldRoom(wilderness.WildernessRoom):
         tile_str = "\n".join(rows)
 
         return tile_str
+
+class TownRoom(Room, XYZRoom):
+    """
+    Combines the XYZGrid functionality with Ainneve-specific room code.
+    """
+    map_visual_range = 1
+
+
+class PvPRoom(Room):
+    """
+    Room where PvP can happen, but noone gets killed.
+
+    """
+
+    allow_combat = True
+    allow_pvp = True
+
+    def get_display_footer(self, looker, **kwargs):
+        """
+        Display the room's PvP status.
+
+        """
+        return "|yNon-lethal PvP combat is allowed here!|n"

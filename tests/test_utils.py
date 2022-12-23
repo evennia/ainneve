@@ -6,15 +6,15 @@ Tests of the utils module.
 from evennia.utils import create
 from evennia.utils.test_resources import BaseEvenniaTest
 
-from .. import utils
-from ..objects import EvAdventureObject
+from world import utils
+from typeclasses.objects import Object
 
 
 class TestUtils(BaseEvenniaTest):
     def test_get_obj_stats(self):
 
         obj = create.create_object(
-            EvAdventureObject, key="testobj", attributes=(("desc", "A test object"),)
+            Object, key="testobj", attributes=(("desc", "A test object"),)
         )
         result = utils.get_obj_stats(obj)
 

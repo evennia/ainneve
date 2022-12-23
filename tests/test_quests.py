@@ -5,14 +5,14 @@ Testing Quest functionality.
 
 from unittest.mock import MagicMock
 
-from evennia.utils.test_resources import BaseEvenniaTest
+from evennia.utils.test_resources import EvenniaTest
 
-from .. import quests
-from ..objects import EvAdventureObject
-from .mixins import EvAdventureMixin
+from world import quests
+from typeclasses.objects import Object
+from .mixins import AinneveTestMixin
 
 
-class _TestQuest(quests.EvAdventureQuest):
+class _TestQuest(quests.Quest):
     """
     Test quest.
 
@@ -73,7 +73,7 @@ class _TestQuest(quests.EvAdventureQuest):
         del self.quester.db.test_quest_counter
 
 
-class EvAdventureQuestTest(EvAdventureMixin, BaseEvenniaTest):
+class QuestTest(AinneveTestMixin, EvenniaTest):
     """
     Test questing.
 
@@ -81,35 +81,35 @@ class EvAdventureQuestTest(EvAdventureMixin, BaseEvenniaTest):
 
     def setUp(self):
         super().setUp()
-        self.character.quests.add(_TestQuest)
-        self.character.msg = MagicMock()
+        self.char1.quests.add(_TestQuest)
+        self.char1.msg = MagicMock()
 
     def _get_quest(self):
-        return self.character.quests.get(_TestQuest.key)
+        return self.char1.quests.get(_TestQuest.key)
 
     def _fulfillA(self):
         """Fulfill quest step A"""
-        EvAdventureObject.create(
-            key="quest obj", location=self.character, tags=(("QuestA", "quests"),)
+        Object.create(
+            key="quest obj", location=self.char1, tags=(("QuestA", "quests"),)
         )
 
     def _fulfillC(self):
         """Fullfill quest step C"""
-        self.character.db.test_quest_counter = 6
+        self.char1.db.test_quest_counter = 6
 
     def test_help(self):
         """Get help"""
         # get help for all quests
-        help_txt = self.character.quests.get_help()
+        help_txt = self.char1.quests.get_help()
         self.assertEqual(help_txt, ["|ctestquest|n\n A test quest!\n\n - You need to do A first."])
 
         # get help for one specific quest
-        help_txt = self.character.quests.get_help(_TestQuest.key)
+        help_txt = self.char1.quests.get_help(_TestQuest.key)
         self.assertEqual(help_txt, ["|ctestquest|n\n A test quest!\n\n - You need to do A first."])
 
         # help for finished quest
         self._get_quest().is_completed = True
-        help_txt = self.character.quests.get_help()
+        help_txt = self.char1.quests.get_help()
         self.assertEqual(help_txt, ["|ctestquest|n\n A test quest!\n\n - This quest is completed!"])
 
     def test_progress__fail(self):
@@ -117,9 +117,9 @@ class EvAdventureQuestTest(EvAdventureMixin, BaseEvenniaTest):
         Check progress without having any.
         """
         # progress all quests
-        self.character.quests.progress()
+        self.char1.quests.progress()
         # progress one quest
-        self.character.quests.progress(_TestQuest.key)
+        self.char1.quests.progress(_TestQuest.key)
 
         # still on step A
         self.assertEqual(self._get_quest().current_step, "A")
@@ -131,20 +131,20 @@ class EvAdventureQuestTest(EvAdventureMixin, BaseEvenniaTest):
         """
         # A requires a certain object in inventory
         self._fulfillA()
-        self.character.quests.progress()
+        self.char1.quests.progress()
         self.assertEqual(self._get_quest().current_step, "B")
 
         # B requires progress be called with specific kwarg
         # should not step (no kwarg)
-        self.character.quests.progress()
+        self.char1.quests.progress()
         self.assertEqual(self._get_quest().current_step, "B")
 
         # should step (kwarg sent)
-        self.character.quests.progress(complete_quest_B=True)
+        self.char1.quests.progress(complete_quest_B=True)
         self.assertEqual(self._get_quest().current_step, "C")
 
         # C requires a counter Attribute on char be high enough
         self._fulfillC()
-        self.character.quests.progress()
+        self.char1.quests.progress()
         self.assertEqual(self._get_quest().current_step, "C")  # still on last step
         self.assertEqual(self._get_quest().is_completed, True)

@@ -10,16 +10,17 @@ from parameterized import parameterized
 from evennia import create_object
 from evennia.utils.test_resources import BaseEvenniaTest
 
-from .. import chargen, enums, objects
+from world import chargen, enums
+from typeclasses import objects
 
 
-class EvAdventureCharacterGenerationTest(BaseEvenniaTest):
+class CharacterGenerationTest(BaseEvenniaTest):
     """
     Test the Character generator in the rule engine.
 
     """
 
-    @patch("evadventure.rules.randint")
+    @patch("world.rules.randint")
     def setUp(self, mock_randint):
         super().setUp()
         mock_randint.return_value = 10
@@ -41,10 +42,10 @@ class EvAdventureCharacterGenerationTest(BaseEvenniaTest):
             "are honest but also irascible. You tend towards neutrality.",
         )
 
-    @patch("evadventure.chargen.spawn")
+    @patch("world.chargen.spawn")
     def test_apply(self, mock_spawn):
 
-        gambeson = create_object(objects.EvAdventureArmor, key="gambeson")
+        gambeson = create_object(objects.ArmorObject, key="gambeson")
         mock_spawn.return_value = [gambeson]
         account = MagicMock()
         account.id = 2222

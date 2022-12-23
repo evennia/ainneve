@@ -8,13 +8,12 @@ from unittest.mock import MagicMock, call, patch
 from anything import Something
 from parameterized import parameterized
 
-from evennia.utils.test_resources import BaseEvenniaTest
+from evennia.utils.test_resources import EvenniaTest
 
-from .. import characters, enums, equipment, random_tables, rules
-from .mixins import EvAdventureMixin
+from world import enums, random_tables, rules
 
 
-class EvAdventureRollEngineTest(BaseEvenniaTest):
+class DiceRollEngineTest(EvenniaTest):
     """
     Test the roll engine in the rules module. This is the core of any RPG.
 
@@ -22,9 +21,9 @@ class EvAdventureRollEngineTest(BaseEvenniaTest):
 
     def setUp(self):
         super().setUp()
-        self.roll_engine = rules.EvAdventureRollEngine()
+        self.roll_engine = rules.DiceRollEngine()
 
-    @patch("evadventure.rules.randint")
+    @patch("world.rules.randint")
     def test_roll(self, mock_randint):
         mock_randint.return_value = 8
         self.assertEqual(self.roll_engine.roll("1d6"), 8)
@@ -51,7 +50,7 @@ class EvAdventureRollEngineTest(BaseEvenniaTest):
         with self.assertRaises(TypeError):
             self.roll_engine.roll("1d10000")  # limit is d1000
 
-    @patch("evadventure.rules.randint")
+    @patch("world.rules.randint")
     def test_roll_with_advantage_disadvantage(self, mock_randint):
         mock_randint.return_value = 9
 
@@ -77,7 +76,7 @@ class EvAdventureRollEngineTest(BaseEvenniaTest):
         mock_randint.assert_has_calls([call(1, 20), call(1, 20)])
         mock_randint.reset_mock()
 
-    @patch("evadventure.rules.randint")
+    @patch("world.rules.randint")
     def test_saving_throw(self, mock_randint):
         mock_randint.return_value = 8
 
@@ -122,7 +121,7 @@ class EvAdventureRollEngineTest(BaseEvenniaTest):
             (True, enums.Ability.CRITICAL_SUCCESS, Something),
         )
 
-    @patch("evadventure.rules.randint")
+    @patch("world.rules.randint")
     def test_opposed_saving_throw(self, mock_randint):
         mock_randint.return_value = 10
 
@@ -147,7 +146,7 @@ class EvAdventureRollEngineTest(BaseEvenniaTest):
             (True, None, Something),
         )
 
-    @patch("evadventure.rules.randint")
+    @patch("world.rules.randint")
     def test_roll_random_table(self, mock_randint):
         mock_randint.return_value = 10
 
@@ -185,7 +184,7 @@ class EvAdventureRollEngineTest(BaseEvenniaTest):
             "no helmet or shield",
         )
 
-    @patch("evadventure.rules.randint")
+    @patch("world.rules.randint")
     def test_morale_check(self, mock_randint):
         defender = MagicMock()
         defender.morale = 12
@@ -196,7 +195,7 @@ class EvAdventureRollEngineTest(BaseEvenniaTest):
         mock_randint.return_value = 3  # 2d6 is rolled, so this will become 6
         self.assertEqual(self.roll_engine.morale_check(defender), True)
 
-    @patch("evadventure.rules.randint")
+    @patch("world.rules.randint")
     def test_heal_from_rest(self, mock_randint):
         character = MagicMock()
         character.heal = MagicMock()
@@ -209,7 +208,7 @@ class EvAdventureRollEngineTest(BaseEvenniaTest):
         mock_randint.assert_called_with(1, 8)  # 1d8
         character.heal.assert_called_with(6)  # roll + constitution bonus
 
-    @patch("evadventure.rules.randint")
+    @patch("world.rules.randint")
     def test_roll_death(self, mock_randint):
         character = MagicMock()
         character.strength = 13

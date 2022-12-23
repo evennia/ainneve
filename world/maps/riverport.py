@@ -4,7 +4,7 @@ from evennia.contrib.grid.xyzgrid import xymap_legend
 class Intersection(xymap_legend.MapNode):
     display_symbol = "o"
     prototype = {
-            "prototype_parent": "xyz_room",
+            "prototype_parent": "ainneve_xyz_room",
             "key": "An intersection",
             "desc": "An intersection of Riverport roads."
         }
@@ -12,7 +12,7 @@ class Intersection(xymap_legend.MapNode):
 class RoadNode(xymap_legend.MapNode):
     display_symbol = "o"
     prototype = {
-            "prototype_parent": "xyz_room",
+            "prototype_parent": "ainneve_xyz_room",
             "key": "A road",
             "desc": "A road through Riverport."
         }
@@ -21,7 +21,7 @@ class GateNode(xymap_legend.MapNode):
     # Note: these nodes will need to be manually connected to the overworld
     display_symbol = "#"
     prototype = {
-            "prototype_parent": "xyz_room",
+            "prototype_parent": "ainneve_xyz_room",
             "key": "A gate",
             "desc": "A gateway set into the walls of Riverport."
         }
@@ -29,7 +29,7 @@ class GateNode(xymap_legend.MapNode):
 class HouseNode(xymap_legend.MapNode):
     display_symbol = "∆"
     prototype = {
-            "prototype_parent": "xyz_room",
+            "prototype_parent": "ainneve_xyz_room",
             "key": "Inside",
             "desc": "A building inside Riverport."
         }
@@ -39,7 +39,7 @@ class HouseNode(xymap_legend.MapNode):
 class BridgeNode(xymap_legend.MapNode):
     display_symbol = "Ξ"
     prototype = {
-            "prototype_parent": "xyz_room",
+            "prototype_parent": "ainneve_xyz_room",
             "key": "A bridge",
             "desc": "A bridge over the river."
         }
@@ -60,12 +60,12 @@ LEGEND = {
     'X': Intersection,
     'R': RoadNode,
     'G': GateNode,
-    'H': HouseNode, # this can be replaced by an indoor-specific node
+    'H': HouseNode,
 }
 
 PROTOTYPES = {
     (13, 8): {
-        "prototype_parent": "xyz_room",
+        "prototype_parent": "ainneve_xyz_room",
         "key": "A fountain",
         "desc": "A fountain in the center of Riverport.",
     },

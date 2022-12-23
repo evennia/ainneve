@@ -1,60 +1,27 @@
 """
-EvAdventure commands and cmdsets. We don't need that many stand-alone new
-commands since a lot of functionality is managed in menus. These commands
-are in additional to normal Evennia commands and should be added
-to the CharacterCmdSet
+Commands and cmdsets for game-specific mechanics and functionality.
 
-New commands:
-    attack/hit <target>[,...]
-    inventory
-    wield/wear <item>
-    unwield/remove <item>
-    give <item or coin> to <character>
-    talk <npc>
+TODO: The base EvAdventure tutorial manages most functionality in menus,
+so there are few commands here. More functionality or modifications may
+be needed.
 
-To install, add the `EvAdventureCmdSet` from this module to the default character cmdset:
-
-```python
-    # in mygame/commands/default_cmds.py
-
-    from evennia.contrib.tutorials.evadventure.commands import EvAdventureCmdSet  # <---
-
-    # ...
-
-    class CharacterCmdSet(CmdSet):
-        def at_cmdset_creation(self):
-            # ...
-            self.add(EvAdventureCmdSet)   # <-----
-
-```
 """
 
-from evennia import CmdSet, Command, InterruptCommand
+from evennia import CmdSet, InterruptCommand
 from evennia.utils.evmenu import EvMenu
 from evennia.utils.utils import inherits_from
 
-from .combat_turnbased import CombatFailure, join_combat
-from .enums import WieldLocation
-from .equipment import EquipmentError
-from .npcs import EvAdventureTalkativeNPC
-from .utils import get_obj_stats
+from typeclasses.npcs import TalkativeNPC
 
+# TODO: properly implement real-time combat
+# from world.combat_turnbased import CombatFailure, join_combat
+from world.enums import WieldLocation
+from world.equipment import EquipmentError
+from world.utils import get_obj_stats
 
-class EvAdventureCommand(Command):
-    """
-    Base EvAdventure command. This is on the form
+from .command import Command
 
-        command <args>
-
-    where whitespace around the argument(s) are stripped.
-
-    """
-
-    def parse(self):
-        self.args = self.args.strip()
-
-
-class CmdAttackTurnBased(EvAdventureCommand):
+class CmdAttackTurnBased(Command):
     """
     Attack a target or join an existing combat.
 
@@ -99,7 +66,7 @@ class CmdAttackTurnBased(EvAdventureCommand):
             self.caller.msg("|rFound noone to attack.|n")
 
 
-class CmdInventory(EvAdventureCommand):
+class CmdInventory(Command):
     """
     View your inventory
 
@@ -119,7 +86,7 @@ class CmdInventory(EvAdventureCommand):
         self.caller.msg(f"{loadout}\n{backpack}\nYou use {slot_usage} equipment slots.")
 
 
-class CmdWieldOrWear(EvAdventureCommand):
+class CmdWieldOrWear(Command):
     """
     Wield a weapon/shield, or wear a piece of armor or a helmet.
 
@@ -171,7 +138,7 @@ class CmdWieldOrWear(EvAdventureCommand):
         self.caller.msg(self.out_txts[use_slot].format(key=item.key))
 
 
-class CmdRemove(EvAdventureCommand):
+class CmdRemove(Command):
     """
     Remove a remove a weapon/shield, armor or helmet.
 
@@ -311,7 +278,7 @@ def node_end(caller, raw_string, **kwargs):
     return "", None
 
 
-class CmdGive(EvAdventureCommand):
+class CmdGive(Command):
     """
     Give item or money to another person. Items need to be accepted before
     they change hands. Money changes hands immediately with no wait.
@@ -422,7 +389,7 @@ class CmdGive(EvAdventureCommand):
         EvMenu(caller, {"node_give": node_give, "node_end": node_end}, item=item, receiver=receiver)
 
 
-class CmdTalk(EvAdventureCommand):
+class CmdTalk(Command):
     """
     Start a conversations with shop keepers and other NPCs in the world.
 
@@ -438,7 +405,7 @@ class CmdTalk(EvAdventureCommand):
         if not target:
             return
 
-        if not inherits_from(target, EvAdventureTalkativeNPC):
+        if not inherits_from(target, TalkativeNPC):
             self.caller.msg(
                 f"{target.get_display_name(looker=self.caller)} does not seem very talkative."
             )
@@ -446,16 +413,16 @@ class CmdTalk(EvAdventureCommand):
         target.at_talk(self.caller)
 
 
-class EvAdventureCmdSet(CmdSet):
+class AinneveCmdSet(CmdSet):
     """
     Groups all commands in one cmdset which can be added in one go to the DefaultCharacter cmdset.
 
     """
 
-    key = "evadventure"
+    key = "ainneve"
 
     def at_cmdset_creation(self):
-        self.add(CmdAttackTurnBased())
+#        self.add(CmdAttackTurnBased())
         self.add(CmdInventory())
         self.add(CmdWieldOrWear())
         self.add(CmdRemove())
