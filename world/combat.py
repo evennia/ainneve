@@ -1,11 +1,7 @@
 
-# maximum range for different weapon types
-_WEAPON_RANGES = {
-    "grapple": 0,
-    "melee": 1,
-    "reach": 2,
-    "ranged": 6,
-}
+from .enums import CombatRange
+
+_MAX_RANGE = max([en.value for en in CombatRange])
 
 # format for combat prompt, currently unused
 # health, mana, current attack cooldown
@@ -16,7 +12,7 @@ class CombatHandler:
     
     def __init__(self, attacker, target):
         # the starting position logic could be better
-        positions = { attacker: 1, target: 2 }
+        self.positions = { attacker: 1, target: 2 }
         attacker.ndb.combat = self
         target.ndb.combat = self
     
@@ -24,7 +20,7 @@ class CombatHandler:
         """Add a new combatant to the combat instance."""
         # only add if they aren't already part of the fight
         if participant not in self.positions:
-          positions[participant] = 0
+          self.positions[participant] = 0
           participant.ndb.combat = self
     
     def remove(self, participant):
@@ -56,10 +52,10 @@ class CombatHandler:
 
         distance = abs(self.positions[attacker] - self.positions[target])
         range = None
-        for key, val in _WEAPON_RANGES.items():
-            if val > distance:
+        for range_enum in CombatRange:
+            if range_enum.value > distance:
                 break
-            range = key
+            range = range_enum.name
 
         return range
 
@@ -69,20 +65,22 @@ class CombatHandler:
         if not (attacker in self.positions and target in self.positions):
             return None
         
-        if range not in _WEAPON_RANGES:
+        range_enum = [en for en in CombatRange if en.name == range]
+        if not range_enum:
             return False
-
+        range_enum = range_enum[0]
         distance = abs(self.positions[attacker] - self.positions[target])
-        return _WEAPON_RANGES[range] >= distance
-    
+        return range_enum.value >= distance
+
     def any_in_range(self, attacker, range):
         if attacker not in self.positions:
             return False
         
-        if range not in _WEAPON_RANGES:
+        range_enum = [en for en in CombatRange if en.name == range]
+        if not range_enum:
             return False
-        
-        return any( p for p in self.positions.values() if p <= _WEAPON_RANGES[range] )
+        range_enum = range_enum[0]
+        return any( p for p in self.positions.values() if p <= range_enum.value )
 
     def approach(self, mover, target):
         """
@@ -117,7 +115,7 @@ class CombatHandler:
         end = self.positions[target]
         
         # can't move beyond maximum weapon range
-        if abs(start-end) >= max(_WEAPON_RANGES.values()):
+        if abs(start-end) >= _MAX_RANGE:
             return False
 
         change = -1 if start < end else 1

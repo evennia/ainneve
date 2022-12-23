@@ -16,25 +16,31 @@ from evennia.utils.evform import EvForm
 from evennia.utils.evtable import EvTable
 from evennia.utils.logger import log_trace
 from evennia.utils.utils import lazy_property
+from evennia.contrib.game_systems.cooldowns import CooldownHandler
 
 from world import rules
 from world.equipment import EquipmentError, EquipmentHandler
 from world.quests import QuestHandler
-#from world.utils import get_obj_stats
+
+# from world.utils import get_obj_stats
 
 from .objects import ObjectParent
 
 
 class BaseCharacter(ObjectParent, DefaultCharacter):
     """
-		The EvAdventure tutorial using a mixin class and DefaultCharacter to implement the
-		different types of Characters - e.g. Players versus Non-Players.
-		
-		Since we are building a game directly, we can instead put that "Living" code directly
-		into a parent character class.
-		"""
+    The EvAdventure tutorial using a mixin class and DefaultCharacter to implement the
+    different types of Characters - e.g. Players versus Non-Players.
+
+    Since we are building a game directly, we can instead put that "Living" code directly
+    into a parent character class.
+    """
 
     is_pc = False
+
+    @lazy_property
+    def cooldowns(self):
+        return CooldownHandler(self)
 
     @property
     def hurt_level(self):
@@ -81,6 +87,8 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
 
         """
         self.hp -= damage
+        if self.hp <= 0:
+            self.at_defeat()
 
     def at_defeat(self):
         """
@@ -95,7 +103,7 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
         Called when this living thing dies.
 
         """
-        pass
+        self.location.msg_contents(f"$You() $conj(die).", from_obj=self)
 
     def at_pay(self, amount):
         """
@@ -162,7 +170,7 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
 class Character(BaseCharacter):
     """
     The Character typeclass for the game. This is the default typeclass new player
-		characters are created as, so the EvAdventure player character is appropriate here.
+                characters are created as, so the EvAdventure player character is appropriate here.
 
     """
 
@@ -265,7 +273,9 @@ class Character(BaseCharacter):
         if self.location.allow_death:
             rules.dice.roll_death(self)
         else:
-            self.location.msg_contents("|y$You() $conj(yield), beaten and out of the fight.|n")
+            self.location.msg_contents(
+                "|y$You() $conj(yield), beaten and out of the fight.|n"
+            )
             self.hp = self.hp_max
 
     def at_death(self):
@@ -377,8 +387,8 @@ def get_character_sheet(character):
     """
     Generate a character sheet. This is grouped in a class in order to make
     it easier to override the look of the sheet.
-		
-		TODO: This is NOT a class - figure out how this is intended to be used and accessed
+
+                TODO: This is NOT a class - figure out how this is intended to be used and accessed
 
     """
 

@@ -70,3 +70,13 @@ class ObjType(Enum):
     MAGIC = "magic"
     QUEST = "quest"
     TREASURE = "treasure"
+
+
+class CombatRange(Enum):
+    """
+    Maximum combat range values
+    """
+    GRAPPLE = 0
+    MELEE   = 1
+    REACH   = 2
+    RANGED  = 6

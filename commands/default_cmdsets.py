@@ -20,6 +20,7 @@ from evennia.contrib.grid.xyzgrid.commands import XYZGridCmdSet
 from .debug import DebugCmdSet
 from .game import AinneveCmdSet
 from .ooc import CmdCharCreate
+from .combat import CombatCmdSet
 
 class CharacterCmdSet(default_cmds.CharacterCmdSet):
     """
@@ -35,10 +36,11 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         Populates the cmdset
         """
         super().at_cmdset_creation()
-				
+        
         self.add(DebugCmdSet())  # commands for debugging purposes
         self.add(XYZGridCmdSet()) # xyzgrid pathfinding and building commands
         self.add(AinneveCmdSet()) # our own game commands
+        self.add(CombatCmdSet()) # combat-specific commands
 
 class AccountCmdSet(default_cmds.AccountCmdSet):
     """
