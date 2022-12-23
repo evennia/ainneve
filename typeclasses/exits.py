@@ -6,7 +6,9 @@ set and has a single command defined on itself with the same name as its key,
 for allowing Characters to traverse the exit to its destination.
 
 """
-from evennia.objects.objects import DefaultExit
+from evennia import DefaultExit, utils
+from evennia.contrib.grid import wilderness
+from .objects import ObjectParent
 
 from .objects import ObjectParent
 
@@ -38,3 +40,28 @@ class Exit(ObjectParent, DefaultExit):
     """
 
     pass
+
+class OverworldExit(wilderness.WildernessExit):
+    def at_traverse_coordinates(self, traversing_object, current_coordinates, new_coordinates):
+        """
+        Called when an object wants to travel from one place inside the
+        wilderness to another place inside the wilderness.
+
+        If this returns True, then the traversing can happen. Otherwise it will
+        be blocked.
+
+        This method is similar how the `at_traverse` works on normal exits.
+
+        Args:
+            traversing_object (Object): The object doing the travelling.
+            current_coordinates (tuple): (x, y) coordinates where
+                `traversing_object` currently is.
+            new_coordinates (tuple): (x, y) coordinates of where
+                `traversing_object` wants to travel to.
+
+        Returns:
+            bool: True if traversing_object is allowed to traverse
+        """
+        if not self.mapprovider.is_valid_coordinates(self.wilderness, new_coordinates):
+            return False
+        return True
