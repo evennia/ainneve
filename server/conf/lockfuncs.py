@@ -20,11 +20,33 @@ lock functions from evennia.locks.lockfuncs.
 
 """
 
-# def myfalse(accessing_obj, accessed_obj, *args, **kwargs):
-#    """
-#    called in lockstring with myfalse().
-#    A simple logger that always returns false. Prints to stdout
-#    for simplicity, should use utils.logger for real operation.
-#    """
-#    print "%s tried to access %s. Access denied." % (accessing_obj, accessed_obj)
-#    return False
+def in_combat(accessing_obj, accessed_obj, *args, **kwargs):
+    """returns true if an active combat handler is present"""
+    if hasattr(accessing_obj, 'nattributes'):
+        return accessing_obj.nattributes.has('combat')
+    else:
+        return False
+
+def in_range(accessing_obj, accessed_obj, *args, **kwargs):
+    """returns true if accessing_obj has any targets in specified range"""
+    range = args[0] if args else "MELEE"
+    if hasattr(accessing_obj, 'nattributes'):
+        if not (combat := accessing_obj.ndb.combat):
+            return False
+        return combat.any_in_range(accessing_obj, range)
+    else:
+        return false
+
+def melee_equipped(accessing_obj, accessed_obj, *args, **kwargs):
+    """returns true if accessing_obj has a melee weapon equipped"""
+    if hasattr(accessing_obj, 'weapon'):
+        return accessing_obj.weapon.attack_range.name == "MELEE"
+    else:
+      return False
+
+def ranged_equipped(accessing_obj, accessed_obj, *args, **kwargs):
+    """returns true if accessing_obj hsa a ranged weapon equipped"""
+    if hasattr(accessing_obj, 'weapon'):
+        return accessing_obj.weapon.attack_range.name == "RANGED"
+    else:
+      return False
