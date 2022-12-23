@@ -30,7 +30,7 @@ class CombatHandler:
             self.positions.pop(participant)
             participant.nattributes.remove("combat")
 
-            survivors = self.positions.keys()
+            survivors = list(self.positions.keys())
             if len(survivors) == 1:
                 # only one participant means no more fight
                 survivors[0].nattributes.remove("combat")
