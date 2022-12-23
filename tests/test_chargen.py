@@ -12,6 +12,7 @@ from evennia.utils.test_resources import BaseEvenniaTest
 
 from world import chargen, enums
 from typeclasses import objects
+from world.characters.races import Races
 
 
 class CharacterGenerationTest(BaseEvenniaTest):
@@ -20,10 +21,12 @@ class CharacterGenerationTest(BaseEvenniaTest):
 
     """
 
+    @patch('world.chargen.TemporaryCharacterSheet._random_race')
     @patch("world.rules.randint")
-    def setUp(self, mock_randint):
+    def setUp(self, mock_randint, mock_random_race):
         super().setUp()
         mock_randint.return_value = 10
+        mock_random_race.return_value = Races.Human
         self.chargen = chargen.TemporaryCharacterSheet()
 
     def test_base_chargen(self):
@@ -66,3 +69,12 @@ class CharacterGenerationTest(BaseEvenniaTest):
 
         gambeson.delete()
         character.delete()
+
+    def test_swap_race(self):
+        # Base strength is 10, Human race has no str mod
+        self.chargen.swap_race(Races.Orc)
+        self.assertEqual(self.chargen.strength, 12)  # Orc bonus is +2
+        self.chargen.swap_race(Races.Elf)
+        self.assertEqual(self.chargen.strength, 9)  # Elf bonus is -1
+        self.chargen.swap_race(Races.Human)
+        self.assertEqual(self.chargen.strength, 10) # Back to base
