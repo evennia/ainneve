@@ -59,14 +59,35 @@ A game made using simple systems which show off Evennia's many features - especi
 - NOT turn-based combat
 	- *Notes from friar are at the end of the section.*
 	- Weapon stats
+		- Are they bonus to-hit, bonus damage, or defining attack/damage type?
 	- Armor stats
-	- Dice rolls
+		- Heavier armor adds a dodge penalty
+		- Damage reduction or general defense bonus?
+	- Dice rolls are standardized as 2d6+stat
+		- *IMPLEMENTATION NOTE* - Make this a single point-of-access method which passes in the stat.
+	- Since this isn't turn-based, there should be no "initiative" but instead "attack speed".
+		- Attack speed defines your delay after attacking - weapon speed minus armor encumbrance?
+		- Attacking also costs stamina - what exactly determines the cost?
+	- Target zones
+		- Combatants can set their defense and attack zones as an XY coordinate, left/center/right, low/mid/high
+			- Changing attack zone is a free action
+			- Changing defense zone incurs an attack delay
+		- Attacks landing on your defended zone procs a defense auto-action, which if successful gives a counter-attack bonus.
+			- Should there be any effect for landing "near" a defended zone? e.g. if you have left/mid and someone aims for left/high
+		- Attacks landing outside the defense zones successfully land on armor in the strike zone
+	- Combat movement
+		- While in combat, you can "advance" or "retreat" to/from an opponent to change your active range
+			- Weapons can have different min/max ranges
+		- Advancing and retreating incur movement delays
+			- Ahould this be separate from the attack delay, or should moving prevent attacks/attacking prevent movement?
 - Crafting weapons/armor/potions as a counter-option to buying them.
 	- *IMPLEMENTATION NOTE* - Use the crafting contrib
 - Containers
 	- If we want them, they need to be implemented, including custom get/put/drop commands.
+	- EvAdventure is built with the concept of a backpack but does not yet implement containers
 - Inventory management
 	- Do characters have a carrying limit in terms of objects or size?
+		- EvAdventure comes with a built-in carrying capacity
 	- If there are containers, do they allow you to carry more?
 
 ----
