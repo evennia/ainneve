@@ -2,6 +2,8 @@
 EvAdventure character generation.
 
 """
+import random
+
 from django.conf import settings
 
 from evennia import create_object, logger
@@ -12,34 +14,33 @@ from evennia.contrib.grid.xyzgrid.xyzroom import XYZRoom
 from evennia.contrib.grid.xyzgrid import xyzgrid
 
 from typeclasses.characters import Character
+from world.characters.classes import CharacterClasses
+from world.characters.races import Races
 
 from .random_tables import chargen_tables
 from .rules import dice
 
 _ABILITIES = {
     "STR": "strength",
-    "DEX": "dexterity",
-    "CON": "constitution",
-    "INT": "intelligence",
-    "WIS": "wisdom",
-    "CHA": "charisma",
+    "WIL": "will",
+    "CUN": "cunning",
 }
 
 _TEMP_SHEET = """
-{name}
+{name} the {race} {cclass}
 
 STR +{strength}
-DEX +{dexterity}
-CON +{constitution}
-INT +{intelligence}
-WIS +{wisdom}
-CHA +{charisma}
+CUN +{cunning}
+WIL +{will}
 
 {description}
 
 Your belongings:
 {equipment}
 """
+
+_SORTED_RACES = sorted(list(Races.values()), key=lambda race: race.name)
+_SORTED_CLASSES = sorted(list(CharacterClasses.values()), key=lambda cclass: cclass.name)
 
 
 class TemporaryCharacterSheet:
@@ -65,17 +66,42 @@ class TemporaryCharacterSheet:
     def _random_ability(self):
         return min(dice.roll("1d6"), dice.roll("1d6"), dice.roll("1d6"))
 
+    def _random_class(self):
+        return random.choice(_SORTED_CLASSES)
+
+    def _random_race(self):
+        return random.choice(_SORTED_RACES)
+    def swap_race(self, new_race):
+        # Remove previous modifiers
+        self.strength -= self.race.strength_mod
+        self.will -= self.race.will_mod
+        self.cunning -= self.race.cunning_mod
+
+        self.race = new_race
+
+        # Apply new modifiers
+        # TODO This should be a trait modifier instead
+        self.strength += self.race.strength_mod
+        self.will += self.race.will_mod
+        self.cunning += self.race.cunning_mod
+
     def __init__(self):
         # name will likely be modified later
         self.name = dice.roll_random_table("1d282", chargen_tables["name"])
 
         # base attribute values
         self.strength = self._random_ability()
-        self.dexterity = self._random_ability()
-        self.constitution = self._random_ability()
-        self.intelligence = self._random_ability()
-        self.wisdom = self._random_ability()
-        self.charisma = self._random_ability()
+        self.will = self._random_ability()
+        self.cunning = self._random_ability()
+
+        # randomized race and class
+        self.race = self._random_race()
+        self.cclass = self._random_class()
+
+        # apply race bonuses
+        self.strength += self.race.strength_mod
+        self.will += self.race.will_mod
+        self.cunning += self.race.cunning_mod
 
         # physical attributes (only for rp purposes)
         physique = dice.roll_random_table("1d20", chargen_tables["physique"])
@@ -133,11 +159,10 @@ class TemporaryCharacterSheet:
         return _TEMP_SHEET.format(
             name=self.name,
             strength=self.strength,
-            dexterity=self.dexterity,
-            constitution=self.constitution,
-            intelligence=self.intelligence,
-            wisdom=self.wisdom,
-            charisma=self.charisma,
+            cunning=self.cunning,
+            will=self.will,
+            race=self.race,
+            cclass=self.cclass,
             description=self.desc,
             equipment=", ".join(equipment),
         )
@@ -159,11 +184,10 @@ class TemporaryCharacterSheet:
             permissions=permissions,
             attributes=(
                 ("strength", self.strength),
-                ("dexterity", self.dexterity),
-                ("constitution", self.constitution),
-                ("intelligence", self.intelligence),
-                ("wisdom", self.wisdom),
-                ("charisma", self.wisdom),
+                ("cunning", self.cunning),
+                ("will", self.will),
+                ("race_key", self.race.key),
+                ("cclass_key", self.cclass.key),
                 ("hp", self.hp),
                 ("hp_max", self.hp_max),
                 ("desc", self.desc),
@@ -237,6 +261,12 @@ def node_chargen(caller, raw_string, **kwargs):
                 "goto": ("node_swap_abilities", kwargs),
             }
         )
+    options.append(
+        {"desc": "Change your race", "goto": ("node_show_races", kwargs)}
+    )
+    options.append(
+        {"desc": "Change your class", "goto": ("node_show_classes", kwargs)}
+    )
     options.append(
         {"desc": "Accept and create character", "goto": ("node_apply_character", kwargs)},
     )
@@ -315,16 +345,13 @@ def node_swap_abilities(caller, raw_string, **kwargs):
 Your current abilities:
 
 STR +{tmp_character.strength}
-DEX +{tmp_character.dexterity}
-CON +{tmp_character.constitution}
-INT +{tmp_character.intelligence}
-WIS +{tmp_character.wisdom}
-CHA +{tmp_character.charisma}
+CUN +{tmp_character.cunning}
+WIL +{tmp_character.will}
 
 You can swap the values of two abilities around.
 You can only do this once, so choose carefully!
 
-To swap the values of e.g.  STR and INT, write |wSTR INT|n. Empty to abort.
+To swap the values of e.g.  STR and WIL, write |wSTR WIL|n. Empty to abort.
 """
 
     options = {"key": "_default", "goto": (_swap_abilities, kwargs)}
@@ -359,6 +386,13 @@ def start_chargen(caller, session=None):
         "node_change_name": node_change_name,
         "node_swap_abilities": node_swap_abilities,
         "node_apply_character": node_apply_character,
+        "node_show_classes": node_show_classes,
+        "node_select_class": node_select_class,
+        "node_apply_class": node_apply_class,
+        "node_show_races": node_show_races,
+        "node_select_race": node_select_race,
+        "node_apply_race": node_apply_race,
+
     }
 
     # this generates all random components of the character
@@ -371,3 +405,113 @@ def start_chargen(caller, session=None):
         session=session,
         startnode_input=("sgsg", {"tmp_character": tmp_character}),
     )
+
+def node_show_classes(caller, raw_string, **kwargs):
+    """Starting page and Class listing."""
+    text = ("""\
+        Select a |cClass|n.
+
+        Select one by number below to view its details, or |whelp|n
+        at any time for more info.
+    """)
+
+    options = []
+
+    for cclass in _SORTED_CLASSES:
+        options.append({
+            "desc": "|c{}|n".format(cclass.name),
+            "goto": ("node_select_class", {"cclass": cclass, **kwargs}),
+        })
+
+    return (text, "Type in the number next to the class to have more info."), options
+
+def node_select_class(caller, raw_string, **kwargs):
+    """Class detail and selection menu node."""
+    try:
+        choice = int(raw_string.strip())
+        cclass = _SORTED_CLASSES[choice - 1]
+    except (ValueError, KeyError, IndexError):
+        caller.msg("|rInvalid choice. Try again.")
+        return None
+
+    text = cclass.desc + "\nWould you like to become this class?"
+    help = "Examine the properties of this class and decide whether\n"
+    help += "to use its starting attributes for your character."
+    options = (
+        {
+            "key": ("Yes", "ye", "y"),
+            "desc": f"Become {cclass.name}",
+            "goto": ("node_apply_class", {"cclass": cclass, **kwargs}),
+        },
+        {
+            "key": ("No", "n", "_default"),
+            "desc": "Return to Class selection",
+            "goto": "node_show_classes"
+        }
+    )
+    return (text, help), options
+
+
+def node_apply_class(caller, raw_string, **kwargs):
+    cclass = kwargs.get('cclass')
+    tmp_character = kwargs["tmp_character"]
+    tmp_character.cclass = cclass
+
+    return node_chargen(caller, '', tmp_character=tmp_character)
+
+
+def node_show_races(caller, raw_string, **kwargs):
+    """Starting page and Class listing."""
+    text = """\
+        Select a |cRace|n.
+
+        Select one by number below to view its details, or |whelp|n
+        at any time for more info.
+    """
+
+    options = []
+
+    for race in _SORTED_RACES:
+        options.append({
+            "desc": "|c{}|n".format(race.name),
+            "goto": ("node_select_race", {"race": race, **kwargs}),
+        })
+
+    return (text, "Select a race to show its details"), options
+
+
+def node_select_race(caller, raw_string, **kwargs):
+    """Race detail and selection menu node."""
+    try:
+        choice = int(raw_string.strip())
+        race = _SORTED_RACES[choice - 1]
+    except (ValueError, KeyError, IndexError):
+        caller.msg("|rInvalid choice. Try again.")
+        return None
+
+    text = race.desc + "\nWould you like to become this race?"
+    help = "Examine the properties of this race and decide whether\n"
+    help += "to use its starting attributes for your character."
+    options = (
+        {
+            "key": ("Yes", "ye", "y"),
+            "desc": f"Become {race.name}",
+            "goto": ("node_apply_race", {'race': race, **kwargs}),
+        },
+        {
+            "key": ("No", "n", "_default"),
+            "desc": "Return to Class selection",
+            "goto": "node_show_races"
+        }
+    )
+
+    return (text, help), options
+
+
+def node_apply_race(caller, raw_string, **kwargs):
+    race = kwargs.get('race')
+    tmp_character = kwargs["tmp_character"]
+    tmp_character.swap_race(race)
+    caller.msg('Swapped race!')
+
+    return node_chargen(caller, '', tmp_character=tmp_character)

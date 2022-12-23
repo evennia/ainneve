@@ -18,6 +18,8 @@ from evennia.utils.logger import log_trace
 from evennia.utils.utils import lazy_property
 
 from world import rules
+from world.characters.classes import CharacterClasses
+from world.characters.races import Races
 from world.equipment import EquipmentError, EquipmentHandler
 from world.quests import QuestHandler
 #from world.utils import get_obj_stats
@@ -170,11 +172,12 @@ class Character(BaseCharacter):
 
     # these are the ability bonuses. Defense is always 10 higher
     strength = AttributeProperty(default=1)
-    dexterity = AttributeProperty(default=1)
-    constitution = AttributeProperty(default=1)
-    intelligence = AttributeProperty(default=1)
-    wisdom = AttributeProperty(default=1)
-    charisma = AttributeProperty(default=1)
+    will = AttributeProperty(default=1)
+    cunning = AttributeProperty(default=1)
+
+    # Keys of the cclass and race, to retrieve the proper dataclass
+    cclass_key = AttributeProperty()
+    race_key = AttributeProperty()
 
     hp = AttributeProperty(default=4)
     hp_max = AttributeProperty(default=4)
@@ -183,6 +186,24 @@ class Character(BaseCharacter):
 
     xp = AttributeProperty(default=0)
     xp_per_level = 1000
+
+    @lazy_property
+    def cclass(self):
+        cclass = self.ndb.cclass
+        if cclass is None:
+            cclass = CharacterClasses.get(self.db.cclass_key)
+            self.ndb.cclass = cclass
+
+        return cclass
+
+    @lazy_property
+    def race(self):
+        race = self.ndb.race
+        if race is None:
+            race = Races.get(self.db.race_key)
+            self.ndb.race = race
+
+        return race
 
     @lazy_property
     def equipment(self):
