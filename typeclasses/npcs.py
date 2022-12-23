@@ -1,21 +1,21 @@
 """
-EvAdventure NPCs. This includes both friends and enemies, only separated by their AI.
+Typeclasses defining NPCs. This includes both friends and enemies, only separated by their AI.
 
 """
 from random import choice
 
-from evennia import DefaultCharacter
 from evennia.typeclasses.attributes import AttributeProperty
 from evennia.utils.evmenu import EvMenu
 from evennia.utils.utils import make_iter
 
-from .characters import LivingMixin
-from .enums import Ability, WieldLocation
+from world.enums import Ability, WieldLocation
+from world.rules import dice
+
+from .characters import BaseCharacter
 from .objects import WeaponEmptyHand
-from .rules import dice
 
 
-class EvAdventureNPC(LivingMixin, DefaultCharacter):
+class NPC(BaseCharacter):
     """
     This is the base class for all non-player entities, including monsters. These
     generally don't advance in level but uses a simplified, abstract measure of how
@@ -97,7 +97,7 @@ class EvAdventureNPC(LivingMixin, DefaultCharacter):
         pass
 
 
-class EvAdventureTalkativeNPC(EvAdventureNPC):
+class TalkativeNPC(NPC):
     """
     Talkative NPCs can be addressed by `talk [to] <npc>`. This opens a chat menu with
     communication options. The menu is created with the npc and we override the .create
@@ -203,14 +203,14 @@ def node_start(caller, raw_string, **kwargs):
     return text, options
 
 
-class EvAdventureQuestGiver(EvAdventureTalkativeNPC):
+class QuestGiver(TalkativeNPC):
     """
     An NPC that acts as a dispenser of quests.
 
     """
 
 
-class EvAdventureShopKeeper(EvAdventureTalkativeNPC):
+class ShopKeeper(TalkativeNPC):
     """
     ShopKeeper NPC.
 
@@ -234,7 +234,7 @@ class EvAdventureShopKeeper(EvAdventureTalkativeNPC):
         )
 
 
-class EvAdventureMob(EvAdventureNPC):
+class Mob(NPC):
     """
     Mob (mobile) NPC; this is usually an enemy.
 
@@ -248,7 +248,7 @@ class EvAdventureMob(EvAdventureNPC):
         Called to get the next action in combat.
 
         Args:
-            combathandler (EvAdventureCombatHandler): The currently active combathandler.
+            combathandler (CombatHandler): The currently active combathandler.
 
         Returns:
             tuple: A tuple `(str, tuple, dict)`, being the `action_key`, and the `*args` and

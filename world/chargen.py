@@ -8,8 +8,11 @@ from evennia import create_object, logger
 from evennia.objects.models import ObjectDB
 from evennia.prototypes.spawner import spawn
 from evennia.utils.evmenu import EvMenu
+from evennia.contrib.grid.xyzgrid.xyzroom import XYZRoom
+from evennia.contrib.grid.xyzgrid import xyzgrid
 
-from .characters import EvAdventureCharacter
+from typeclasses.characters import Character
+
 from .random_tables import chargen_tables
 from .rules import dice
 
@@ -144,13 +147,12 @@ class TemporaryCharacterSheet:
         Once the chargen is complete, call this create and set up the character.
 
         """
-
         start_location = ObjectDB.objects.get_id(settings.START_LOCATION)
         default_home = ObjectDB.objects.get_id(settings.DEFAULT_HOME)
         permissions = settings.PERMISSION_ACCOUNT_DEFAULT
         # creating character with given abilities
         new_character = create_object(
-            EvAdventureCharacter,
+            Character,
             key=self.name,
             location=start_location,
             home=default_home,
@@ -173,6 +175,8 @@ class TemporaryCharacterSheet:
             " perm(Admin)" % (new_character.id, account.id, account.id)
         )
         # spawn equipment
+        # TODO: add item prototypes
+        # none of the equipment from the random tables have prototypes, so there is no starting gear
         if self.weapon:
             try:
                 weapon = spawn(self.weapon)

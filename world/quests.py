@@ -19,7 +19,7 @@ from copy import copy, deepcopy
 from evennia.utils import dbserialize
 
 
-class EvAdventureQuest:
+class Quest:
     """
     This represents a single questing unit of quest.
 
@@ -35,7 +35,7 @@ class EvAdventureQuest:
 
     Example:
     ```py
-    class MyQuest(EvAdventureQuest):
+    class MyQuest(Quest):
         '''A quest with two steps that ar'''
 
         start_step = "A"
@@ -168,7 +168,7 @@ class EvAdventureQuest:
         pass
 
 
-class EvAdventureQuestHandler:
+class QuestHandler:
     """
     This sits on the Character, as `.quests`.
 
@@ -177,7 +177,7 @@ class EvAdventureQuestHandler:
     ```
     @lazy_property
     def quests(self):
-        return EvAdventureQuestHandler(self)
+        return QuestHandler(self)
     ```
 
     """

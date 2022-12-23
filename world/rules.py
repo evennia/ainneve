@@ -15,11 +15,7 @@ to use them as the base for your own variation (tweaking values etc).
   character over time.
 - Charsheet - a container with tools for visually displaying the character sheet in-game.
 
-This module presents several singletons to import
-
-- `dice` - the `EvAdventureRollEngine` for all random resolution and table-rolling.
-- `character_sheet` - the `EvAdventureCharacterSheet` visualizer.
-- `improvement` - the EvAdventureImprovement` class for handling char xp and leveling.
+This module is designed to use by importing the `dice` singleton provided.
 
 """
 from random import randint
@@ -30,34 +26,16 @@ from .random_tables import death_and_dismemberment as death_table
 # Basic rolls
 
 
-class EvAdventureRollEngine:
+class DiceRollEngine:
     """
-    This groups all dice rolls of EvAdventure. These could all have been normal functions, but we
+    This groups all dice rolls for game mechanics. These could all have been normal functions, but we
     are group them in a class to make them easier to partially override and replace later.
 
     """
 
     def roll(self, roll_string, max_number=10):
         """
-        NOTE: In evennia/contribs/rpg/dice/ is a more powerful dice roller with
-        more features, such as modifiers, secret rolls etc. This is much simpler and only
-        gets a simple sum of normal rpg-dice.
-
-        Args:
-            roll_string (str): A roll using standard rpg syntax, <number>d<diesize>, like
-                1d6, 2d10 etc. Max die-size is 1000.
-            max_number (int): The max number of dice to roll. Defaults to 10, which is usually
-                more than enough.
-
-        Returns:
-            int: The rolled result - sum of all dice rolled.
-
-        Raises:
-            TypeError: If roll_string is not on the right format or otherwise doesn't validate.
-
-        Notes:
-            Since we may see user input to this function, we make sure to validate the inputs (we
-            wouldn't bother much with that if it was just for developer use).
+        NOTE: Implement this with the dice roller contrib instead!
 
         """
         max_diesize = 1000
@@ -340,5 +318,5 @@ class EvAdventureRollEngine:
 
 # singletons
 
-# access rolls e.g. with rules.dice.opposed_saving_throw(...)
-dice = EvAdventureRollEngine()
+# access rolls e.g. with world.rules.dice.opposed_saving_throw(...)
+dice = DiceRollEngine()

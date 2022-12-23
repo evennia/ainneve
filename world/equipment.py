@@ -6,7 +6,7 @@ Knave has a system of Slots for its inventory.
 from evennia.utils.utils import inherits_from
 
 from .enums import Ability, WieldLocation
-from .objects import EvAdventureObject, WeaponEmptyHand
+from typeclasses.objects import Object, WeaponEmptyHand
 
 
 class EquipmentError(TypeError):
@@ -88,13 +88,13 @@ class EquipmentHandler:
         Check if obj can fit in equipment, based on its size.
 
         Args:
-            obj (EvAdventureObject): The object to add.
+            obj (Object): The object to add.
 
         Raise:
             EquipmentError: If there's not enough room.
 
         """
-        if not inherits_from(obj, EvAdventureObject):
+        if not inherits_from(obj, Object):
             raise EquipmentError(f"{obj.key} is not something that can be equipped.")
 
         size = obj.size
@@ -114,7 +114,7 @@ class EquipmentHandler:
         Check which slot-type the given object is in.
 
         Args:
-            obj (EvAdventureObject): The object to check.
+            obj (Object): The object to check.
 
         Returns:
             WieldLocation: A location the object is in. None if the object
@@ -235,7 +235,7 @@ class EquipmentHandler:
         slot to decide where it goes. The item is assumed to already be in the backpack.
 
         Args:
-            obj (EvAdventureObject): Thing to use.
+            obj (Object): Thing to use.
 
         Raises:
             EquipmentError: If there's no room in inventory. It will contains the details
@@ -288,7 +288,7 @@ class EquipmentHandler:
         Put something in the backpack specifically (even if it could be wield/worn).
 
         Args:
-            obj (EvAdventureObject): The object to add.
+            obj (Object): The object to add.
 
         Notes:
             This will not change the object's `.location`, this must be done
@@ -305,7 +305,7 @@ class EquipmentHandler:
         Remove specific object or objects from a slot.
 
         Args:
-            obj_or_slot (EvAdventureObject or WieldLocation): The specific object or
+            obj_or_slot (Object or WieldLocation): The specific object or
                 location to empty. If this is WieldLocation.BACKPACK, all items
                 in the backpack will be emptied and returned!
         Returns:

@@ -1,16 +1,18 @@
 """
 Object
 
-The Object is the "naked" base class for things in the game world.
+The Object is the base class for things in the game world.
 
-Note that the default Character, Room and Exit does not inherit from
-this Object, but from their respective default implementations in the
-evennia library. If you want to use this class as a parent to change
-the other types, you can do so by adding this as a multiple
-inheritance.
+Note that the default Character, Room and Exit do not inherit from Object,
+but do inherit from the provided mixin ObjectParent by default.
 
 """
+from evennia import AttributeProperty
 from evennia.objects.objects import DefaultObject
+from evennia.utils.utils import make_iter
+
+from world.enums import Ability, ObjType, WieldLocation
+from world.utils import get_obj_stats
 
 
 class ObjectParent:
@@ -27,148 +29,213 @@ class ObjectParent:
 
 class Object(ObjectParent, DefaultObject):
     """
-    This is the root typeclass object, implementing an in-game Evennia
-    game object, such as having a location, being able to be
-    manipulated or looked at, etc. If you create a new typeclass, it
-    must always inherit from this object (or any of the other objects
-    in this file, since they all actually inherit from BaseObject, as
-    seen in src.object.objects).
-
-    The BaseObject class implements several hooks tying into the game
-    engine. By re-implementing these hooks you can control the
-    system. You should never need to re-implement special Python
-    methods, such as __init__ and especially never __getattribute__ and
-    __setattr__ since these are used heavily by the typeclass system
-    of Evennia and messing with them might well break things for you.
-
-
-    * Base properties defined/available on all Objects
-
-     key (string) - name of object
-     name (string)- same as key
-     dbref (int, read-only) - unique #id-number. Also "id" can be used.
-     date_created (string) - time stamp of object creation
-
-     account (Account) - controlling account (if any, only set together with
-                       sessid below)
-     sessid (int, read-only) - session id (if any, only set together with
-                       account above). Use `sessions` handler to get the
-                       Sessions directly.
-     location (Object) - current location. Is None if this is a room
-     home (Object) - safety start-location
-     has_account (bool, read-only)- will only return *connected* accounts
-     contents (list of Objects, read-only) - returns all objects inside this
-                       object (including exits)
-     exits (list of Objects, read-only) - returns all exits from this
-                       object, if any
-     destination (Object) - only set if this object is an exit.
-     is_superuser (bool, read-only) - True/False if this user is a superuser
-
-    * Handlers available
-
-     aliases - alias-handler: use aliases.add/remove/get() to use.
-     permissions - permission-handler: use permissions.add/remove() to
-                   add/remove new perms.
-     locks - lock-handler: use locks.add() to add new lock strings
-     scripts - script-handler. Add new scripts to object with scripts.add()
-     cmdset - cmdset-handler. Use cmdset.add() to add new cmdsets to object
-     nicks - nick-handler. New nicks with nicks.add().
-     sessions - sessions-handler. Get Sessions connected to this
-                object with sessions.get()
-     attributes - attribute-handler. Use attributes.add/remove/get.
-     db - attribute-handler: Shortcut for attribute-handler. Store/retrieve
-            database attributes using self.db.myattr=val, val=self.db.myattr
-     ndb - non-persistent attribute handler: same as db but does not create
-            a database entry when storing data
-
-    * Helper methods (see src.objects.objects.py for full headers)
-
-     search(ostring, global_search=False, attribute_name=None,
-             use_nicks=False, location=None, ignore_errors=False, account=False)
-     execute_cmd(raw_string)
-     msg(text=None, **kwargs)
-     msg_contents(message, exclude=None, from_obj=None, **kwargs)
-     move_to(destination, quiet=False, emit_to_obj=None, use_destination=True)
-     copy(new_key=None)
-     delete()
-     is_typeclass(typeclass, exact=False)
-     swap_typeclass(new_typeclass, clean_attributes=False, no_default=True)
-     access(accessing_obj, access_type='read', default=False)
-     check_permstring(permstring)
-
-    * Hooks (these are class methods, so args should start with self):
-
-     basetype_setup()     - only called once, used for behind-the-scenes
-                            setup. Normally not modified.
-     basetype_posthook_setup() - customization in basetype, after the object
-                            has been created; Normally not modified.
-
-     at_object_creation() - only called once, when object is first created.
-                            Object customizations go here.
-     at_object_delete() - called just before deleting an object. If returning
-                            False, deletion is aborted. Note that all objects
-                            inside a deleted object are automatically moved
-                            to their <home>, they don't need to be removed here.
-
-     at_init()            - called whenever typeclass is cached from memory,
-                            at least once every server restart/reload
-     at_cmdset_get(**kwargs) - this is called just before the command handler
-                            requests a cmdset from this object. The kwargs are
-                            not normally used unless the cmdset is created
-                            dynamically (see e.g. Exits).
-     at_pre_puppet(account)- (account-controlled objects only) called just
-                            before puppeting
-     at_post_puppet()     - (account-controlled objects only) called just
-                            after completing connection account<->object
-     at_pre_unpuppet()    - (account-controlled objects only) called just
-                            before un-puppeting
-     at_post_unpuppet(account) - (account-controlled objects only) called just
-                            after disconnecting account<->object link
-     at_server_reload()   - called before server is reloaded
-     at_server_shutdown() - called just before server is fully shut down
-
-     at_access(result, accessing_obj, access_type) - called with the result
-                            of a lock access check on this object. Return value
-                            does not affect check result.
-
-     at_pre_move(destination)             - called just before moving object
-                        to the destination. If returns False, move is cancelled.
-     announce_move_from(destination)         - called in old location, just
-                        before move, if obj.move_to() has quiet=False
-     announce_move_to(source_location)       - called in new location, just
-                        after move, if obj.move_to() has quiet=False
-     at_post_move(source_location)          - always called after a move has
-                        been successfully performed.
-     at_object_leave(obj, target_location)   - called when an object leaves
-                        this object in any fashion
-     at_object_receive(obj, source_location) - called when this object receives
-                        another object
-
-     at_traverse(traversing_object, source_loc) - (exit-objects only)
-                              handles all moving across the exit, including
-                              calling the other exit hooks. Use super() to retain
-                              the default functionality.
-     at_post_traverse(traversing_object, source_location) - (exit-objects only)
-                              called just after a traversal has happened.
-     at_failed_traverse(traversing_object)      - (exit-objects only) called if
-                       traversal fails and property err_traverse is not defined.
-
-     at_msg_receive(self, msg, from_obj=None, **kwargs) - called when a message
-                             (via self.msg()) is sent to this obj.
-                             If returns false, aborts send.
-     at_msg_send(self, msg, to_obj=None, **kwargs) - called when this objects
-                             sends a message to someone via self.msg().
-
-     return_appearance(looker) - describes this object. Used by "look"
-                                 command by default
-     at_desc(looker=None)      - called by 'look' whenever the
-                                 appearance is requested.
-     at_get(getter)            - called after object has been picked up.
-                                 Does not stop pickup.
-     at_drop(dropper)          - called when this object has been dropped.
-     at_say(speaker, message)  - by default, called if an object inside this
-                                 object speaks
+    Base in-game entity.
 
     """
 
-    pass
+    # inventory management
+    inventory_use_slot = AttributeProperty(WieldLocation.BACKPACK)
+    # how many inventory slots it uses (can be a fraction)
+    size = AttributeProperty(1)
+    value = AttributeProperty(0)
+
+    # can also be an iterable, for adding multiple obj-type tags
+    obj_type = ObjType.GEAR
+
+    def at_object_creation(self):
+        for obj_type in make_iter(self.obj_type):
+            self.tags.add(obj_type.value, category="obj_type")
+
+    def get_display_header(self, looker, **kwargs):
+        return ""  # this is handled by get_obj_stats
+
+    def get_display_desc(self, looker, **kwargs):
+        return get_obj_stats(self, owner=looker)
+
+    def has_obj_type(self, objtype):
+        """
+        Check if object is of a particular type.
+
+        typeobj_enum (enum.ObjType): A type to check, like enums.TypeObj.TREASURE.
+
+        """
+        return objtype.value in make_iter(self.obj_type)
+
+    def get_help(self):
+        """
+        Get help text for the item.
+
+        Returns:
+            str: The help text, by default taken from the `.help_text` property.
+
+        """
+        return "No help for this item."
+
+
+class ObjectFiller(Object):
+    """
+    In _Knave_, the inventory slots act as an extra measure of how you are affected by
+    various averse effects. For example, mud or water could fill up some of your inventory
+    slots and make the equipment there unusable until you cleaned it. Inventory is also
+    used to track how long you can stay under water etc - the fewer empty slots you have,
+    the less time you can stay under water due to carrying so much stuff with you.
+
+    This class represents such an effect filling up an empty slot. It has a quality of 0,
+    meaning it's unusable.
+
+    """
+
+    obj_type = ObjType.QUEST.value  # can't be sold
+    quality = AttributeProperty(0)
+
+
+class QuestObject(Object):
+    """
+    A quest object. These cannot be sold and only be used for quest resolution.
+
+    """
+
+    obj_type = ObjType.QUEST
+    value = AttributeProperty(0)
+
+
+class TreasureObject(Object):
+    """
+    A 'treasure' is mainly useful to sell for coin.
+
+    """
+
+    obj_type = ObjType.TREASURE
+    value = AttributeProperty(100)
+
+
+class ConsumableObject(Object):
+    """
+    Item that can be 'used up', like a potion or food. Weapons, armor etc does not
+    have a limited usage in this way.
+
+    """
+
+    obj_type = ObjType.CONSUMABLE
+    size = AttributeProperty(0.25)
+    uses = AttributeProperty(1)
+
+    def at_use(self, user, *args, **kwargs):
+        """
+        Consume a 'use' of this item. Once it reaches 0 uses, it should normally
+        not be usable anymore and probably be deleted.
+
+        Args:
+            user (Object): The one using the item.
+            *args, **kwargs: Extra arguments depending on the usage and item.
+
+        """
+        pass
+
+    def at_post_use(self, user, *args, **kwargs):
+        """
+        Called after this item was used.
+
+        Args:
+            user (Object): The one using the item.
+            *args, **kwargs: Optional arguments.
+
+        """
+        self.uses -= 1
+        if self.uses <= 0:
+            user.msg(f"{self.key} was used up.")
+            self.delete()
+
+class WeaponEmptyHand:
+    """
+    This is a dummy-class loaded when you wield no weapons. We won't create any db-object for it.
+
+    """
+
+    obj_type = ObjType.WEAPON
+    key = "Empty Fists"
+    inventory_use_slot = WieldLocation.WEAPON_HAND
+    attack_type = Ability.STR
+    defense_type = Ability.ARMOR
+    damage_roll = "1d4"
+    quality = 100000  # let's assume fists are always available ...
+
+    def __repr__(self):
+        return "<WeaponEmptyHand>"
+
+
+class WeaponObject(Object):
+    """
+    Base weapon class for all  weapons.
+
+    """
+
+    obj_type = ObjType.WEAPON
+    inventory_use_slot = AttributeProperty(WieldLocation.WEAPON_HAND)
+    quality = AttributeProperty(3)
+
+    # what ability used to attack with this weapon
+    attack_type = AttributeProperty(Ability.STR)
+    # what defense stat of the enemy it must defeat
+    defense_type = AttributeProperty(Ability.ARMOR)
+    damage_roll = AttributeProperty("1d6")
+
+
+class Runestone(WeaponObject, ConsumableObject):
+    """
+    Base class for magic runestones. In _Knave_, every spell is represented by a rune stone
+    that takes up an inventory slot. It is wielded as a weapon in order to create the specific
+    magical effect provided by the stone. Normally each stone can only be used once per day but
+    they are quite powerful (and scales with caster level).
+
+    """
+
+    obj_type = (ObjType.WEAPON, ObjType.MAGIC)
+    inventory_use_slot = WieldLocation.TWO_HANDS
+    quality = AttributeProperty(3)
+
+    attack_type = AttributeProperty(Ability.INT)
+    defense_type = AttributeProperty(Ability.DEX)
+    damage_roll = AttributeProperty("1d8")
+
+    def at_post_use(self, user, *args, **kwargs):
+        """Called after the spell was cast"""
+        self.uses -= 1
+        # the rune stone is not deleted after use, but
+        # it needs to be refreshed after resting.
+
+    def refresh(self):
+        self.uses = 1
+
+
+class ArmorObject(Object):
+    """
+    Base class for all wearable Armors.
+
+    """
+
+    obj_type = ObjType.ARMOR
+    inventory_use_slot = WieldLocation.BODY
+
+    armor = AttributeProperty(1)
+    quality = AttributeProperty(3)
+
+
+class Shield(ArmorObject):
+    """
+    Base class for all Shields.
+
+    """
+
+    obj_type = ObjType.SHIELD
+    inventory_use_slot = WieldLocation.SHIELD_HAND
+
+
+class Helmet(ArmorObject):
+    """
+    Base class for all Helmets.
+
+    """
+
+    obj_type = ObjType.HELMET
+    inventory_use_slot = WieldLocation.HEAD
