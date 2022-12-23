@@ -53,6 +53,7 @@ A game made using simple systems which show off Evennia's many features - especi
 ## Mechanics
 
 - Three-stat system, with three "resource" pools
+	- *IMPLEMENTATION NOTE* - Use the Traits contrib
 	- Stats: Strength, Cunning, Will
 	- Resources: Health, Mana, Stamina
 - NOT turn-based combat
