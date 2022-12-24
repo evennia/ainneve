@@ -95,7 +95,7 @@ class TownRoom(Room, XYZRoom):
     """
     Combines the XYZGrid functionality with Ainneve-specific room code.
     """
-    map_visual_range = 1
+    map_visual_range = 2
 
 
 class PvPRoom(Room):
