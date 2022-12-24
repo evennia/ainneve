@@ -11,7 +11,7 @@ from evennia import AttributeProperty
 from evennia.objects.objects import DefaultObject
 from evennia.utils.utils import make_iter
 
-from world.enums import Ability, ObjType, WieldLocation
+from world.enums import Ability, CombatRange, ObjType, WieldLocation
 from world.utils import get_obj_stats
 
 
@@ -159,10 +159,14 @@ class WeaponEmptyHand:
     defense_type = Ability.ARMOR
     damage_roll = "1d4"
     quality = 100000  # let's assume fists are always available ...
+    attack_range = CombatRange.MELEE
 
     def __repr__(self):
         return "<WeaponEmptyHand>"
 
+    def get_display_name(self, *args, **kwargs):
+        """A dummy implementation of the hook, to smooth over combat messages."""
+        return self.key
 
 class WeaponObject(Object):
     """
@@ -174,6 +178,8 @@ class WeaponObject(Object):
     inventory_use_slot = AttributeProperty(WieldLocation.WEAPON_HAND)
     quality = AttributeProperty(3)
 
+    # maximum attack range for this weapon
+    attack_range = AttributeProperty(CombatRange.MELEE)
     # what ability used to attack with this weapon
     attack_type = AttributeProperty(Ability.STR)
     # what defense stat of the enemy it must defeat
