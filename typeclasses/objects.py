@@ -164,6 +164,9 @@ class WeaponEmptyHand:
     def __repr__(self):
         return "<WeaponEmptyHand>"
 
+    def get_display_name(self, *args, **kwargs):
+        """A dummy implementation of the hook, to smooth over combat messages."""
+        return self.key
 
 class WeaponObject(Object):
     """
