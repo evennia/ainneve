@@ -56,18 +56,29 @@ A game made using simple systems which show off Evennia's many features - especi
 	- *IMPLEMENTATION NOTE* - Use the Traits contrib
 	- Stats: Strength, Cunning, Will
 	- Resources: Health, Mana, Stamina
+	- Player Set Information: Aggression, Block Position, Parry Position
 - NOT turn-based combat
-	- *Notes from friar are at the end of the section.*
-	- Weapon stats
-		- Are they bonus to-hit, bonus damage, or defining attack/damage type?
-	- Armor stats
-		- Heavier armor adds a dodge penalty
-		- Damage reduction or general defense bonus?
+	- *Notes from friar are at the end of the section.  All values subject to future tweaking for game balance/fun-ness*
 	- Dice rolls are standardized as 2d6+stat
 		- *IMPLEMENTATION NOTE* - Make this a single point-of-access method which passes in the stat.
-	- Since this isn't turn-based, there should be no "initiative" but instead "attack speed".
-		- Attack speed defines your delay after attacking - weapon speed minus armor encumbrance?
-		- Attacking also costs stamina - what exactly determines the cost?
+	- Agression:
+		- Defensive (x1/2), Normal (x1), or Aggressive (x1.5)
+		- Increases damage dealt, delay, and stamina costs by Aggression factor
+		- Changing Aggression will incur an attack delay.
+	- Weapon stats
+		- Min and Max Weapon Range (melee/short/medium/long), Polearms could have Min: melee, Max: Short
+		- Physical Damage Range (1 for Unarmed, 1-3 pt for a dagger, 2-4 for a longsword, 3-8 for a battleaxe/polearm)
+		- Stun Damage Duration (An amount of delay to add to the Target's action delay)
+		- Base Stamina Cost to attack with it (Fist: 2 points, Daggers: 2 point, longsword: 4pts, Battleaxe: 6pts, Polearms/Bow: 8 pts)
+		- Base Delay Duration (polearms take longer to recover after an attack than daggers, for example)
+		- Optional extra delay to reload (bows/crossbows, for example)
+		- It can be thrown effectively: Boolean
+	- Armor stats
+		- Heavier armor adds a dodge penalty to your defenses (-1 dodge for light armor, -2 medium, -3 heavy)
+		- Heavier armor adds an Extra Stamina cost to all actions (1 stamina for light, 2 for medium, 3 for heavy)
+		- Acts as Damage reduction when hit (ex: Light is 2 points of Physical reduction, Medium is 4 points, Heavy is 6 points)
+		- Heavier armor adds to the delay modifier of all of the wearers actions (Light is 1.1, Medium is 1.2, Heavy is 1.3)
+		- Exotic armors may affect the other non-physical types of damage
 	- Target zones
 		- Combatants can set their defense and attack zones as an XY coordinate, left/center/right, low/mid/high
 			- Changing attack zone is a free action
@@ -77,9 +88,42 @@ A game made using simple systems which show off Evennia's many features - especi
 		- Attacks landing outside the defense zones successfully land on armor in the strike zone
 	- Combat movement
 		- While in combat, you can "advance" or "retreat" to/from an opponent to change your active range
-			- Weapons can have different min/max ranges
 		- Advancing and retreating incur movement delays
 			- Ahould this be separate from the attack delay, or should moving prevent attacks/attacking prevent movement?
+			- Movement and Attacking are separate delays, but Movement and Casting spells should probably be mutually exclusive
+	- Overall Attack Algorithm:
+		- Check to see if the attacker is still counting down a previous attack delay
+			- if so, send an error message about it and early exit.
+		- If this is a Throw attack, check the Throwable flag on the Attackers Weapon
+			- if not throwable, set the Base Physical Damage Range to 1-2 and the Base Stamina Cost to 4.
+		- Check to see if the attacker has enough Stamina for the attack, based on weapon/spell, modified for their aggression and armor.
+			- if not early exit with an error message
+		- Check to see if the target is within the attackers weapon range (both melee or ranged attacks)
+			- If not early exit with an error message
+		- Set the Attackers delay to the Weapon's delay time modified for Armor/Aggression
+		- Subtract the Weapon/Armor/Aggression modified Stamina cost from the Attacker
+		- Check to see if the target is using a shield and their Block zone matches the Attacker's target zone
+			- if so, set Blocked 
+		- Check if target is wielding something that can parry, and if their Parry zone matches the Attacker's target zone.
+			- if so, set Parried
+		- If Blocked or Parried 
+			- Subtract a small amount of Stamina from the target for the Block/Parry
+			- Check to see if the range to the target is melee and the attackers weapon Minimum allows melee
+				- Add extra time to the attackers delay for being melee Blocked/Parried
+				- if Parried, Set the target's Parry Bonus to +2 against this attacker
+			- early exit
+		- if melee, Roll Attackers (2d6+Strength+Agression+Bonuses) versus (2d6 + Targets Cunning + Buffs - Target's Armor Dodge penalty)
+		- if ranged, Roll Attackers (2d6+Cunning+Aggression+Bonuses) versus (5 + Target's size modifier + Buffs +2/+4 for medium/long range)
+		- if spell, Roll Attackers (2d6+Will+Aggression+Bonuses) versus (4 + Target's Will + Buffs)
+		- if melee or ranged and this roll exceeds the target number:
+			- generate a damage value from the Attackers weapon's base damage range
+			- Add Attackers Strength for Melee/Thrown attacks, Cunning for Ranged weapon attacks
+			- multiply the result by the Attackers Agression factor (round up)
+			- Subtract off the Target's armor, if any, and apply the remainder to the Targets Health
+				- if the target dies, perform corpse operations.
+		- if spell, and this roll exceeds the target number:
+			- call that spell's custom code.
+
 - Crafting weapons/armor/potions as a counter-option to buying them.
 	- *IMPLEMENTATION NOTE* - Use the crafting contrib
 - Containers
@@ -89,34 +133,3 @@ A game made using simple systems which show off Evennia's many features - especi
 	- Do characters have a carrying limit in terms of objects or size?
 		- EvAdventure comes with a built-in carrying capacity
 	- If there are containers, do they allow you to carry more?
-
-----
-
-friar's combat notes (included as-is until I figure out how to condense them to concise bullet points):
-> Each combatant would use 2d6 + stat for initiative, ties go to the higher stat, then roll off again if they have the same stat.
-> 
-> Each combatant will have a preferred aggression level pre-set before combat begins (Low, Medium, High)...each swing costs stamina and aggression multiplies the stamina cost (but reduces the post-swing delay).
-> 
-> Each combatant would also have pre-set defensive parry, block and dodge locations (left/center/right, low/medium/high).
-> 
-> Each attack would set a target location (left/center/right, low/medium/high)
-> 
-> Any attack that avoids one of the 3 defensive locations auto-hits armor near that location
-> 
-> Any attack that meets one of those 3 defensive locations gets checked for the right equipment (parry needs a weapon to parry with, block needs a shield/bracer to block with, dodge needs  lighter armor to dodge with, etc).
-> 
-> if they successfully defend, they get a bonus on their next attack response.
-> 
-> Attackers then have to wait for their attack delay to expire before they can take their next action.
-> 
-> armor reduces damage.
-> 
-> heavier armors can remove the ability to dodge.
-> 
-> Changing defense locations requires a short delay
-> 
-> (critters will likely use patterns of attack and defenses).
-> 
-> Oh, and aggression will also multiply damage by some factor.
-> 
-> I figure there should be multiple types of damage as well, stun (which can add to or multiply action delays), normal healable wounds, and aggravated damage which requires some out-of-combat effect to heal and reduces maximum stamina.
