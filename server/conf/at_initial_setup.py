@@ -14,8 +14,12 @@ does what you expect it to.
 
 """
 from django.conf import settings
+
 from evennia.contrib.grid.xyzgrid.launchcmd import xyzcommand
 from evennia.contrib.grid.xyzgrid.xyzgrid import get_xyzgrid
+from evennia.utils.create import create_object
+from evennia.utils.search import search_object_by_tag
+
 
 def at_initial_setup():
     maps_list = settings.XYZGRID_MAP_LIST
@@ -29,3 +33,13 @@ def at_initial_setup():
 
     grid.log = _log
     grid.spawn(xyz=("*", "*", "*"))
+
+
+    # Create Exits to Static Areas leading to the Overworld
+    exit_rooms = search_object_by_tag(key='area_exit', category='area_def')
+    for exit_room in exit_rooms:
+        create_object(
+            typeclass="typeclasses.exits.OverworldEntrance",
+            key="leave",
+            location=exit_room,
+        )
