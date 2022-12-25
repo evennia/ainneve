@@ -1,8 +1,12 @@
 import logging
+import random
 
 from evennia.contrib.grid import wilderness
 from evennia.prototypes.prototypes import search_prototype
+from evennia.utils.create import create_object
+from evennia.utils.search import search_object_by_tag
 from world.overworld import map
+from world.overworld.landmarks import OverworldLandmarks
 
 logger = logging.getLogger()
 
@@ -73,6 +77,29 @@ class OverworldMapProvider(wilderness.WildernessMapProvider):
         except KeyError:
             logger.error(f"No room prototype found with name {prototype_name} for overworld coordinates {coordinates}")
             desc = "Unknown"
+
+        landmark = OverworldLandmarks.get_by_coordinates(coordinates)
+        landmark_exit = next((re for re in room.exits if re.key == "enter"), None)
+        if landmark:
+            if not landmark_exit:
+                landmark_exit = getattr(room, '_hidden_landmark_exit', None)
+                if not landmark_exit:
+                    landmark_exit = create_object(
+                        typeclass="typeclasses.exits.Exit",
+                        key="enter",
+                        location=room,
+                    )
+
+
+            # To search multiple tags at once, we need to regroup tags into ordered keys and categories
+            possible_exits = search_object_by_tag([landmark.key, 'area_exit'], ['area_id', 'area_def'])
+            if possible_exits:
+                possible_exit = random.choice(possible_exits)
+                landmark_exit.destination = possible_exit
+
+        elif not landmark and landmark_exit:
+            landmark_exit.location = None
+            setattr(room, '_hidden_landmark_exit', landmark_exit)
 
         room.db.desc = desc
 
