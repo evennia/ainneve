@@ -7,6 +7,7 @@ import random
 from django.conf import settings
 
 from evennia import create_object, logger
+from evennia.contrib.grid.xyzgrid.xyzgrid import get_xyzgrid
 from evennia.objects.models import ObjectDB
 from evennia.prototypes.spawner import spawn
 from evennia.utils.evmenu import EvMenu
@@ -172,7 +173,13 @@ class TemporaryCharacterSheet:
         Once the chargen is complete, call this create and set up the character.
 
         """
-        start_location = ObjectDB.objects.get_id(settings.START_LOCATION)
+        grid = get_xyzgrid()
+        start_location = grid.get_room(('13', '8', 'riverport'))
+        if start_location:
+            start_location = start_location[0] # The room we got above is a queryset so we get it by index
+        else:
+            start_location = ObjectDB.objects.get_id(settings.START_LOCATION)
+
         default_home = ObjectDB.objects.get_id(settings.DEFAULT_HOME)
         permissions = settings.PERMISSION_ACCOUNT_DEFAULT
         # creating character with given abilities
