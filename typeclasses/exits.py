@@ -6,9 +6,10 @@ set and has a single command defined on itself with the same name as its key,
 for allowing Characters to traverse the exit to its destination.
 
 """
-from evennia import DefaultExit, utils
+from evennia import DefaultExit
 from evennia.contrib.grid import wilderness
-from .objects import ObjectParent
+from world.overworld import Overworld
+from world.overworld.landmarks import OverworldLandmarks
 
 from .objects import ObjectParent
 
@@ -65,3 +66,26 @@ class OverworldExit(wilderness.WildernessExit):
         if not self.mapprovider.is_valid_coordinates(self.wilderness, new_coordinates):
             return False
         return True
+
+
+class OverworldEntrance(Exit):
+    def at_traverse(self, traversing_object, target_location, **kwargs):
+        """
+        This overrides default traversal to instead 'move' into the Overworld
+
+        Args:
+            traversing_object (Object): Object traversing us.
+            target_location (Object): Where target is going.
+            **kwargs (dict): Arbitrary, optional arguments for users
+                overriding the call (unused by default).
+
+        """
+        source_location = traversing_object.location
+        area_id = source_location.tags.get(category='area_id')
+        landmark = OverworldLandmarks.get(area_id)
+
+        if Overworld.enter(traversing_object, coordinates=landmark.coordinates):
+            self.at_post_traverse(traversing_object, source_location)
+            traversing_object.execute_cmd('look')
+        else:
+            self.at_failed_traverse(traversing_object)
