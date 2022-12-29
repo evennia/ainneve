@@ -101,6 +101,7 @@ class CmdWieldOrWear(Command):
 
     key = "wield"
     aliases = ("wear",)
+    auto_help = False
 
     out_txts = {
         WieldLocation.BACKPACK: "You shuffle the position of {key} around in your backpack.",
