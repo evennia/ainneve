@@ -2,7 +2,7 @@ from evennia.contrib.grid.xyzgrid import xymap_legend
 
 # Roads
 class Intersection(xymap_legend.MapNode):
-    display_symbol = "o"
+    display_symbol = "#"
     prototype = {
             "prototype_parent": "riverport_xyz_room",
             "key": "An intersection",
@@ -10,7 +10,7 @@ class Intersection(xymap_legend.MapNode):
         }
 
 class RoadNode(xymap_legend.MapNode):
-    display_symbol = "o"
+    display_symbol = "#"
     prototype = {
             "prototype_parent": "riverport_xyz_room",
             "key": "A road",
@@ -35,8 +35,6 @@ class HouseNode(xymap_legend.MapNode):
             "desc": "A building inside Riverport."
         }
 
-
-
 class BridgeNode(xymap_legend.MapNode):
     display_symbol = "Ξ"
     prototype = {
@@ -54,7 +52,6 @@ class BridgeLink(xymap_legend.MapLink):
         }
 
 
-
 LEGEND = {
     'B': BridgeNode,
     'Ξ': BridgeLink,
@@ -65,7 +62,7 @@ LEGEND = {
 }
 
 PROTOTYPES = {
-    (13, 8): {
+    (12, 7): {
         "prototype_parent": "riverport_xyz_room",
         "key": "A fountain",
         "desc": "A fountain in the center of Riverport.",
@@ -73,47 +70,35 @@ PROTOTYPES = {
 }
 
 MAP_STR = """
-                       1                   2                   3                   4
- + 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
+                       1                   2                   3 
+ + 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 
 
-17                                                                                
-                                                                                   
-16                                               G                                 
-                                                 |                                  
-15                                     H         |                                 
-                                       |         |                                  
-14         o----------ΞBΞ--------------R---------X-------o                         
-           |                                             |                            
-13         R-H                                           o---o                     
-           |                                                 |                      
-12         |                                               H-R                     
-           |                                                 |                      
-11         |                                                 o---o                
-           |                                                     |                 
-10         o---o                                                 R-H              
-               |                                                 |                 
- 9             |   H     H   H                                   |                
-               |   |     |   |                                   |                 
- 8       G-----X---R-----R---#-----R------ΞBΞ--------------------X-----------G    
-               |             |     |                             |                 
- 7             |             H     H                             R-H              
-               |                                                 |                 
- 6             o-----o                                       o---o                
-                     |                                       |                    
- 5                   o---o                             o-----o                    
-                         |                             |                         
- 4                     H-R                 H         H-R                          
-                         |                 |           |                         
- 3                       o----ΞBΞ----X-----R-----X-----o                          
-                                     |           |                               
- 2                                   |   H   H   |                              
-                                     |   |   |   |                               
- 1                                   o-ΞΞBΞΞΞBΞΞ-o                              
+12                                                                                 
+                                                                                    
+11                                 H         G                                 
+                                   |         |                                  
+10         o------------ΞBΞ--------R---------X-----o                        
+           |                                       |                          
+ 9         R-H                                   H-R                     
+           |                                       |                      
+ 8         o---o   H   H   H                       R-H                
+               |   |   |   |                       |                 
+ 7         G---X---R---R---#---R--ΞBΞ--------------X---G    
+               |           |   |                   |                 
+ 5             o---o       H   H             o-----R-H                  
+                   |                         |                         
+ 4               H-R                     H   R-H                        
+                   |                     |   |                         
+ 3                 o--------ΞBΞ--X---R---X---o                          
+                                 |       |                               
+ 2                               | H   H |                              
+                                 | |   | |                               
+ 1                               oΞBΞΞΞBΞo                              
                                                                                    
  0                                                                                
 
- + 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0
-                       1                   2                   3                   4
+ + 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 
+                       1                   2                   3 
 """
 
 XYMAP_DATA = {
