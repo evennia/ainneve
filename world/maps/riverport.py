@@ -62,7 +62,7 @@ LEGEND = {
 }
 
 PROTOTYPES = {
-    (13, 8): {
+    (12, 7): {
         "prototype_parent": "riverport_xyz_room",
         "key": "A fountain",
         "desc": "A fountain in the center of Riverport.",
