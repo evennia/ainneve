@@ -105,6 +105,19 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
         """
         self.mana -= amount
 
+    def at_recovery(self):
+        """
+        Called periodically by the combat ticker
+
+        """
+        self.stamina += self.strength
+        if self.stamina > self.stamina_max:
+            self.stamina = self.stamina_max
+
+        self.mana += self.will
+        if self.mana > self.mana_max:
+            self.mana = self.mana_max
+
     def at_defeat(self):
         """
         Called when this living thing reaches HP 0.

@@ -13,6 +13,7 @@ just overloads its hooks to have it perform its function.
 """
 
 from evennia.scripts.scripts import DefaultScript
+from evennia.utils.search import search_typeclass
 
 
 class Script(DefaultScript):
@@ -90,3 +91,15 @@ class Script(DefaultScript):
     """
 
     pass
+
+
+class GlobalRecoveryScript( Script ):
+
+    def at_repeat(self):
+        """
+        Cycle through all the participants currently registered in combat and execute their recovery
+        """
+        participants = search_typeclass( "typeclasses.characters.BaseCharacter", include_children=True )
+        for participant in participants:
+            participant.at_recovery()
+

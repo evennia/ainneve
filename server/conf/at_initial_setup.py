@@ -43,3 +43,13 @@ def at_initial_setup():
             key="leave",
             location=exit_room,
         )
+
+    from evennia.utils.create import create_script
+    create_script( typeclass="typeclasses.scripts.GlobalRecoveryScript",
+                   key="Recovery",
+                   obj=None,
+                   interval=6,
+                   persistent=False,
+                   autostart=True
+                 )
+

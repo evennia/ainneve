@@ -46,6 +46,8 @@ class NPC(BaseCharacter):
     morale = AttributeProperty(default=9, autocreate=False)
     hp_multiplier = AttributeProperty(default=4, autocreate=False)  # 4 default in Knave
     hp = AttributeProperty(default=None, autocreate=False)  # internal tracking, use .hp property
+    mana = AttributeProperty(default=None, autocreate=False)  # internal tracking, use .mana property
+    stamina = AttributeProperty(default=None, autocreate=False)  # internal tracking, use .stamina property
     allegiance = AttributeProperty(default=Ability.ALLEGIANCE_HOSTILE, autocreate=False)
 
     is_idle = AttributeProperty(default=False, autocreate=False)
@@ -58,28 +60,24 @@ class NPC(BaseCharacter):
         return self.hit_dice
 
     @property
-    def dexterity(self):
+    def cunning(self):
         return self.hit_dice
 
     @property
-    def constitution(self):
-        return self.hit_dice
-
-    @property
-    def intelligence(self):
-        return self.hit_dice
-
-    @property
-    def wisdom(self):
-        return self.hit_dice
-
-    @property
-    def charisma(self):
+    def will(self):
         return self.hit_dice
 
     @property
     def hp_max(self):
         return self.hit_dice * self.hp_multiplier
+
+    @property
+    def mana_max(self):
+        return self.hit_dice * self.mp_multiplier
+
+    @property
+    def stamina_max(self):
+        return self.hit_dice * self.mp_multiplier
 
     def at_object_creation(self):
         """
@@ -87,6 +85,8 @@ class NPC(BaseCharacter):
 
         """
         self.hp = self.hp_max
+        self.man = self.mana_max
+        self.stamina = self.stamina_max
 
     def ai_combat_next_action(self):
         """
