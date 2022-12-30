@@ -7,11 +7,12 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
+from time import perf_counter # float for nanosecond-ish timer (python 3.3+)
+
 from evennia.objects.objects import DefaultCharacter
 
-
 from evennia.objects.objects import DefaultCharacter
-from evennia.typeclasses.attributes import AttributeProperty
+from evennia.typeclasses.attributes import AttributeProperty, NAttributeProperty
 from evennia.utils.evform import EvForm
 from evennia.utils.evtable import EvTable
 from evennia.utils.logger import log_trace
@@ -91,6 +92,18 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
         self.hp -= damage
         if self.hp <= 0:
             self.at_defeat()
+
+    def spend_stamina(self, amount):
+        """
+        Called when attacking and defending
+        """
+        self.stamina -= amount
+
+    def spend_mana(self, amount):
+        """
+        Called when casting spells
+        """
+        self.mana -= amount
 
     def at_defeat(self):
         """
@@ -172,8 +185,7 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
 class Character(BaseCharacter):
     """
     The Character typeclass for the game. This is the default typeclass new player
-                characters are created as, so the EvAdventure player character is appropriate here.
-
+    characters are created as, so the EvAdventure player character is appropriate here.
     """
 
     is_pc = True
@@ -187,9 +199,22 @@ class Character(BaseCharacter):
     cclass_key = AttributeProperty()
     race_key = AttributeProperty()
 
+    # Combat Resources
     hp = AttributeProperty(default=4)
     hp_max = AttributeProperty(default=4)
-    level = AttributeProperty(default=1)
+    mana = AttributeProperty(default=4)
+    mana_max = AttributeProperty(default=4)
+    stamina = AttributeProperty(default=4)
+    stamina_max = AttributeProperty(default=4)
+
+    # Combat State Tracking
+    aggro = AttributeProperty(default="n") # Defensive, Normal, or Aggressive (d/n/a)
+    parry = AttributeProperty(default="mm") # Low/Mid/High, Left/Mid/Right (mm, ll, hr, etc)
+    block = AttributeProperty(default="mm") # Low/Mid/High, Left/Mid/Right (mm, hm, lr, etc)
+    adelay = NAttributeProperty( default=0.0 ) # delay attacks until float time
+    mdelay = NAttributeProperty( default=0.0 ) # delay movement until float time
+
+    level = AttributeProperty(default=1)  # Just a bragging stat, for now.
     coins = AttributeProperty(default=0)  # copper coins
 
     xp = AttributeProperty(default=0)
@@ -230,6 +255,13 @@ class Character(BaseCharacter):
     @property
     def armor(self):
         return self.equipment.armor
+
+    def add_buff(self, category, amount, versus=None, duration=0):
+        """
+        This will require buff tracking
+        """
+        # TODO FIXME
+        pass
 
     def at_pre_object_receive(self, moved_object, source_location, **kwargs):
         """
