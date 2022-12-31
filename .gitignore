@@ -32,6 +32,7 @@ server/conf/secret_settings.py
 server/conf/connection_settings.py
 server/logs/*.log.*
 server/.static/*
+server/.cache/*
 web/static/*
 web/media/*
 
