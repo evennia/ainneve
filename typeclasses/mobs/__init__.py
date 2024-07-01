@@ -1,0 +1,1 @@
+from typeclasses.mobs.goblins import Goblin
