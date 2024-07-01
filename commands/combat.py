@@ -38,7 +38,7 @@ class CmdInitiateCombat(CombatCommand):
     """Engage an opponent in combat."""
 
     key = "attack"
-    aliases = ("engage",)
+    aliases = ("engage", "kill")
 
     def func(self):
         caller = self.caller
@@ -76,6 +76,9 @@ class CmdAdvance(CombatCommand):
     def func(self):
         caller = self.caller
         args = self.args
+        target = self.get_valid_target()
+        if not target:
+            return
 
         if not caller.cooldowns.ready("combat_move"):
             caller.msg(

@@ -4,18 +4,12 @@ Room
 Rooms are simple containers that has no location of their own.
 
 """
-from copy import deepcopy
 
-from evennia.objects.objects import DefaultRoom
-from evennia.utils.utils import inherits_from
 from evennia.contrib.grid import wilderness
 from evennia.contrib.grid.xyzgrid.xyzroom import XYZRoom
-
+from evennia.objects.objects import DefaultRoom
 from world.overworld import Overworld, OverworldMap
-
 from .objects import ObjectParent
-from .characters import Character
-
 
 CHAR_SYMBOL = "|w@|n"
 CHAR_ALT_SYMBOL = "|w>|n"
@@ -90,6 +84,7 @@ class OverworldRoom(wilderness.WildernessRoom, Room):
         tile_str = "\n".join(rows)
 
         return tile_str
+
 
 class TownRoom(Room, XYZRoom):
     """

@@ -1,34 +1,10 @@
-"""
-Enums are constants representing different things in EvAdventure. The advantage
-of using an Enum over, say, a string is that if you make a typo using an unknown
-enum, Python will give you an error while a typo in a string may go through silently.
-
-It's used as a direct reference:
-
-    from enums import Ability
-
-    if abi is Ability.STR:
-        # ...
-
-To get the `value` of an enum (must always be hashable, useful for Attribute lookups), use
-`Ability.STR.value` (which would return 'strength' in our case).
-
-"""
 from enum import Enum
 
 
 class Ability(Enum):
-    """
-    The six base abilities (defense is always bonus + 10)
-
-    """
-
     STR = "strength"
-    DEX = "dexterity"
-    CON = "constitution"
-    INT = "intelligence"
-    WIS = "wisdom"
-    CHA = "charisma"
+    CUN = "cunning"
+    WIL = "will"
 
     ARMOR = "armor"
 
