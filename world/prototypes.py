@@ -1,27 +1,11 @@
 """
-Prototypes
+Central loading point for prototypes
 
 """
-
-# base room prototype for XYZGrid rooms in ainneve
-AINNEVE_XYZ_ROOM = {
-        "prototype_parent": "xyz_room",
-        "prototype_key": "ainneve_xyz_room",
-        "typeclass": "typeclasses.rooms.TownRoom",
-    }
-
-RIVERPORT_XYZ_ROOM = {
-        "prototype_parent": "ainneve_xyz_room",
-        "prototype_key": "riverport_xyz_room",
-        "typeclass": "typeclasses.rooms.TownRoom",
-        "tags": [('riverport_settlement', 'area_id')]
-    }
-
-
-LANDMARK_RIVERPORT_ROOM = {
-    "prototype_key": "landmark_riverport_room",
-    "desc": "You are standing in front of the city gates.",
-}
+from world.common.room_prototypes import *
+from world.common.item_prototypes import *
+from world.common.mob_prototypes import *
+from world.overworld.prototypes import *
 
 
 

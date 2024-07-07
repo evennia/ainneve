@@ -7,9 +7,7 @@ is setup to be the "default" character type created by the default
 creation commands.
 
 """
-from time import perf_counter # float for nanosecond-ish timer (python 3.3+)
 
-from evennia.objects.objects import DefaultCharacter
 
 from evennia.objects.objects import DefaultCharacter
 from evennia.typeclasses.attributes import AttributeProperty, NAttributeProperty
@@ -20,9 +18,10 @@ from evennia.utils.utils import lazy_property
 from evennia.contrib.game_systems.cooldowns import CooldownHandler
 
 from world import rules
-from world.characters.classes import CharacterClasses
-from world.characters.races import Races
+from world.characters.classes import CharacterClasses, CharacterClass
+from world.characters.races import Races, Race
 from world.equipment import EquipmentError, EquipmentHandler
+from world.levelling import LevelsHandler
 from world.quests import QuestHandler
 
 # from world.utils import get_obj_stats
@@ -31,15 +30,37 @@ from .objects import ObjectParent
 
 
 class BaseCharacter(ObjectParent, DefaultCharacter):
-    """
-    The EvAdventure tutorial using a mixin class and DefaultCharacter to implement the
-    different types of Characters - e.g. Players versus Non-Players.
-
-    Since we are building a game directly, we can instead put that "Living" code directly
-    into a parent character class.
-    """
-
     is_pc = False
+
+    hp = AttributeProperty(default=1)
+    hp_max = AttributeProperty(default=1)
+    mana = AttributeProperty(default=1)
+    mana_max = AttributeProperty(default=1)
+
+    strength = AttributeProperty(default=1)
+    will = AttributeProperty(default=1)
+    cunning = AttributeProperty(default=1)
+
+    cclass_key = AttributeProperty()
+    race_key = AttributeProperty()
+
+    @property
+    def cclass(self) -> CharacterClass | None:
+        cclass = self.ndb.cclass
+        if cclass is None:
+            cclass = CharacterClasses.get(self.db.cclass_key)
+            self.ndb.cclass = cclass
+
+        return cclass
+
+    @property
+    def race(self) -> Race:
+        race = self.ndb.race
+        if race is None:
+            race = Races.get(self.db.race_key)
+            self.ndb.race = race
+
+        return race
 
     @lazy_property
     def cooldowns(self):
@@ -83,6 +104,16 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
             self.msg(f"|g{healer.key} heals you for {healed} health.|n")
         else:
             self.msg(f"You are healed for {healed} health.")
+
+    @lazy_property
+    def equipment(self):
+        """Allows to access equipment like char.equipment.worn"""
+        return EquipmentHandler(self)
+
+    @lazy_property
+    def levels(self):
+        """Allows to access equipment like char.equipment.worn"""
+        return LevelsHandler(self)
 
     def at_damage(self, damage, attacker=None):
         """
@@ -203,20 +234,10 @@ class Character(BaseCharacter):
 
     is_pc = True
 
-    # these are the ability bonuses. Defense is always 10 higher
-    strength = AttributeProperty(default=1)
-    will = AttributeProperty(default=1)
-    cunning = AttributeProperty(default=1)
-
-    # Keys of the cclass and race, to retrieve the proper dataclass
-    cclass_key = AttributeProperty()
-    race_key = AttributeProperty()
-
-    # Combat Resources
-    hp = AttributeProperty(default=4)
-    hp_max = AttributeProperty(default=4)
-    mana = AttributeProperty(default=4)
-    mana_max = AttributeProperty(default=4)
+    hp = AttributeProperty(default=10)
+    hp_max = AttributeProperty(default=10)
+    mana = AttributeProperty(default=10)
+    mana_max = AttributeProperty(default=10)
     stamina = AttributeProperty(default=4)
     stamina_max = AttributeProperty(default=4)
 
@@ -226,35 +247,8 @@ class Character(BaseCharacter):
     block = AttributeProperty(default="mm") # Low/Mid/High, Left/Mid/Right (mm, hm, lr, etc)
     adelay = NAttributeProperty( default=0.0 ) # delay attacks until float time
     mdelay = NAttributeProperty( default=0.0 ) # delay movement until float time
-
-    level = AttributeProperty(default=1)  # Just a bragging stat, for now.
     coins = AttributeProperty(default=0)  # copper coins
 
-    xp = AttributeProperty(default=0)
-    xp_per_level = 1000
-
-    @lazy_property
-    def cclass(self):
-        cclass = self.ndb.cclass
-        if cclass is None:
-            cclass = CharacterClasses.get(self.db.cclass_key)
-            self.ndb.cclass = cclass
-
-        return cclass
-
-    @lazy_property
-    def race(self):
-        race = self.ndb.race
-        if race is None:
-            race = Races.get(self.db.race_key)
-            self.ndb.race = race
-
-        return race
-
-    @lazy_property
-    def equipment(self):
-        """Allows to access equipment like char.equipment.worn"""
-        return EquipmentHandler(self)
 
     @lazy_property
     def quests(self):
@@ -368,54 +362,7 @@ class Character(BaseCharacter):
         """
         pass
 
-    def add_xp(self, xp):
-        """
-        Add new XP.
 
-        Args:
-            xp (int): The amount of gained XP.
-
-        Returns:
-            bool: If a new level was reached or not.
-
-        Notes:
-            level 1 -> 2 = 1000 XP
-            level 2 -> 3 = 2000 XP etc
-
-        """
-        self.xp += xp
-        next_level_xp = self.level * self.xp_per_level
-        return self.xp >= next_level_xp
-
-    def level_up(self, *abilities):
-        """
-        Perform the level-up action.
-
-        Args:
-            *abilities (str): A set of abilities (like 'strength', 'dexterity' (normally 3)
-                to upgrade by 1. Max is usually +10.
-        Notes:
-            We block increases above a certain value, but we don't raise an error here, that
-            will need to be done earlier, when the user selects the ability to increase.
-
-        """
-
-        self.level += 1
-        for ability in set(abilities[:3]):
-            # limit to max amount allowed, each one unique
-            try:
-                # set at most to the max bonus
-                current_bonus = getattr(self, ability)
-                setattr(
-                    self,
-                    ability,
-                    min(10, current_bonus + 1),
-                )
-            except AttributeError:
-                pass
-
-        # update hp
-        self.hp_max = max(self.max_hp + 1, rules.dice.roll(f"{self.level}d8"))
 
 
 # character sheet visualization

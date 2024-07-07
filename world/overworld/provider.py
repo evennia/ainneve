@@ -72,7 +72,7 @@ class OverworldMapProvider(wilderness.WildernessMapProvider):
         location = map.OverworldMap.get(coordinates)
         prototype_name = location.room_prototype
         try:
-            room_prototype = search_prototype(prototype_name, require_single=True)
+            room_prototype = search_prototype(prototype_name, require_single=True)[0]
             desc = room_prototype['desc']
         except KeyError:
             logger.error(f"No room prototype found with name {prototype_name} for overworld coordinates {coordinates}")

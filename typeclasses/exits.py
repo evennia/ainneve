@@ -8,6 +8,7 @@ for allowing Characters to traverse the exit to its destination.
 """
 from evennia import DefaultExit
 from evennia.contrib.grid import wilderness
+from world.encounters.script import EncounterScript
 from world.overworld import Overworld
 from world.overworld.landmarks import OverworldLandmarks
 
@@ -42,7 +43,18 @@ class Exit(ObjectParent, DefaultExit):
 
     pass
 
+
 class OverworldExit(wilderness.WildernessExit):
+
+    def at_traverse(self, traversing_object, target_location):
+        result = super().at_traverse(traversing_object, target_location)
+        if not result:
+            return result
+
+        overworld = Overworld.get_instance()
+        x, y = overworld.get_obj_coordinates(traversing_object)
+        EncounterScript.get().get_encounter_at(target_location, x, y)
+
     def at_traverse_coordinates(self, traversing_object, current_coordinates, new_coordinates):
         """
         Called when an object wants to travel from one place inside the

@@ -146,6 +146,7 @@ class ConsumableObject(Object):
             user.msg(f"{self.key} was used up.")
             self.delete()
 
+
 class WeaponEmptyHand:
     """
     This is a dummy-class loaded when you wield no weapons. We won't create any db-object for it.
@@ -167,6 +168,7 @@ class WeaponEmptyHand:
     def get_display_name(self, *args, **kwargs):
         """A dummy implementation of the hook, to smooth over combat messages."""
         return self.key
+
 
 class WeaponObject(Object):
     """
@@ -200,8 +202,8 @@ class Runestone(WeaponObject, ConsumableObject):
     inventory_use_slot = WieldLocation.TWO_HANDS
     quality = AttributeProperty(3)
 
-    attack_type = AttributeProperty(Ability.INT)
-    defense_type = AttributeProperty(Ability.DEX)
+    attack_type = AttributeProperty(Ability.WIL)
+    defense_type = AttributeProperty(Ability.CUN)
     damage_roll = AttributeProperty("1d8")
 
     def at_post_use(self, user, *args, **kwargs):
