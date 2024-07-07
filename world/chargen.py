@@ -156,7 +156,7 @@ class TemporaryCharacterSheet:
 
         """
         grid = get_xyzgrid()
-        start_location = grid.get_room(('13', '8', 'riverport'))
+        start_location = grid.get_room(('12', '7', 'riverport'))
         if start_location:
             start_location = start_location[0] # The room we got above is a queryset so we get it by index
         else:

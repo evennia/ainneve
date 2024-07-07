@@ -149,7 +149,13 @@ class CmdRetreat(CombatCommand):
 
 
 class CmdHit(CombatCommand):
-    """Basic melee combat attack."""
+    """
+    Basic melee combat attack.
+
+    hit
+    hit m m
+    hit <low/middle/high> <left/middle/right>
+    """
 
     key = "hit"
     locks = "cmd:in_combat() and melee_equipped()"
@@ -178,21 +184,28 @@ class CmdHit(CombatCommand):
             caller.msg(f"{target.get_display_name(caller)} is too far away.")
             return
 
-        weapon = caller.weapon
-        # TODO: calculate damage, delay
-        dmg = 1
-        cooldown = 5
+        target_location = "mm" # default for no arguments given to the "hit" command
+        if len(args) > 0:
+            cmd_parts = args.split()
+            match len(cmd_parts):
+                case 1:
+                    target_location = cmd_parts
+                case 2:
+                    target_location = "".join( [cmd_parts[0][0], cmd_parts[1][0]] )
+        if target_location not in [ "ll", "lm", "lr", "ml", "mm", "mr", "hl", "hm", "hr" ] or len(cmd_parts) >= 3:
+            caller.msg(
+                f"You need to provide a valid target body location: <low/middle/high> <left/middle/right>."
+            )
+            return
 
-        if not dmg:
+        dmg = combat.at_attack( caller, target, target_location, "melee" )
+
+        if dmg <= 0:
+            # TODO FIXME specific messages for all the negative return codes.
             caller.msg(
                 f"You can't hit {target.get_display_name(caller)} with your {weapon.get_display_name(caller)}."
             )
             return
-
-        # apply damage and set cooldown
-        caller.cooldowns.add("attack", cooldown)
-
-        # TODO: add a damage/block check/application hook to BaseCharacter and call here
 
         caller.location.msg_contents(
             f"$You() $conj(hit) {{{target.key}}} with $pron(your) {{{weapon.key}}} for {dmg} damage.",
@@ -200,8 +213,6 @@ class CmdHit(CombatCommand):
             from_obj=caller,
         )
         target.at_damage(dmg, attacker=caller)
-
-        # TODO: trigger combat prompt
 
 
 class CmdShoot(CombatCommand):
@@ -233,31 +244,38 @@ class CmdShoot(CombatCommand):
         elif not shootable:
             caller.msg(f"{target.get_display_name(caller)} is too far away.")
             return
+        #elif too_close:
+        #    caller.msg(f"{target.get_display_name(caller)} is too close.")
+        #    return
 
-        weapon = caller.weapon
-        # TODO: calculate damage, delay
-        dmg = 1
-        cooldown = 5
+        target_location = "mm"  # default for no arguments given to the "shoot" command
+        if len(args) > 0:
+            cmd_parts = args.split()
+            match len(cmd_parts):
+                case 1:
+                    target_location = cmd_parts
+                case 2:
+                    target_location = "".join( [cmd_parts[0][0], cmd_parts[1][0]] )
+        if target_location not in [ "ll", "lm", "lr", "ml", "mm", "mr", "hl", "hm", "hr" ] or len(cmd_parts) >= 3:
+            caller.msg(
+                f"You need to provide a valid target body location: <low/middle/high> <left/middle/right>."
+            )
+            return
 
-        if not dmg:
+        dmg = combat.at_attack( caller, target, target_location, "ranged" )
+
+        if dmg <= 0:
+            # TODO FIXME specific messages for all the negative return codes.
             caller.msg(
                 f"You can't shoot {target.get_display_name(caller)} with your {weapon.get_display_name(caller)}."
             )
             return
-
-        # apply damage and set cooldown
-        caller.cooldowns.add("attack", cooldown)
-
-        # TODO: add a damage/block check/application hook to BaseCharacter and call here
 
         caller.location.msg_contents(
             f"$You() $conj(shoot) {{{target.key}}} with $pron(your) {{{weapon.key}}} for {dmg} damage.",
             mapping={target.key: target, weapon.key: weapon},
             from_obj=caller,
         )
-        target.at_damage(dmg, attacker=caller)
-
-        # TODO: trigger combat prompt
 
 
 class CmdFlee(CombatCommand):
