@@ -1,6 +1,9 @@
 from typing import Self
 
+from django.core.exceptions import ObjectDoesNotExist
+
 from evennia.typeclasses.attributes import AttributeProperty
+from evennia.utils import logger
 from typeclasses.scripts import Script
 from world.encounters.data import ENCOUNTERS
 
@@ -14,7 +17,18 @@ class EncounterScript(Script):
 
     @classmethod
     def get(cls) -> Self:
-        return EncounterScript.objects.get_or_create(db_key="encounter_script")[0]
+        try:
+            script = EncounterScript.objects.get(db_key="encounter_script")
+        except ObjectDoesNotExist:
+            logger.info("Creating new instance of Encounter script...")
+            script = EncounterScript.create(
+                key="encounter_script",
+                interval=cls.REPOP_DELAY,
+                persistent=True,
+                autostart=True,
+            )
+
+        return script
 
     def at_script_creation(self):
         self.key = "encounter_script"

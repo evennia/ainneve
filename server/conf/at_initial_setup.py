@@ -34,7 +34,6 @@ def at_initial_setup():
     grid.log = _log
     grid.spawn(xyz=("*", "*", "*"))
 
-
     # Create Exits to Static Areas leading to the Overworld
     exit_rooms = search_object_by_tag(key='area_exit', category='area_def')
     for exit_room in exit_rooms:
@@ -45,11 +44,15 @@ def at_initial_setup():
         )
 
     from evennia.utils.create import create_script
-    create_script( typeclass="typeclasses.scripts.GlobalRecoveryScript",
-                   key="Recovery",
-                   obj=None,
-                   interval=6,
-                   persistent=False,
-                   autostart=True
-                 )
+    create_script(
+        typeclass="typeclasses.scripts.GlobalRecoveryScript",
+        key="Recovery",
+        obj=None,
+        interval=6,
+        persistent=False,
+        autostart=True
+    )
 
+    # Ensure the encounter script is created
+    from world.encounters.script import EncounterScript
+    EncounterScript.get()
