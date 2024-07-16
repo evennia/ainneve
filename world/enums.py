@@ -1,4 +1,4 @@
-from enum import Enum
+from enum import IntEnum, Enum
 
 
 class Ability(Enum):
@@ -48,12 +48,19 @@ class ObjType(Enum):
     TREASURE = "treasure"
 
 
-class CombatRange(Enum):
+class CombatRange(IntEnum):
     """
     Maximum combat range values
     """
-    MELEE   = 1
-    REACH   = 2
-    SHORT   = 3
-    MEDIUM  = 4
-    RANGED  = 6
+    MELEE = 1
+    REACH = 2
+    SHORT = 3
+    MEDIUM = 4
+    RANGED = 6
+
+
+class AttackType(IntEnum):
+    MELEE = 1
+    RANGED = 2
+    THROWN = 3
+    MAGIC = 4

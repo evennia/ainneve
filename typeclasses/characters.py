@@ -9,24 +9,23 @@ creation commands.
 """
 
 
+from evennia.contrib.game_systems.cooldowns import CooldownHandler
 from evennia.objects.objects import DefaultCharacter
 from evennia.typeclasses.attributes import AttributeProperty, NAttributeProperty
 from evennia.utils.evform import EvForm
 from evennia.utils.evtable import EvTable
 from evennia.utils.logger import log_trace
 from evennia.utils.utils import lazy_property
-from evennia.contrib.game_systems.cooldowns import CooldownHandler
-
 from world import rules
 from world.characters.classes import CharacterClasses, CharacterClass
 from world.characters.races import Races, Race
 from world.equipment import EquipmentError, EquipmentHandler
 from world.levelling import LevelsHandler
 from world.quests import QuestHandler
+from .objects import ObjectParent
+
 
 # from world.utils import get_obj_stats
-
-from .objects import ObjectParent
 
 
 class BaseCharacter(ObjectParent, DefaultCharacter):
@@ -36,6 +35,8 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
     hp_max = AttributeProperty(default=1)
     mana = AttributeProperty(default=1)
     mana_max = AttributeProperty(default=1)
+    stamina = AttributeProperty(default=1)
+    stamina_max = AttributeProperty(default=1)
 
     strength = AttributeProperty(default=1)
     will = AttributeProperty(default=1)
@@ -43,6 +44,8 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
 
     cclass_key = AttributeProperty()
     race_key = AttributeProperty()
+
+    aggro = AttributeProperty(default="n")  # Defensive, Normal, or Aggressive (d/n/a)
 
     @property
     def cclass(self) -> CharacterClass | None:
@@ -109,6 +112,18 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
     def equipment(self):
         """Allows to access equipment like char.equipment.worn"""
         return EquipmentHandler(self)
+
+    @property
+    def weapon(self):
+        return self.equipment.weapon
+
+    @property
+    def armor(self):
+        return self.equipment.armor
+
+    @property
+    def shield(self):
+        return self.equipment.shield
 
     @lazy_property
     def levels(self):
@@ -242,9 +257,8 @@ class Character(BaseCharacter):
     stamina_max = AttributeProperty(default=4)
 
     # Combat State Tracking
-    aggro = AttributeProperty(default="n") # Defensive, Normal, or Aggressive (d/n/a)
-    parry = AttributeProperty(default="mm") # Low/Mid/High, Left/Mid/Right (mm, ll, hr, etc)
-    block = AttributeProperty(default="mm") # Low/Mid/High, Left/Mid/Right (mm, hm, lr, etc)
+
+
     adelay = NAttributeProperty( default=0.0 ) # delay attacks until float time
     mdelay = NAttributeProperty( default=0.0 ) # delay movement until float time
     coins = AttributeProperty(default=0)  # copper coins
@@ -254,14 +268,6 @@ class Character(BaseCharacter):
     def quests(self):
         """Access and track quests"""
         return QuestHandler(self)
-
-    @property
-    def weapon(self):
-        return self.equipment.weapon
-
-    @property
-    def armor(self):
-        return self.equipment.armor
 
     def add_buff(self, category, amount, versus=None, duration=0):
         """

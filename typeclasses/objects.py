@@ -11,7 +11,7 @@ from evennia import AttributeProperty
 from evennia.objects.objects import DefaultObject
 from evennia.utils.utils import make_iter
 
-from world.enums import Ability, CombatRange, ObjType, WieldLocation
+from world.enums import Ability, CombatRange, ObjType, WieldLocation, AttackType
 from world.utils import get_obj_stats
 
 
@@ -147,29 +147,6 @@ class ConsumableObject(Object):
             self.delete()
 
 
-class WeaponEmptyHand:
-    """
-    This is a dummy-class loaded when you wield no weapons. We won't create any db-object for it.
-
-    """
-
-    obj_type = ObjType.WEAPON
-    key = "Empty Fists"
-    inventory_use_slot = WieldLocation.WEAPON_HAND
-    attack_type = Ability.STR
-    defense_type = Ability.ARMOR
-    damage_roll = "1d4"
-    quality = 100000  # let's assume fists are always available ...
-    attack_range = CombatRange.MELEE
-
-    def __repr__(self):
-        return "<WeaponEmptyHand>"
-
-    def get_display_name(self, *args, **kwargs):
-        """A dummy implementation of the hook, to smooth over combat messages."""
-        return self.key
-
-
 class WeaponObject(Object):
     """
     Base weapon class for all  weapons.
@@ -182,11 +159,14 @@ class WeaponObject(Object):
 
     # maximum attack range for this weapon
     attack_range = AttributeProperty(CombatRange.MELEE)
-    # what ability used to attack with this weapon
-    attack_type = AttributeProperty(Ability.STR)
+    attack_type = AttributeProperty(AttackType.MELEE)
     # what defense stat of the enemy it must defeat
     defense_type = AttributeProperty(Ability.ARMOR)
-    damage_roll = AttributeProperty("1d6")
+
+    min_damage = AttributeProperty(1)
+    max_damage = AttributeProperty(4)
+    stamina_cost = AttributeProperty(2)
+    cooldown = AttributeProperty(2)
 
 
 class Runestone(WeaponObject, ConsumableObject):

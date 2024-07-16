@@ -10,6 +10,7 @@ class CharacterClass:
     secondary_stat: str
     health_dice: tuple[int, int]
     mana_dice: tuple[int, int]
+    stamina_dice: tuple[int, int]
 
     def __str__(self):
         return self.name
@@ -29,6 +30,7 @@ class CharacterClasses:
         desc="Very strong in melee combat.",
         health_dice=(1, 10),
         mana_dice=(1, 6),
+        stamina_dice=(1, 12),
     )
 
     Paladin = CharacterClass(
@@ -39,6 +41,7 @@ class CharacterClasses:
         desc="Strong in melee combat with some divine spells.",
         health_dice=(1, 10),
         mana_dice=(1, 6),
+        stamina_dice=(1, 12),
     )
 
     Rogue = CharacterClass(
@@ -49,6 +52,7 @@ class CharacterClasses:
         desc="Adept fighter relying on stealthy tactics and evasion.",
         health_dice=(1, 8),
         mana_dice=(1, 8),
+        stamina_dice=(1, 10),
     )
 
     Bard = CharacterClass(
@@ -59,6 +63,7 @@ class CharacterClasses:
         desc="Able to buff allies and debuff enemies while being able to contribute in combat.",
         health_dice=(1, 8),
         mana_dice=(1, 8),
+        stamina_dice=(1, 10),
     )
 
     Shaman = CharacterClass(
@@ -69,6 +74,7 @@ class CharacterClasses:
         desc="Good caster capable of fighting with heavy weapons.",
         health_dice=(1, 6),
         mana_dice=(1, 10),
+        stamina_dice=(1, 8),
     )
 
     Wizard = CharacterClass(
@@ -79,6 +85,7 @@ class CharacterClasses:
         desc="Focused caster.",
         health_dice=(1, 6),
         mana_dice=(1, 10),
+        stamina_dice=(1, 8),
     )
 
     @classmethod

@@ -113,6 +113,8 @@ class TemporaryCharacterSheet:
         self.hp = self.hp_max
         self.mana_max = 10 + self.cclass.mana_dice[1]
         self.mana = self.mana_max
+        self.stamina_max = 10 + self.cclass.stamina_dice[1]
+        self.stamina = self.stamina_max
 
         # random equipment
         self.armor = dice.roll_random_table("1d20", chargen_tables["armor"])
@@ -181,6 +183,8 @@ class TemporaryCharacterSheet:
                 ("hp_max", self.hp_max),
                 ("mana", self.hp),
                 ("mana_max", self.hp_max),
+                ("stamina", self.stamina),
+                ("stamina_max", self.stamina_max),
                 ("desc", self.desc),
             ),
         )
