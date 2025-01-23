@@ -237,7 +237,8 @@ class CmdHit(CombatCommand):
         if caller.weapon:
             base_cost = caller.weapon.stamina_cost
 
-        stamina_cost = combat.calc_attack_stamina_cost(caller, CombatRange.MELEE, base_cost)
+        # TODO This validation should be moved into the combat rules
+        stamina_cost = combat.rules.get_attack_stamina_cost(caller, CombatRange.MELEE, base_cost)
         if stamina_cost >= caller.stamina:
             caller.msg("You are too exhausted!")
             return False

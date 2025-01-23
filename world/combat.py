@@ -1,8 +1,12 @@
 import random
 from random import randrange
-from typing import Self
+from typing import Self, TYPE_CHECKING
 
 from .enums import CombatRange, AttackType
+
+
+if TYPE_CHECKING:
+    from typeclasses.characters import BaseCharacter
 
 _MAX_RANGE = max([en.value for en in CombatRange])
 
@@ -11,136 +15,47 @@ _MAX_RANGE = max([en.value for en in CombatRange])
 COMBAT_PROMPT = "HP {hp} - MP {mana} - SP {stamina}"
 
 
-class CombatHandler:
-    positions = None
+class CombatRules:
+    __slots__ = ("handler",)
 
-    def __init__(self, attacker, target):
-        # the starting position logic could be better
-        self.positions = {attacker: 1, target: 2}
-        attacker.ndb.combat = self
-        target.ndb.combat = self
+    def __init__(self, handler: 'CombatHandler'):
+        self.handler = handler
 
-    @classmethod
-    def get_or_create(cls, attacker, target) -> Self:
-        attacker_combat: Self = attacker.ndb.combat
-        target_combat: Self = target.ndb.combat
+    def get_initial_position(self, fighter: 'BaseCharacter') -> CombatRange:
+        # TODO Ranged fighters should start further apart
+        # TODO Fighters should be grouped according to alliance at the start of a fight.
+        # TODO Fighters should be added at the furthest position on their alliance's side if added during the fight.
 
-        if attacker_combat and target_combat:
-            # both parties are in separate combat instances; combine into one
-            attacker_combat.merge(target.ndb.combat)
-            return attacker_combat
-        elif attacker_combat:
-            attacker_combat.add(target)
-            return attacker_combat
-        elif target_combat:
-            target_combat.add(attacker)
-            return target_combat
+        # Temporary code until we can implement the above
+        if fighter.is_pc:
+            return CombatRange.MELEE
         else:
-            # neither are in combat; start new instance
-            combat = CombatHandler(attacker, target)
-            return combat
+            return CombatRange.MELEE
 
-    def add(self, participant):
-        """Add a new combatant to the combat instance."""
-        # only add if they aren't already part of the fight
-        if participant not in self.positions:
-            self.positions[participant] = 0
-            participant.ndb.combat = self
+    @property
+    def is_combat_finished(self) -> bool:
+        return len(self.handler.positions) <= 1
 
-    def remove(self, participant):
-        """Removes a combatant from the combat instance."""
-        # only remove if they're actually in combat
-        if participant in self.positions:
-            self.positions.pop(participant)
-            participant.nattributes.remove("combat")
-
-            survivors = list(self.positions.keys())
-            if len(survivors) == 1:
-                # only one participant means no more fight
-                survivors[0].nattributes.remove("combat")
-                self.positions = None
-
-    def merge(self, other):
-        """Merge another combat instance into this one"""
-        # an entity can't be in two combat instances at once, so there should be no dupes
-        self.positions |= other.positions
-        for obj in other.positions.keys():
-            obj.ndb.combat = self
-        other.positions = None
-
-    def get_range(self, attacker, target) -> CombatRange:
-        """Get the distance from target in terms of weapon range."""
-        # both combatants must be in combat
-        if not (attacker in self.positions and target in self.positions):
-            return None
-
-        distance = abs(self.positions[attacker] - self.positions[target])
-        for range_enum in CombatRange:
-            if range_enum.value >= distance:
-                return range_enum
-
-        return CombatRange.RANGED
-
-    def in_range(self, attacker, target, combat_range: CombatRange):
-        """Check if target is within the specified range of attacker."""
-        # both combatants must be in combat
-        if not (attacker in self.positions and target in self.positions):
-            return None
-
-        distance = abs(self.positions[attacker] - self.positions[target])
-        return distance <= combat_range
-
-    def any_in_range(self, attacker, combat_range: CombatRange):
-        if not (a_pos := self.positions.get(attacker)):
-            return False
-
-        return any(
-            p
-            for c, p in self.positions.items()
-            if abs(a_pos - p) <= combat_range and c != attacker
-        )
-
-    def approach(self, mover, target):
+    def get_strike_zone(self, attack_location, defense_location):
         """
-        Move a combatant towards the target.
-        Returns True if the distance changed, or False if it didn't.
+        We can expand on this to include adjacent sides/etc or weightings/corners
         """
-        # both combatants must be in combat
-        if not (mover in self.positions and target in self.positions):
-            return False
+        return (attack_location == defense_location)
 
-        start = self.positions[mover]
-        end = self.positions[target]
+    def get_attack_stamina_cost(self, attacker: 'BaseCharacter', attack_type: AttackType, base_cost: int) -> int:
+        if attacker.aggro == "aggressive":
+            cost = int(base_cost * 1.5)
+        elif attacker.aggro == "defensive":
+            cost = int(base_cost / 2)
+        else:
+            cost = base_cost
 
-        if start == end:
-            # already as close as you can get
-            return False
+        return cost
 
-        change = 1 if start < end else -1
-        self.positions[mover] += change
-        return True
+    def get_defense_stamina_cost(self, attacker: 'BaseCharacter', attack_type: AttackType, base_cost: int, target: 'BaseCharacter') -> int:
+        return 2  # TODO FIXME update this
 
-    def retreat(self, mover, target):
-        """
-        Move a combatant away from the target.
-        Returns True if the distance changed, or False if it didn't.
-        """
-        # both combatants must be in combat
-        if not (mover in self.positions and target in self.positions):
-            return False
-
-        start = self.positions[mover]
-        end = self.positions[target]
-
-        # can't move beyond maximum weapon range
-        if abs(start - end) >= _MAX_RANGE:
-            return False
-
-        change = -1 if start < end else 1
-        self.positions[mover] += change
-        return True
-
-    def roll(self, roller, target, stat, is_dodge=False):
+    def roll(self, roller: 'BaseCharacter', target: 'BaseCharacter', stat: str, is_dodge: bool = False) -> int:
         """
         Roll 2d6 + roller's stat +/- roller's aggression + applicable bonuses
         """
@@ -151,10 +66,10 @@ class CombatHandler:
             if roller.aggro == "aggressive":
                 roll += -1
             elif roller.aggro == "defensive":
-                roll += 1
+                roll +=  1
         else:
             if roller.aggro == "aggressive":
-                roll += 1
+                roll +=  1
             elif roller.aggro == "defensive":
                 roll += -1
 
@@ -163,25 +78,166 @@ class CombatHandler:
 
         return roll
 
-    def calc_strikezone(self, attack_location, defense_location):
-        """
-        We can expand on this to include adjacent sides/etc or weightings/corners
-        """
-        return (attack_location == defense_location)
 
-    def calc_attack_stamina_cost(self, attacker, attack_type, base_cost):
-        if attacker.aggro == "aggressive":
-            cost = int(base_cost * 1.5)
-        elif attacker.aggro == "defensive":
-            cost = int(base_cost/2)
+class CombatHandler:
+    __slots__ = ('positions', 'rules')
+
+    rules_class = CombatRules
+
+    def __init__(self, attacker: 'BaseCharacter', target: 'BaseCharacter', custom_rules: type(CombatRules) | None = None):
+        self.rules = custom_rules(self) if custom_rules else self.rules_class(self)
+        self.positions: dict['BaseCharacter', CombatRange] = {}
+        self.add(attacker)
+        self.add(target)
+
+    @classmethod
+    def get_or_create(cls, attacker, target) -> Self:
+        """
+        This function will create the CombatHandler or merge existing ones, then return it.
+        """
+        attacker_combat: Self = attacker.ndb.combat
+        target_combat: Self = target.ndb.combat
+
+        if attacker_combat and target_combat:
+            attacker_combat.merge(target.ndb.combat)
+            return attacker_combat
+
+        elif attacker_combat:
+            attacker_combat.add(target)
+            return attacker_combat
+
+        elif target_combat:
+            target_combat.add(attacker)
+            return target_combat
+
         else:
-            cost = base_cost
-        return cost
+            return CombatHandler(attacker, target)
 
-    def calc_defense_stamina_cost(self, target):
-        return 2   # TODO FIXME update this
+    def add(self, fighter: 'BaseCharacter') -> None:
+        """
+        Add a new combatant to the combat instance.
+        """
+        assert fighter not in self.positions, f"Fighter {fighter} was already added to the fight!"
 
-    def at_melee_attack(self, attacker, target):
+        self.positions[fighter] = self.rules.get_initial_position(fighter)
+        fighter.combat = self
+
+    def remove(self, fighter: 'BaseCharacter') -> None:
+        """
+        Removes a fighter from the combat instance.
+        """
+        assert fighter in self.positions, f"Fighter {fighter} was already removed from the fight!"
+
+
+        del self.positions[fighter]
+        if fighter.combat == self:
+            fighter.combat = None
+
+        if self.is_finished:
+            self.end_combat()
+
+
+    def merge(self, other):
+        """
+        Merge another combat instance into this one
+        """
+        self.positions.update(other.positions)
+        for obj in other.positions.keys():
+            obj.ndb.combat = self
+
+        other.positions = {}
+
+    def end_combat(self) -> None:
+        for fighter in self.positions:
+            if fighter.combat == self:
+                fighter.combat = None
+
+            if fighter.is_pc:
+                # Temporary message for debugging
+                fighter.msg("You are victorious!")
+
+        self.positions = {}
+
+    @property
+    def is_finished(self) -> bool:
+        return self.rules.is_combat_finished
+
+    def get_range(self, attacker: 'BaseCharacter', target: 'BaseCharacter') -> CombatRange:
+        """
+        Get the distance from target in terms of weapon range.
+        """
+        assert attacker in self.positions, f"Attacker {attacker} is not in combat!"
+        assert target in self.positions, f"Target {target} is not in combat!"
+
+        distance = abs(self.positions[attacker] - self.positions[target])
+        for range_enum in CombatRange:
+            if range_enum.value >= distance:
+                return range_enum
+
+        return CombatRange.RANGED
+
+    def in_range(self, attacker: 'BaseCharacter', target: 'BaseCharacter', combat_range: CombatRange) -> bool:
+        """Check if target is within the specified range of attacker."""
+        assert attacker in self.positions, f"Attacker {attacker} is not in combat!"
+        assert target in self.positions, f"Target {target} is not in combat!"
+
+        distance = abs(self.positions[attacker] - self.positions[target])
+
+        return distance <= combat_range
+
+    def any_in_range(self, attacker: 'BaseCharacter', combat_range: CombatRange) -> bool:
+        assert attacker in self.positions, f"Attacker {attacker} is not in combat!"
+
+        a_pos = self.positions[attacker]
+
+        return any(
+            p
+            for c, p in self.positions.items()
+            if abs(a_pos - p) <= combat_range and c != attacker
+        )
+
+    def approach(self, mover: 'BaseCharacter', target: 'BaseCharacter') -> bool:
+        """
+        Move a combatant towards the target.
+        Returns True if the distance changed, or False if it didn't.
+        """
+        assert mover in self.positions, f"Mover {mover} is not in combat!"
+        assert target in self.positions, f"Target {target} is not in combat!"
+
+        start = self.positions[mover]
+        end = self.positions[target]
+
+        if start == end:
+            # already as close as you can get
+            return False
+
+        change = 1 if start < end else -1
+        self.positions[mover] += change
+
+        return True
+
+    def retreat(self, mover: 'BaseCharacter', target: 'BaseCharacter') -> bool:
+        """
+        Move a combatant away from the target.
+        Returns True if the distance changed, or False if it didn't.
+        """
+        assert mover in self.positions, f"Mover {mover} is not in combat!"
+        assert target in self.positions, f"Target {target} is not in combat!"
+
+        start = self.positions[mover]
+        end = self.positions[target]
+
+        # can't move beyond maximum weapon range
+        if abs(start - end) >= _MAX_RANGE:
+            return False
+
+        change = -1 if start < end else 1
+        self.positions[mover] += change
+
+        return True
+
+
+    def at_melee_attack(self, attacker: 'BaseCharacter', target: 'BaseCharacter') -> None:
         """
         Proceed with a melee attack.
         All validations should be done before this method.
@@ -203,7 +259,7 @@ class CombatHandler:
             stamina_cost = 2
             cooldown = 2
 
-        attacker_stamina_cost = self.calc_attack_stamina_cost(attacker, AttackType.MELEE, stamina_cost)
+        attacker_stamina_cost = self.rules.get_attack_stamina_cost(attacker, AttackType.MELEE, stamina_cost)
         attacker.spend_stamina(attacker_stamina_cost)
         attacker.cooldowns.add("attack", cooldown)
 
@@ -219,12 +275,17 @@ class CombatHandler:
 
         if blocked or parried:
             # See if target can defend
-            target_defense_stamina_cost = self.calc_defense_stamina_cost(target)
+            target_defense_stamina_cost = self.rules.get_defense_stamina_cost(
+                attacker,
+                AttackType.MELEE,
+                stamina_cost,
+                target
+            )
             if target_defense_stamina_cost < target.stamina:
                 target.spend_stamina(target_defense_stamina_cost)
                 if range_to_target == CombatRange.MELEE:
                     attacker.cooldowns.add("attack", cooldown + 1)
-                    target.add_buff("attack", 2, versus=attacker, duration=1)
+                    target.buffs.add_buff("attack", 2, versus=attacker, duration=1)
 
                 if blocked:
                     blocking_item = target.shield
@@ -238,13 +299,13 @@ class CombatHandler:
                 )
                 return
 
-        attack_roll = self.roll(attacker, target, "strength")
-        defense_roll = self.roll(target, attacker, "cunning", is_dodge=True)
+        attack_roll = self.rules.roll(attacker, target, "strength")
+        defense_roll = self.rules.roll(target, attacker, "cunning", is_dodge=True)
         if attack_roll >= defense_roll:
             damage = random.randrange(min_damage, max_damage)
             damage += attacker.strength
 
-            # multiply the result by the Attackers Agression factor (round up)
+            # multiply the result by the Attackers Aggression factor (round up)
             if attacker.aggro == "defensive":
                 damage = int(damage / 2)
             elif attacker.aggro == "aggressive":
@@ -291,7 +352,7 @@ class CombatHandler:
         stamina_cost = weapon.stamina_cost
         cooldown = weapon.cooldown
 
-        attacker_stamina_cost = self.calc_attack_stamina_cost(attacker, AttackType.RANGED, stamina_cost)
+        attacker_stamina_cost = self.rules.get_attack_stamina_cost(attacker, AttackType.RANGED, stamina_cost)
         attacker.spend_stamina(attacker_stamina_cost)
         attacker.cooldowns.add("attack", cooldown)
 
@@ -307,7 +368,12 @@ class CombatHandler:
 
         if blocked or parried:
             # See if target can defend
-            target_defense_stamina_cost = self.calc_defense_stamina_cost(target)
+            target_defense_stamina_cost = self.rules.get_defense_stamina_cost(
+                attacker,
+                AttackType.RANGED,
+                stamina_cost,
+                target
+            )
             if target_defense_stamina_cost < target.stamina:
                 target.spend_stamina(target_defense_stamina_cost)
                 if range_to_target == CombatRange.MELEE:
@@ -326,7 +392,7 @@ class CombatHandler:
                 )
                 return
 
-        attack_roll = self.roll(attacker, target, "cunning")
+        attack_roll = self.rules.roll(attacker, target, "cunning")
         target_size_penalty = 0
         if self.in_range(attacker, target, CombatRange.SHORT):
             range_penalty = 0
@@ -339,7 +405,7 @@ class CombatHandler:
             damage = random.randrange(min_damage, max_damage)
             damage += attacker.strength
 
-            # multiply the result by the Attackers Agression factor (round up)
+            # multiply the result by the Attackers Aggression factor (round up)
             if attacker.aggro == "defensive":
                 damage = int(damage / 2)
             elif attacker.aggro == "aggressive":
@@ -389,7 +455,7 @@ class CombatHandler:
             stamina_cost = weapon.stamina_cost
             cooldown = weapon.cooldown
 
-        attacker_stamina_cost = self.calc_attack_stamina_cost(attacker, AttackType.THROWN, stamina_cost)
+        attacker_stamina_cost = self.rules.get_attack_stamina_cost(attacker, AttackType.THROWN, stamina_cost)
         attacker.spend_stamina(attacker_stamina_cost)
         attacker.cooldowns.add("attack", cooldown)
 
@@ -405,7 +471,12 @@ class CombatHandler:
 
         if blocked or parried:
             # See if target can defend
-            target_defense_stamina_cost = self.calc_defense_stamina_cost(target)
+            target_defense_stamina_cost = self.rules.get_defense_stamina_cost(
+                attacker,
+                AttackType.THROWN,
+                stamina_cost,
+                target
+            )
             if target_defense_stamina_cost < target.stamina:
                 target.spend_stamina(target_defense_stamina_cost)
                 if range_to_target == CombatRange.MELEE:
@@ -424,7 +495,7 @@ class CombatHandler:
                 )
                 return
 
-        attack_roll = self.roll(attacker, target, "cunning")
+        attack_roll = self.rules.roll(attacker, target, "cunning")
         target_size_penalty = 0
         if self.in_range(attacker, target, CombatRange.SHORT):
             range_penalty = 0
@@ -437,7 +508,7 @@ class CombatHandler:
             damage = random.randrange(min_damage, max_damage)
             damage += attacker.cunning
 
-            # multiply the result by the Attackers Agression factor (round up)
+            # multiply the result by the Attackers Aggression factor (round up)
             if attacker.aggro == "defensive":
                 damage = int(damage / 2)
             elif attacker.aggro == "aggressive":
