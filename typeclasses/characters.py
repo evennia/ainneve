@@ -17,12 +17,20 @@ from evennia.utils.evtable import EvTable
 from evennia.utils.logger import log_trace
 from evennia.utils.utils import lazy_property
 from world import rules
+from world.buffs import AbstractBuffHandler
 from world.characters.classes import CharacterClasses, CharacterClass
 from world.characters.races import Races, Race
+
 from world.equipment import EquipmentError, EquipmentHandler
 from world.levelling import LevelsHandler
 from world.quests import QuestHandler
 from .objects import ObjectParent
+
+from typing import TYPE_CHECKING
+
+
+if TYPE_CHECKING:
+    from world.combat import CombatHandler
 
 
 # from world.utils import get_obj_stats
@@ -55,6 +63,15 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
             self.ndb.cclass = cclass
 
         return cclass
+
+    @property
+    def combat(self) -> 'CombatHandler | None':
+        return self.ndb.combat
+
+    @combat.setter
+    def combat(self, value) -> None:
+        self.ndb.combat = value
+
 
     @property
     def race(self) -> Race:
@@ -129,6 +146,11 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
     def levels(self):
         """Allows to access equipment like char.equipment.worn"""
         return LevelsHandler(self)
+
+    @lazy_property
+    def buffs(self):
+        # TODO Implement
+        return AbstractBuffHandler()
 
     def at_damage(self, damage, attacker=None):
         """
@@ -269,12 +291,7 @@ class Character(BaseCharacter):
         """Access and track quests"""
         return QuestHandler(self)
 
-    def add_buff(self, category, amount, versus=None, duration=0):
-        """
-        This will require buff tracking
-        """
-        # TODO FIXME
-        pass
+
 
     def at_pre_object_receive(self, moved_object, source_location, **kwargs):
         """
