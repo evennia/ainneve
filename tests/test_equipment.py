@@ -21,7 +21,7 @@ class TestEquipment(AinneveTestMixin, EvenniaTest):
 
     def test_max_slots(self):
         self.assertEqual(self.char1.equipment.max_slots, 11)
-        setattr(self.char1, Ability.CON.value, 3)
+        setattr(self.char1, Ability.STR.value, 3)
         self.assertEqual(self.char1.equipment.max_slots, 13)
 
     def test_add__remove(self):
