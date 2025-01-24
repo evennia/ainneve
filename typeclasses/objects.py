@@ -154,19 +154,19 @@ class WeaponObject(Object):
     """
 
     obj_type = ObjType.WEAPON
-    inventory_use_slot = AttributeProperty(WieldLocation.WEAPON_HAND)
-    quality = AttributeProperty(3)
+    inventory_use_slot: WieldLocation = AttributeProperty(WieldLocation.WEAPON_HAND)
+    quality: int = AttributeProperty(3)
 
     # maximum attack range for this weapon
-    attack_range = AttributeProperty(CombatRange.MELEE)
-    attack_type = AttributeProperty(AttackType.MELEE)
+    attack_range: CombatRange = AttributeProperty(CombatRange.MELEE)
+    attack_type: AttackType = AttributeProperty(AttackType.MELEE)
     # what defense stat of the enemy it must defeat
-    defense_type = AttributeProperty(Ability.ARMOR)
+    defense_type: Ability = AttributeProperty(Ability.ARMOR)
 
-    min_damage = AttributeProperty(1)
-    max_damage = AttributeProperty(4)
-    stamina_cost = AttributeProperty(2)
-    cooldown = AttributeProperty(2)
+    min_damage: int = AttributeProperty(1)
+    max_damage: int = AttributeProperty(4)
+    stamina_cost: int = AttributeProperty(2)
+    cooldown: int = AttributeProperty(2)
 
 
 class Runestone(WeaponObject, ConsumableObject):
