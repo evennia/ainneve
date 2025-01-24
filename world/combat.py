@@ -22,7 +22,7 @@ class CombatRules:
     def __init__(self, handler: 'CombatHandler'):
         self.handler = handler
 
-    def validate_melee_attack(self, attacker: 'BaseCharacter', target: 'BaseCharacter', weapon: 'WeaponObject | None' = None) -> bool:
+    def validate_weapon_attack(self, attacker: 'BaseCharacter', target: 'BaseCharacter', weapon: 'WeaponObject | None' = None) -> bool:
         if not attacker.combat:
             attacker.msg("You are not in combat.")
             return False
@@ -40,11 +40,18 @@ class CombatRules:
             attacker.msg(f"You can't attack for {delay} more seconds.")
             return False
 
+        weapon_range = weapon.attack_range if weapon and weapon.attack_range else CombatRange.MELEE
+        within_range = self.handler.in_range(attacker, target, weapon_range)
+        if not within_range:
+            attacker.msg(f"{target.get_display_name(attacker)} is too far away.")
+            return False
+
         base_cost = 2
         if weapon:
             base_cost = weapon.stamina_cost
 
-        stamina_cost = self.get_attack_stamina_cost(attacker, AttackType.MELEE, base_cost)
+        attack_type = weapon.attack_type if weapon and weapon.attack_type else AttackType.MELEE
+        stamina_cost = self.get_attack_stamina_cost(attacker, attack_type, base_cost)
         if stamina_cost >= attacker.stamina:
             attacker.msg("You are too exhausted!")
             return False

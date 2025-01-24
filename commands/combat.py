@@ -167,7 +167,7 @@ class CmdHit(CombatCommand):
             caller.msg("You are not in combat!")
             return
 
-        if not combat.rules.validate_melee_attack(caller, target, caller.weapon):
+        if not combat.rules.validate_weapon_attack(caller, target, caller.weapon):
             return
 
         hittable = combat.in_range(caller, target, CombatRange.MELEE)
@@ -198,17 +198,13 @@ class CmdShoot(CombatCommand):
         if not self.validate_target():
             return
 
-        combat: CombatHandler = caller.ndb.combat
-        shootable = combat.in_range(caller, target, CombatRange.RANGED)
-        if shootable is None:
-            caller.msg("You can't fight that.")
+        combat = caller.combat
+        if not combat:
+            caller.msg("You are not in combat!")
             return
-        elif not shootable:
-            caller.msg(f"{target.get_display_name(caller)} is too far away.")
+
+        if not combat.rules.validate_weapon_attack(caller, target, caller.weapon):
             return
-        #elif too_close:
-        #    caller.msg(f"{target.get_display_name(caller)} is too close.")
-        #    return
 
         combat.at_ranged_attack(caller, target)
 
