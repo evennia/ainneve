@@ -47,7 +47,9 @@ class CombatCommand(Command):
 
         return True
 
-
+    def at_post_cmd(self):
+        if self.caller.combat:
+            self.caller.combat.update()
 
 
 class CmdInitiateCombat(CombatCommand):
@@ -89,7 +91,7 @@ class CmdAdvance(CombatCommand):
         if not self.validate_target():
             return
 
-        combat: CombatHandler = caller.ndb.combat
+        combat: CombatHandler = caller.combat
         if combat.approach(caller, target):
             # TODO: base movement cooldown on character stats
             caller.cooldowns.add(self.cooldown_key, 3)
@@ -125,7 +127,7 @@ class CmdRetreat(CombatCommand):
         if not self.validate_target():
             return
 
-        combat = caller.ndb.combat
+        combat = caller.combat
         if combat.retreat(caller, target):
             # TODO: base movement cooldown on character stats
             caller.cooldowns.add(self.cooldown_key, 3)
@@ -231,7 +233,7 @@ class CmdFlee(CombatCommand):
 
         # this is the actual fleeing bit
         caller.msg("You flee!")
-        caller.ndb.combat.remove(caller)
+        caller.combat.remove(caller)
         target = choice(exits)
         # using execute_cmd instead of duplicating all the checks in ExitCommand
         caller.execute_cmd(target.key)

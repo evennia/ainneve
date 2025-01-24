@@ -135,7 +135,7 @@ class CombatHandler:
         attacker_combat: Self = attacker.combat
         target_combat: Self = target.combat
 
-        if attacker_combat and target_combat:
+        if attacker_combat and target_combat and attacker_combat != target_combat:
             attacker_combat.merge(target.combat)
             return attacker_combat
 
@@ -180,9 +180,13 @@ class CombatHandler:
         """
         self.positions.update(other.positions)
         for obj in other.positions.keys():
-            obj.ndb.combat = self
+            obj.combat = self
 
         other.positions = {}
+
+    def update(self):
+        if self.is_finished:
+            self.end_combat()
 
     def end_combat(self) -> None:
         for fighter in self.positions:

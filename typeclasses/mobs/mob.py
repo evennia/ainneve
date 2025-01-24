@@ -49,5 +49,5 @@ class BaseMob(BaseCharacter):
         Called when this living thing dies.
 
         """
-        self.location.msg_contents(f"$You() $conj(die).", from_obj=self)
+        super().at_death()
         self.delete()

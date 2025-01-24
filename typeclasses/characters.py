@@ -199,6 +199,9 @@ class BaseCharacter(ObjectParent, DefaultCharacter):
         Called when this living thing dies.
 
         """
+        if self.combat:
+            self.combat.remove(self)
+
         self.location.msg_contents(f"$You() $conj(die).", from_obj=self)
 
     def at_pay(self, amount):
