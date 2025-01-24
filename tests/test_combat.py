@@ -88,7 +88,7 @@ class TestCombatCommands(AinneveTestMixin, EvenniaCommandTest):
         self.call(
             combat.CmdInitiateCombat(),
             "obj",
-            "You can't attack that.",
+            "Invalid target.",
         )
 
     def test_hit(self):

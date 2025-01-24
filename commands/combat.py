@@ -41,6 +41,10 @@ class CombatCommand(Command):
             self.caller.msg("Invalid target.")
             return False
 
+        if target.is_pc and not (target.location and target.location.allow_pvp):
+            self.caller.msg("You can't attack another player here.")
+            return False
+
         return True
 
 
@@ -222,9 +226,6 @@ class CmdFlee(CombatCommand):
 
     def func(self):
         caller = self.caller
-        if not self.validate_target():
-            return
-
         exits = [ex for ex in caller.location.contents if ex.destination]
         if not exits:
             caller.msg("There's nowhere to run!")
