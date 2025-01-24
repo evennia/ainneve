@@ -24,74 +24,26 @@ class CombatCommand(Command):
 
     def parse(self):
         super().parse()
-        self.target = self.get_target()
+        target = self.get_target()
+        self.target = target
 
     def get_target(self):
+        if not self.args:
+            # TODO Use the last hit enemy OR
+            # TODO Find the closest enemy in combat.
+            return None
+
         return self.caller.search(self.args)
 
-    def validate(self) -> bool:
-        if self.requires_target and not self._validate_target():
-            return False
-
-        if not self._validate_cooldown():
-            return False
-
-        return True
-
-    def _validate_target(self) -> bool:
-        """
-        Make sure the target is something that can be attacked
-        """
+    def validate_target(self) -> bool:
         target = self.target
-        if not target or not target.dbid:
-            return False
-
-        if not self._validate_target_can_be_attacked(target):
-            return False
-
-        if not self._validate_target_is_mob_or_pvp_allowed(target):
-            return False
-
-        if self.in_combat_only:
-            if not self._validate_target_is_in_combat_with(target):
-                return False
-
-        return True
-
-    def _validate_target_can_be_attacked(self, target) -> bool:
-        if not inherits_from(target, "typeclasses.characters.BaseCharacter"):
-            self.caller.msg("You can't attack that.")
+        if not target or not target.dbid or not hasattr(target, "combat"):
+            self.caller.msg("Invalid target.")
             return False
 
         return True
 
-    def _validate_target_is_mob_or_pvp_allowed(self, target) -> bool:
-        if target.is_pc and not target.location.allow_pvp:
-            self.caller.msg("You can't attack another player here.")
-            return False
 
-        return True
-
-    def _validate_target_is_in_combat_with(self, target) -> bool:
-        if not target.nattributes.has("combat"):
-            caller = self.caller
-            caller.msg(f"You aren't in combat with {target.get_display_name(caller)}.")
-            return False
-        return True
-
-    def _validate_cooldown(self) -> bool:
-        cooldown_key = self.cooldown_key
-        if not cooldown_key:
-            return True
-
-        caller = self.caller
-        if not caller.cooldowns.ready(cooldown_key):
-            delay = caller.cooldowns.time_left(cooldown_key, use_int=True)
-            msg = self.cooldown_message.format(delay=delay)
-            caller.msg(msg)
-            return False
-
-        return True
 
 
 class CmdInitiateCombat(CombatCommand):
@@ -105,7 +57,7 @@ class CmdInitiateCombat(CombatCommand):
     def func(self):
         caller = self.caller
         target = self.target
-        if not self.validate():
+        if not self.validate_target():
             return
 
         combat = CombatHandler.get_or_create(caller, target)
@@ -130,7 +82,7 @@ class CmdAdvance(CombatCommand):
     def func(self):
         caller = self.caller
         target = self.target
-        if not self.validate():
+        if not self.validate_target():
             return
 
         combat: CombatHandler = caller.ndb.combat
@@ -166,7 +118,7 @@ class CmdRetreat(CombatCommand):
     def func(self):
         caller = self.caller
         target = self.target
-        if not self.validate():
+        if not self.validate_target():
             return
 
         combat = caller.ndb.combat
@@ -200,16 +152,20 @@ class CmdHit(CombatCommand):
     key = "hit"
     locks = "cmd:in_combat() and melee_equipped()"
 
-    cooldown_key = "attack"
-    cooldown_message = "You can't attack for {delay} more seconds."
-
     def func(self):
         caller = self.caller
         target = self.target
-        if not self.validate():
+        if not self.validate_target():
             return
 
-        combat: CombatHandler = caller.ndb.combat
+        combat = caller.combat
+        if not combat:
+            caller.msg("You are not in combat!")
+            return
+
+        if not combat.rules.validate_melee_attack(caller, target, caller.weapon):
+            return
+
         hittable = combat.in_range(caller, target, CombatRange.MELEE)
         if hittable is None:
             caller.msg("You can't fight that.")
@@ -220,30 +176,7 @@ class CmdHit(CombatCommand):
 
         combat.at_melee_attack(caller, target)
 
-    def validate(self) -> bool:
-        result = super().validate()
-        if not result:
-            return result
 
-        if not self._validate_stamina_cost():
-            return False
-
-        return True
-
-    def _validate_stamina_cost(self) -> bool:
-        caller = self.caller
-        combat = caller.ndb.combat
-        base_cost = 2
-        if caller.weapon:
-            base_cost = caller.weapon.stamina_cost
-
-        # TODO This validation should be moved into the combat rules
-        stamina_cost = combat.rules.get_attack_stamina_cost(caller, CombatRange.MELEE, base_cost)
-        if stamina_cost >= caller.stamina:
-            caller.msg("You are too exhausted!")
-            return False
-
-        return True
 
 
 class CmdShoot(CombatCommand):
@@ -258,7 +191,7 @@ class CmdShoot(CombatCommand):
     def func(self):
         caller = self.caller
         target = self.target
-        if not self.validate():
+        if not self.validate_target():
             return
 
         combat: CombatHandler = caller.ndb.combat
@@ -289,7 +222,8 @@ class CmdFlee(CombatCommand):
 
     def func(self):
         caller = self.caller
-        self.validate()
+        if not self.validate_target():
+            return
 
         exits = [ex for ex in caller.location.contents if ex.destination]
         if not exits:

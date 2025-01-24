@@ -7,6 +7,7 @@ from .enums import CombatRange, AttackType
 
 if TYPE_CHECKING:
     from typeclasses.characters import BaseCharacter
+    from typeclasses.objects import WeaponObject
 
 _MAX_RANGE = max([en.value for en in CombatRange])
 
@@ -20,6 +21,35 @@ class CombatRules:
 
     def __init__(self, handler: 'CombatHandler'):
         self.handler = handler
+
+    def validate_melee_attack(self, attacker: 'BaseCharacter', target: 'BaseCharacter', weapon: 'WeaponObject | None' = None) -> bool:
+        if not attacker.combat:
+            attacker.msg("You are not in combat.")
+            return False
+
+        if not target.combat or target.combat != attacker.combat:
+            attacker.msg("They are not in combat with you.")
+            return False
+
+        if target.is_pc and not (target.location and target.location.allow_pvp):
+            attacker.msg("You can't attack another player here.")
+            return False
+
+        if not attacker.cooldowns.ready("attack"):
+            delay = attacker.cooldowns.time_left("attack", use_int=True)
+            attacker.msg(f"You can't attack for {delay} more seconds.")
+            return False
+
+        base_cost = 2
+        if weapon:
+            base_cost = weapon.stamina_cost
+
+        stamina_cost = self.get_attack_stamina_cost(attacker, AttackType.MELEE, base_cost)
+        if stamina_cost >= attacker.stamina:
+            attacker.msg("You are too exhausted!")
+            return False
+
+        return True
 
     def get_initial_position(self, fighter: 'BaseCharacter') -> CombatRange:
         # TODO Ranged fighters should start further apart
@@ -95,11 +125,11 @@ class CombatHandler:
         """
         This function will create the CombatHandler or merge existing ones, then return it.
         """
-        attacker_combat: Self = attacker.ndb.combat
-        target_combat: Self = target.ndb.combat
+        attacker_combat: Self = attacker.combat
+        target_combat: Self = target.combat
 
         if attacker_combat and target_combat:
-            attacker_combat.merge(target.ndb.combat)
+            attacker_combat.merge(target.combat)
             return attacker_combat
 
         elif attacker_combat:
