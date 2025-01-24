@@ -388,6 +388,30 @@ class Character(BaseCharacter):
         """
         pass
 
+    def at_post_puppet(self, **kwargs):
+        super().at_post_puppet(**kwargs)
+        # Here we add Keybinds for Evelite Webclient so we can walk around with the numpad
+        self.msg(
+            key_cmds=(
+                '', {
+                    '7': 'northwest',
+                    '8': 'north',
+                    '9': 'northeast',
+                    '1': 'southwest',
+                    '2': 'south',
+                    '3': 'southeast',
+                    '4': 'west',
+                    '6': 'east',
+                    '5': 'look',
+                }
+            )
+        )
+
+    def at_post_move(self, source_location, **kwargs):
+        super().at_post_move(source_location, **kwargs)
+        if map_getter := getattr(self.location, 'get_map_display', None):
+            # Send the map to the WebClient
+            self.msg(map=map_getter(looker=self))
 
 
 

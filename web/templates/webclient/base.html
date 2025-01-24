@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+{% if not user.is_authenticated %}
+<meta http-equiv="Refresh" content="0; url='{% url 'login' %}/?next=/webclient'" />
+{% else %}
+{% load static %}
+<html dir="ltr" lang="en">
+  <head>
+    <title> {{game_name}} </title>
+    <meta http-equiv="content-type", content="application/xhtml+xml; charset=UTF-8" />
+    <meta name="author" content="Evennia" />
+    <link rel="icon" type="image/x-icon" href="{% static "website/images/logo.png" %}" />
+    <link rel="stylesheet" type="text/css" href="{% static "webclient/css/webclient.css" %}?{{client_css_version}}">
+    <link rel="stylesheet" type="text/css" href="{% static "webclient/css/keybinds_small.css" %}">
+    <link rel="stylesheet" type="text/css" href="{% static "webclient/css/xterm256.css" %}">
+
+    <script language="javascript" type="text/javascript">
+        {% if websocket_enabled %}
+            var wsactive = true;
+        {% else %}
+            var wsactive = false;
+        {% endif %}
+
+        {% if browser_sessid %}
+           var csessid = "{{browser_sessid}}";
+        {% else %}
+           var csessid = false;
+        {% endif %}
+
+				{% if websocket_url %}
+					var wsurl = "{{websocket_url}}";
+				{% else %}
+					var wsurl = "ws://" + this.location.hostname + ":{{websocket_port}}";
+				{% endif %}
+    </script>
+  </head>
+<body>
+	<div id="left">
+		<div id="main">
+			<div id="tab_area">
+				<span id="_tab" class="chan-tab active-tab" data-channel=''>Game</span>
+			</div>
+			<div id="_log" class="log" role="log"><div class="dl-button" onclick="LogDownload(this)" alt="Download this log" title="Download this log">📥</div></div>
+		</div>
+		<p id="prompt" aria-live="polite"></p>
+		<div id="toggles">
+		<!-- temporarily turning off since light mode isn't set up
+			<label title="Toggle between Dark and Light mode" class="switch">
+				<input id="theme_toggle" type="checkbox" onclick="javascript:toggleTheme(this);">
+				<span class="slider"></span>
+				<span>Dark Mode</font>
+			</label>
+		-->
+		</div>
+			<form id="input_form" method="post">
+				<textarea id="input_box" class="input_box" name="input_box" placeholder="" maxlength="500"></textarea>
+			</form>
+		</div>
+	</div>
+	<div id="right">
+		<div id="map"></div>
+		<div id="keybinds">
+			<span id='keybind_1' class='keybind_button invisible'></span>
+			<span id='keybind_2' class='keybind_button invisible'></span>
+			<span id='keybind_3' class='keybind_button invisible'></span>
+			<span id='keybind_4' class='keybind_button invisible'></span>
+			<span id='keybind_5' class='keybind_button invisible'></span>
+			<span id='keybind_6' class='keybind_button invisible'></span>
+			<span id='keybind_7' class='keybind_button invisible'></span>
+			<span id='keybind_8' class='keybind_button invisible'></span>
+			<span id='keybind_9' class='keybind_button invisible'></span>
+<!--
+			<span id='keybind_0'></span>
+			<span id='keybind_enter'></span>
+			<span id='keybind_dot'></span>
+			<span id='keybind_plus'></span>
+			<span id='keybind_dash'></span>
+			<span id='keybind_star'></span>
+			<span id='keybind_slash'></span>
+-->
+		</div>
+	</div>
+	<script src="{% static "webclient/js/webclient.js" %}?{{client_js_version}}" language="javascript" type="text/javascript" charset="utf-8"/></script>
+</body>
+{% endif %}
+</html>

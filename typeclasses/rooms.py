@@ -85,7 +85,7 @@ class OverworldRoom(wilderness.WildernessRoom, Room):
 
         return tile_str
 
-    def at_object_receive(self, source_location, moved_obj, **kwargs):
+    def at_object_receive(self, moved_obj, source_location, **kwargs):
         return super().at_object_receive(source_location=source_location, moved_obj=moved_obj)
 
 
@@ -94,6 +94,9 @@ class TownRoom(Room, XYZRoom):
     Combines the XYZGrid functionality with Ainneve-specific room code.
     """
     map_visual_range = 2
+    map_separator_char = "|n"
+    map_area_client = False
+    map_fill_all = False
 
 
 class PvPRoom(Room):
