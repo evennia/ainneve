@@ -19,6 +19,7 @@ from evennia.contrib.grid.xyzgrid.commands import XYZGridCmdSet
 
 from .debug import DebugCmdSet
 from .game import AinneveCmdSet
+from .look import CmdLook
 from .ooc import CmdCharCreate
 from .combat import CombatCmdSet
 
@@ -36,6 +37,7 @@ class CharacterCmdSet(default_cmds.CharacterCmdSet):
         Populates the cmdset
         """
         super().at_cmdset_creation()
+        self.add(CmdLook())  # We override the look func to display the map
         
         self.add(DebugCmdSet())  # commands for debugging purposes
         self.add(XYZGridCmdSet()) # xyzgrid pathfinding and building commands
