@@ -6,7 +6,7 @@ Knave has a system of Slots for its inventory.
 from evennia.utils.utils import inherits_from
 
 from .enums import Ability, WieldLocation
-from typeclasses.objects import Object, WeaponEmptyHand
+from typeclasses.objects import Object
 
 
 class EquipmentError(TypeError):
@@ -77,11 +77,9 @@ class EquipmentHandler:
     @property
     def max_slots(self):
         """
-        The max amount of equipment slots ('carrying capacity') is based on
-        the constitution defense.
-
+        The max amount of equipment slots ('carrying capacity') is based on strength.
         """
-        return getattr(self.obj, Ability.CON.value, 1) + 10
+        return getattr(self.obj, Ability.STR.value, 1) + 10
 
     def validate_slot_usage(self, obj):
         """
@@ -166,9 +164,12 @@ class EquipmentHandler:
         weapon = slots[WieldLocation.TWO_HANDS]
         if not weapon:
             weapon = slots[WieldLocation.WEAPON_HAND]
-        if not weapon:
-            weapon = WeaponEmptyHand()
+
         return weapon
+
+    @property
+    def shield(self):
+        return self.slots[WieldLocation.SHIELD_HAND]
 
     def display_loadout(self):
         """

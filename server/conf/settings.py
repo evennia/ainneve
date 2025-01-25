@@ -48,7 +48,13 @@ FILE_HELP_ENTRY_MODULES = [ 'world.help.combat_help' ]
 ######################################################################
 
 # make contrib prototypes available as parents for map nodes
-PROTOTYPE_MODULES += ['evennia.contrib.grid.xyzgrid.prototypes']
+PROTOTYPE_MODULES += [
+    'evennia.contrib.grid.xyzgrid.prototypes',
+    'world.overworld.prototypes',
+    'world.common.item_prototypes',
+    'world.common.mob_prototypes',
+    'world.common.room_prototypes',
+]
 
 # add launcher command
 EXTRA_LAUNCHER_COMMANDS['xyzgrid'] = 'evennia.contrib.grid.xyzgrid.launchcmd.xyzcommand'

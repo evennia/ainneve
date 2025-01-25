@@ -62,7 +62,7 @@ class _TestQuest(quests.Quest):
         """
         if self.quester.db.test_quest_counter and self.quester.db.test_quest_counter > 5:
             self.quester.msg("Quest complete! Get XP rewards!")
-            self.quester.db.xp += 10
+            self.quester.levels.add_xp(10)
             self.complete()
 
     def cleanup(self):

@@ -7,12 +7,10 @@ from unittest.mock import call, patch
 
 from anything import Something
 
+from commands import game
 from evennia.utils.create import create_object
 from evennia.utils.test_resources import EvenniaCommandTest
-
-from commands import game
-from typeclasses.characters import Character
-from typeclasses.npcs import Mob, ShopKeeper
+from typeclasses.npcs import ShopKeeper
 from .mixins import AinneveTestMixin
 
 

@@ -23,7 +23,7 @@ lock functions from evennia.locks.lockfuncs.
 def in_combat(accessing_obj, accessed_obj, *args, **kwargs):
     """returns true if an active combat handler is present"""
     if hasattr(accessing_obj, 'nattributes'):
-        return accessing_obj.nattributes.has('combat')
+        return accessing_obj.nattributes.get('combat')
     else:
         return False
 

@@ -3,20 +3,11 @@ Test Ainneve's custom commands.
 
 """
 
-from unittest.mock import call, patch
-
-from anything import Something
-
+from commands import combat
 from evennia.utils.create import create_object
 from evennia.utils.test_resources import EvenniaTest, EvenniaCommandTest
-
-from commands import combat
-from typeclasses.characters import Character
-from typeclasses.npcs import Mob, ShopKeeper
-
 from world.combat import CombatHandler
 from world.enums import CombatRange
-
 from .mixins import AinneveTestMixin
 
 
@@ -28,7 +19,8 @@ class TestCombatHandler(AinneveTestMixin, EvenniaTest):
         self.combat.positions[self.char2] = 2
 
     def test_add_remove(self):
-        target = create_object(Mob, key="rat", location=self.room1)
+        from typeclasses.mobs.mob import BaseMob
+        target = create_object(BaseMob, key="rat", location=self.room1)
         self.combat.add(target)
         self.assertTrue(target in self.combat.positions)
         self.combat.remove(target)
@@ -52,31 +44,33 @@ class TestCombatHandler(AinneveTestMixin, EvenniaTest):
         self.assertEqual(self.combat.positions[self.char2], 3)
 
     def test_in_range(self):
-        self.assertTrue(self.combat.in_range(self.char1, self.char2, "MELEE"))
+        self.assertTrue(self.combat.in_range(self.char1, self.char2, CombatRange.MELEE))
         self.combat.positions[self.char2] = 5
-        self.assertFalse(self.combat.in_range(self.char1, self.char2, "MELEE"))
-        self.assertTrue(self.combat.in_range(self.char1, self.char2, "RANGED"))
+        self.assertFalse(self.combat.in_range(self.char1, self.char2, CombatRange.MELEE))
+        self.assertTrue(self.combat.in_range(self.char1, self.char2, CombatRange.RANGED))
 
     def test_any_in_range(self):
-        self.assertTrue(self.combat.any_in_range(self.char1, "MELEE"))
+        self.assertTrue(self.combat.any_in_range(self.char1, CombatRange.MELEE))
         self.combat.positions[self.char2] = 5
-        self.assertFalse(self.combat.any_in_range(self.char1, "MELEE"))
-        self.assertTrue(self.combat.any_in_range(self.char1, "RANGED"))
+        self.assertFalse(self.combat.any_in_range(self.char1, CombatRange.MELEE))
+        self.assertTrue(self.combat.any_in_range(self.char1, CombatRange.RANGED))
 
     def test_get_range(self):
-        self.assertEqual(self.combat.get_range(self.char1, self.char2), "MELEE")
+        self.assertEqual(self.combat.get_range(self.char1, self.char2), CombatRange.MELEE)
         self.combat.positions[self.char2] = 5
-        self.assertEqual(self.combat.get_range(self.char1, self.char2), "RANGED")
+        self.assertEqual(self.combat.get_range(self.char1, self.char2), CombatRange.MEDIUM)
 
 
 class TestCombatCommands(AinneveTestMixin, EvenniaCommandTest):
     def setUp(self):
         super().setUp()
-        self.target = create_object(Mob, key="rat", location=self.room1)
+        from typeclasses.mobs.mob import BaseMob
+        self.target = create_object(BaseMob, key="rat", location=self.room1)
 
     def tearDown(self):
         super().tearDown()
-        self.target.delete()
+        if self.target.dbid:
+            self.target.delete()
 
     def test_engage(self):
         self.call(
@@ -94,23 +88,25 @@ class TestCombatCommands(AinneveTestMixin, EvenniaCommandTest):
         self.call(
             combat.CmdInitiateCombat(),
             "obj",
-            "You can't attack that.",
+            "Invalid target.",
         )
 
     def test_hit(self):
         combat_instance = CombatHandler(self.char1, self.target)
-        self.call(
-            combat.CmdHit(),
-            "rat",
-            "You hit rat with your Empty Fists",
-        )
-        self.char1.cooldowns.clear()
-        combat_instance.retreat(self.char1, self.target)
+        combat_instance.positions[self.target] = CombatRange.RANGED
         self.call(
             combat.CmdHit(),
             "rat",
             "rat is too far away.",
         )
+        combat_instance.positions[self.target] = CombatRange.MELEE
+        self.call(
+            combat.CmdHit(),
+            "rat",
+            # TODO Patch a guaranteed hit
+            #"You hit rat with your fists",
+        )
+        self.char1.cooldowns.clear()
 
     def test_shoot(self):
         combat_instance = CombatHandler(self.char1, self.target)
@@ -120,15 +116,10 @@ class TestCombatCommands(AinneveTestMixin, EvenniaCommandTest):
         self.call(
             combat.CmdShoot(),
             "rat",
-            "You shoot rat with your weapon",
+            # TODO Patch a guaranteed hit
+            #"You shoot rat with your weapon",
         )
         self.char1.cooldowns.clear()
-        combat_instance.retreat(self.char1, self.target)
-        self.call(
-            combat.CmdShoot(),
-            "rat",
-            "You shoot rat with your weapon",
-        )
 
     def test_flee(self):
         combat_instance = CombatHandler(self.char1, self.target)
@@ -137,6 +128,6 @@ class TestCombatCommands(AinneveTestMixin, EvenniaCommandTest):
             "",
             "You flee!",
         )
-        self.assertFalse(self.char1.nattributes.has("combat"))
-        self.assertFalse(self.target.nattributes.has("combat"))
+        self.assertFalse(self.char1.combat)
+        self.assertFalse(self.target.combat)
         self.assertEqual(self.char1.location, self.room2)

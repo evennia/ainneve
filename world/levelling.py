@@ -11,16 +11,19 @@ class _NextLevelXp:
     """
     __slots__ = ('level', 'xp_per_level')
 
-    def __init__(self, level, xp_per_level):
+    def __init__(self, level: int, xp_per_level: int):
         self.xp_per_level = xp_per_level
         self.level = level
+
+    def __int__(self):
+        return self.xp_per_level
 
 
 class LevelsHandler:
     __slots__ = ('obj',)
 
     _ATTRIBUTE_CATEGORY = "levels"
-    _XP_FOR_LEVELS = (
+    _XP_FOR_LEVELS: tuple[_NextLevelXp] = (
         _NextLevelXp(level=0, xp_per_level=100),
         _NextLevelXp(level=5, xp_per_level=200),
         _NextLevelXp(level=10, xp_per_level=300),
@@ -66,7 +69,7 @@ class LevelsHandler:
         Returns the required xp for the next level.
         """
         current_level = self.level
-        xp_per_level = self._XP_FOR_LEVELS[0]
+        xp_per_level = self._XP_FOR_LEVELS[0].xp_per_level
         for next_level_xp in self._XP_FOR_LEVELS:
             if current_level < next_level_xp.level:
                 xp_per_level = next_level_xp.xp_per_level
@@ -75,7 +78,7 @@ class LevelsHandler:
 
         return xp_per_level
 
-    def add_xp(self, xp):
+    def add_xp(self, xp: int):
         """
         Add new XP.
 

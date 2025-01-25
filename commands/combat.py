@@ -3,35 +3,53 @@ Combat commands.
 """
 
 from random import choice
+
 from evennia import CmdSet
 from evennia.utils import inherits_from
-
 from world.combat import CombatHandler
-
+from world.enums import CombatRange
 from .command import Command
 
 
 class CombatCommand(Command):
-    def get_valid_target(self, in_combat=True):
-        """
-        Make sure the target is something that can be attacked
-        """
-        if target := self.caller.search(self.args):
-            if not inherits_from(target, "typeclasses.characters.BaseCharacter"):
-                self.caller.msg("You can't attack that.")
-                return None
-            if target.is_pc and not target.location.allow_pvp:
-                self.caller.msg("You can't attack another player here.")
-                return None
-            if in_combat:
-                if not target.nattributes.has("combat"):
-                    self.caller.msg(
-                        f"You aren't in combat with {target.get_display_name(self.caller)}."
-                    )
-                    return None
-            return target
-        else:
+    cooldown_key = ""
+    cooldown_message = "You can't do that for another {delay} seconds."
+
+    in_combat_only = True
+    requires_target = True
+
+    def __init__(self, **kwargs):
+        self.target = None  # This line is to avoid the IDE complaints
+        super().__init__(**kwargs)
+
+    def parse(self):
+        super().parse()
+        target = self.get_target()
+        self.target = target
+
+    def get_target(self):
+        if not self.args:
+            # TODO Use the last hit enemy OR
+            # TODO Find the closest enemy in combat.
             return None
+
+        return self.caller.search(self.args)
+
+    def validate_target(self) -> bool:
+        target = self.target
+        if not target or not target.dbid or not hasattr(target, "combat"):
+            self.caller.msg("Invalid target.")
+            return False
+
+        if target.is_pc and not (target.location and target.location.allow_pvp):
+            self.caller.msg("You can't attack another player here.")
+            return False
+
+        return True
+
+    def at_post_cmd(self):
+        if self.caller.combat:
+            self.caller.combat.update()
 
 
 class CmdInitiateCombat(CombatCommand):
@@ -40,27 +58,18 @@ class CmdInitiateCombat(CombatCommand):
     key = "attack"
     aliases = ("engage", "kill")
 
+    in_combat_only = False
+
     def func(self):
         caller = self.caller
-
-        target = self.get_valid_target(in_combat=False)
-        if not target:
+        target = self.target
+        if not self.validate_target():
             return
 
-        # get or make combat instance
-        combat = caller.ndb.combat
-        if not combat:
-            # caller is not in combat, so use the target's combat instance
-            combat = target.ndb.combat
-        if not combat:
-            # still no combat instance means neither are in combat; start new instance
-            combat = CombatHandler(caller, target)
-        elif combat != target.ndb.combat:
-            # both parties are in separate combat instances; combine into one
-            combat.merge(target.ndb.combat)
-        range = combat.get_range(caller, target)
+        combat = CombatHandler.get_or_create(caller, target)
+        combat_range = combat.get_range(caller, target)
         caller.msg(
-            f"You prepare for combat! {target.get_display_name(caller)} is at {range.lower()} range."
+            f"You prepare for combat! {target.get_display_name(caller)} is at {combat_range.name.lower()} range."
         )
 
         # TODO: trigger combat prompt
@@ -73,31 +82,27 @@ class CmdAdvance(CombatCommand):
     aliases = ("approach",)
     locks = "cmd:in_combat()"
 
+    cooldown_key = "combat_move"
+    cooldown_message = "You can't move for another {delay} seconds."
+
     def func(self):
         caller = self.caller
-        args = self.args
-        target = self.get_valid_target()
-        if not target:
+        target = self.target
+        if not self.validate_target():
             return
 
-        if not caller.cooldowns.ready("combat_move"):
-            caller.msg(
-                f"You can't move for another {caller.cooldowns.time_left('combat_move',use_int=True)} seconds."
-            )
-            return
-
-        combat = caller.ndb.combat
-        if combat.advance(caller, target):
+        combat: CombatHandler = caller.combat
+        if combat.approach(caller, target):
             # TODO: base movement cooldown on character stats
-            caller.cooldowns.add("combat_move", 3)
-            range = combat.get_range(caller, target)
+            caller.cooldowns.add(self.cooldown_key, 3)
+            combat_range = combat.get_range(caller, target)
             caller.location.msg_contents(
                 "{attacker} advances towards {target}.",
                 exclude=caller,
                 mapping={"attacker": caller, "target": target},
             )
             caller.msg(
-                f"You advance towards {target.get_display_name(caller)} and are now at {range.lower()} range."
+                f"You advance towards {target.get_display_name(caller)} and are now at {combat_range.lower()} range."
             )
         else:
             caller.msg(
@@ -113,32 +118,27 @@ class CmdRetreat(CombatCommand):
     key = "retreat"
     locks = "cmd:in_combat()"
 
+    cooldown_key = "combat_move"
+    cooldown_message = "You can't move for another {delay} seconds."
+
     def func(self):
         caller = self.caller
-        args = self.args
-
-        if not caller.cooldowns.ready("combat_move"):
-            caller.msg(
-                f"You can't move for another {caller.cooldowns.time_left('combat_move',use_int=True)} seconds."
-            )
+        target = self.target
+        if not self.validate_target():
             return
 
-        target = caller.search(args)
-        if not target:
-            return
-
-        combat = caller.ndb.combat
+        combat = caller.combat
         if combat.retreat(caller, target):
             # TODO: base movement cooldown on character stats
-            caller.cooldowns.add("combat_move", 3)
-            range = combat.get_range(caller, target)
+            caller.cooldowns.add(self.cooldown_key, 3)
+            combat_range = combat.get_range(caller, target)
             caller.location.msg_contents(
                 "{attacker} retreats from {target}.",
                 exclude=caller,
                 mapping={"attacker": caller, "target": target},
             )
             caller.msg(
-                f"You retreat from {target.get_display_name(caller)} and are now at {range.lower()} range."
+                f"You retreat from {target.get_display_name(caller)} and are now at {combat_range.lower()} range."
             )
         else:
             caller.msg(
@@ -152,9 +152,7 @@ class CmdHit(CombatCommand):
     """
     Basic melee combat attack.
 
-    hit
-    hit m m
-    hit <low/middle/high> <left/middle/right>
+    hit <target>
     """
 
     key = "hit"
@@ -162,21 +160,19 @@ class CmdHit(CombatCommand):
 
     def func(self):
         caller = self.caller
-        args = self.args
-        range = "MELEE"
-
-        if not caller.cooldowns.ready("attack"):
-            caller.msg(
-                f"You can't attack for {caller.cooldowns.time_left('attack',use_int=True)} more seconds."
-            )
+        target = self.target
+        if not self.validate_target():
             return
 
-        target = self.get_valid_target()
-        if not target:
+        combat = caller.combat
+        if not combat:
+            caller.msg("You are not in combat!")
             return
 
-        combat = caller.ndb.combat
-        hittable = combat.in_range(caller, target, range)
+        if not combat.rules.validate_weapon_attack(caller, target, caller.weapon):
+            return
+
+        hittable = combat.in_range(caller, target, CombatRange.MELEE)
         if hittable is None:
             caller.msg("You can't fight that.")
             return
@@ -184,35 +180,9 @@ class CmdHit(CombatCommand):
             caller.msg(f"{target.get_display_name(caller)} is too far away.")
             return
 
-        target_location = "mm" # default for no arguments given to the "hit" command
-        if len(args) > 0:
-            cmd_parts = args.split()
-            match len(cmd_parts):
-                case 1:
-                    target_location = cmd_parts
-                case 2:
-                    target_location = "".join( [cmd_parts[0][0], cmd_parts[1][0]] )
-        if target_location not in [ "ll", "lm", "lr", "ml", "mm", "mr", "hl", "hm", "hr" ] or len(cmd_parts) >= 3:
-            caller.msg(
-                f"You need to provide a valid target body location: <low/middle/high> <left/middle/right>."
-            )
-            return
+        combat.at_melee_attack(caller, target)
 
-        dmg = combat.at_attack( caller, target, target_location, "melee" )
 
-        if dmg <= 0:
-            # TODO FIXME specific messages for all the negative return codes.
-            caller.msg(
-                f"You can't hit {target.get_display_name(caller)} with your {weapon.get_display_name(caller)}."
-            )
-            return
-
-        caller.location.msg_contents(
-            f"$You() $conj(hit) {{{target.key}}} with $pron(your) {{{weapon.key}}} for {dmg} damage.",
-            mapping={target.key: target, weapon.key: weapon},
-            from_obj=caller,
-        )
-        target.at_damage(dmg, attacker=caller)
 
 
 class CmdShoot(CombatCommand):
@@ -221,61 +191,24 @@ class CmdShoot(CombatCommand):
     key = "shoot"
     locks = "cmd:in_combat() and ranged_equipped()"
 
+    cooldown_key = "attack"
+    cooldown_message = "You can't attack for {delay} more seconds."
+
     def func(self):
         caller = self.caller
-        args = self.args
-        range = "RANGED"
-
-        if not caller.cooldowns.ready("attack"):
-            caller.msg(
-                f"You can't attack for {caller.cooldowns.time_left('attack',use_int=True)} more seconds."
-            )
+        target = self.target
+        if not self.validate_target():
             return
 
-        target = self.get_valid_target()
-        if not target:
+        combat = caller.combat
+        if not combat:
+            caller.msg("You are not in combat!")
             return
 
-        combat = caller.ndb.combat
-        shootable = combat.in_range(caller, target, range)
-        if shootable is None:
-            caller.msg("You can't fight that.")
-            return
-        elif not shootable:
-            caller.msg(f"{target.get_display_name(caller)} is too far away.")
-            return
-        #elif too_close:
-        #    caller.msg(f"{target.get_display_name(caller)} is too close.")
-        #    return
-
-        target_location = "mm"  # default for no arguments given to the "shoot" command
-        if len(args) > 0:
-            cmd_parts = args.split()
-            match len(cmd_parts):
-                case 1:
-                    target_location = cmd_parts
-                case 2:
-                    target_location = "".join( [cmd_parts[0][0], cmd_parts[1][0]] )
-        if target_location not in [ "ll", "lm", "lr", "ml", "mm", "mr", "hl", "hm", "hr" ] or len(cmd_parts) >= 3:
-            caller.msg(
-                f"You need to provide a valid target body location: <low/middle/high> <left/middle/right>."
-            )
+        if not combat.rules.validate_weapon_attack(caller, target, caller.weapon):
             return
 
-        dmg = combat.at_attack( caller, target, target_location, "ranged" )
-
-        if dmg <= 0:
-            # TODO FIXME specific messages for all the negative return codes.
-            caller.msg(
-                f"You can't shoot {target.get_display_name(caller)} with your {weapon.get_display_name(caller)}."
-            )
-            return
-
-        caller.location.msg_contents(
-            f"$You() $conj(shoot) {{{target.key}}} with $pron(your) {{{weapon.key}}} for {dmg} damage.",
-            mapping={target.key: target, weapon.key: weapon},
-            from_obj=caller,
-        )
+        combat.at_ranged_attack(caller, target)
 
 
 class CmdFlee(CombatCommand):
@@ -285,16 +218,12 @@ class CmdFlee(CombatCommand):
     aliases = ("escape",)
     locks = "cmd:in_combat()"
 
+    cooldown_key = "combat_move"
+    cooldown_message = "You can't move for another {delay} seconds."
+    requires_target = False
+
     def func(self):
         caller = self.caller
-        args = self.args
-
-        if not caller.cooldowns.ready("combat_move"):
-            caller.msg(
-                f"You can't move for another {caller.cooldowns.time_left('combat_move',use_int=True)} seconds."
-            )
-            return
-
         exits = [ex for ex in caller.location.contents if ex.destination]
         if not exits:
             caller.msg("There's nowhere to run!")
@@ -304,10 +233,13 @@ class CmdFlee(CombatCommand):
 
         # this is the actual fleeing bit
         caller.msg("You flee!")
-        caller.ndb.combat.remove(caller)
+        caller.combat.remove(caller)
         target = choice(exits)
         # using execute_cmd instead of duplicating all the checks in ExitCommand
         caller.execute_cmd(target.key)
+
+    def get_target(self):
+        return None
 
 
 # TODO: add defend command for changing/setting your defense zone
